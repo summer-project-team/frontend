@@ -13,6 +13,7 @@ import { AnalyticsScreen } from './components/AnalyticsScreen';
 import { ExchangeRateService } from './services/ExchangeRateService';
 import { NotificationService } from './services/NotificationService';
 import { dashboardService } from './services/DashboardService';
+import TransactionService from './services/TransactionService';
 
 export type Recipient = {
   id: string;
@@ -240,87 +241,248 @@ export default function App() {
     localStorage.setItem('saved_recipients', JSON.stringify(updatedRecipients));
   };
 
-  const handleAmountConfirm = (params: { amount: string; category?: string; note?: string; transactionId?: string; exchangeRate?: number; }) => {
+  const handleAmountConfirm = async (params: { amount: string; category?: string; note?: string; transactionId?: string; exchangeRate?: number; }) => {
     const { amount, category, note } = params;
     setSendAmount(amount);
     
     if (selectedRecipient && user) {
-      const exchangeRate = exchangeRates[selectedRecipient.currency] || 1;
-      const numericAmount = parseFloat(amount);
-      
-      // Different processing for USDC to USDC vs USDC to Fiat
-      let convertedAmount: number;
-      let fee: number;
-      
-      if (selectedRecipient.currency === 'USDC') {
-        // USDC to USDC (app to app) - minimal fee
-        convertedAmount = numericAmount;
-        fee = numericAmount * 0.005; // 0.5% fee for app-to-app
-      } else {
-        // USDC to Fiat (to bank) - standard fee
-        convertedAmount = numericAmount * exchangeRate;
-        fee = numericAmount * 0.015; // 1.5% fee for fiat conversion
-      }
-      
-      const totalPaid = numericAmount + fee;
-      
-      const newTransaction: Transaction = {
-        id: `TX${Date.now()}`,
-        recipient: selectedRecipient.name,
-        recipientId: selectedRecipient.id,
-        amount: amount,
-        currency: 'USDC',
-        convertedAmount: convertedAmount.toFixed(2),
-        recipientCurrency: selectedRecipient.currency,
-        status: 'pending',
-        date: new Date().toISOString(),
-        timestamp: Date.now(),
-        avatar: selectedRecipient.avatar,
-        referenceNumber: `TX${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-        exchangeRate: exchangeRate,
-        fee: fee.toFixed(2),
-        totalPaid: totalPaid.toFixed(2),
-        category: category as Transaction['category'],
-        note: note
-      };
-      
-      setCurrentTransaction(newTransaction);
-      
-      // Simulate success/failure - 95% success rate for app-to-app, 90% for bank transfers
-      const successRate = selectedRecipient.currency === 'USDC' ? 0.95 : 0.9;
-      const isSuccess = Math.random() < successRate;
-      
-      setTimeout(() => {
-        const completedTransaction: Transaction = {
-          ...newTransaction,
-          status: isSuccess ? 'completed' : 'failed'
+      try {
+        // Create a temporary pending transaction for UI
+        const tempTransaction: Transaction = {
+          id: `TEMP_${Date.now()}`,
+          recipient: selectedRecipient.name,
+          recipientId: selectedRecipient.id,
+          amount: amount,
+          currency: 'CBUSD', // Backend uses CBUSD
+          convertedAmount: amount,
+          recipientCurrency: selectedRecipient.currency,
+          status: 'pending',
+          date: new Date().toISOString(),
+          timestamp: Date.now(),
+          avatar: selectedRecipient.avatar,
+          referenceNumber: 'PENDING...',
+          exchangeRate: 1,
+          fee: '0.00',
+          totalPaid: amount,
+          category: category as Transaction['category'],
+          note: note
         };
         
-        const updatedTransactions = [completedTransaction, ...transactions];
+        setCurrentTransaction(tempTransaction);
+        
+        // Call real backend API
+        const completedTransaction = await TransactionService.sendMoney({
+          recipient_phone: '8123456789', // Mock phone number based on recipient
+          recipient_country_code: '+234', // Mock country code
+          amount: parseFloat(amount),
+          narration: note
+        });
+        
+        // Map backend response to frontend Transaction
+        const mappedTransaction: Transaction = {
+          id: completedTransaction.id,
+          recipient: selectedRecipient.name,
+          recipientId: selectedRecipient.id,
+          amount: amount,
+          currency: 'CBUSD',
+          convertedAmount: completedTransaction.converted_amount?.toString() || amount,
+          recipientCurrency: completedTransaction.currency_to || 'CBUSD',
+          status: completedTransaction.status as Transaction['status'],
+          date: completedTransaction.created_at,
+          timestamp: new Date(completedTransaction.created_at).getTime(),
+          avatar: selectedRecipient.avatar,
+          referenceNumber: completedTransaction.reference_id,
+          exchangeRate: completedTransaction.exchange_rate,
+          fee: completedTransaction.fee.toFixed(2),
+          totalPaid: completedTransaction.total.toFixed(2),
+          category: category as Transaction['category'],
+          note: note
+        };
+        
+        // Update state with completed transaction
+        const updatedTransactions = [mappedTransaction, ...transactions];
         setTransactions(updatedTransactions);
         
         // Add transaction notification
         NotificationService.addTransactionNotification(
-          isSuccess ? 'completed' : 'failed',
+          mappedTransaction.status,
           selectedRecipient.name,
           amount,
           selectedRecipient.currency
         );
         
         // Save to localStorage
-        if (user) {
-          localStorage.setItem(`transactions_${user.id}`, JSON.stringify(updatedTransactions));
+        localStorage.setItem(`transactions_${user.id}`, JSON.stringify(updatedTransactions));
+        
+        if (mappedTransaction.status === 'completed') {
+          // Refresh user balance from backend
+          try {
+            const balanceData = await dashboardService.getWalletBalance();
+            const updatedUser = { ...user, balance: balanceData.cbusd_balance };
+            setUser(updatedUser);
+            localStorage.setItem(`user_${user.id}`, JSON.stringify(updatedUser));
+          } catch (error) {
+            console.error('Failed to refresh balance:', error);
+          }
         }
         
-        if (isSuccess && user) {
-          // Deduct from user balance
-          const updatedUser = { ...user, balance: user.balance - totalPaid };
+        setCurrentTransaction(mappedTransaction);
+        navigateTo(mappedTransaction.status === 'completed' ? 'success' : 'failure');
+        
+      } catch (error: any) {
+        console.error('Transaction failed:', error);
+        
+        // Create failed transaction
+        const failedTransaction: Transaction = {
+          id: `FAILED_${Date.now()}`,
+          recipient: selectedRecipient.name,
+          recipientId: selectedRecipient.id,
+          amount: amount,
+          currency: 'CBUSD',
+          convertedAmount: amount,
+          recipientCurrency: selectedRecipient.currency,
+          status: 'failed',
+          date: new Date().toISOString(),
+          timestamp: Date.now(),
+          avatar: selectedRecipient.avatar,
+          referenceNumber: `FAILED_${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+          exchangeRate: 1,
+          fee: '0.00',
+          totalPaid: amount,
+          category: category as Transaction['category'],
+          note: note
+        };
+        
+        setCurrentTransaction(failedTransaction);
+        setTransactions([failedTransaction, ...transactions]);
+        
+        // Show error notification
+        NotificationService.addTransactionNotification(
+          'failed',
+          selectedRecipient.name,
+          amount,
+          selectedRecipient.currency
+        );
+        
+        navigateTo('failure');
+      }
+    }
+  };
+
+  const handleDeposit = async (amount: number, currency: string) => {
+    try {
+      const depositResult = await TransactionService.initiateDeposit({
+        amount,
+        currency
+      });
+      
+      // Show deposit instructions to user
+      console.log('Deposit instructions:', depositResult);
+      
+      // For demo purposes, we'll simulate a deposit completion after a delay
+      setTimeout(async () => {
+        try {
+          // Refresh balance after simulated deposit
+          const balanceData = await dashboardService.getWalletBalance();
+          const updatedUser = { ...user!, balance: balanceData.cbusd_balance };
           setUser(updatedUser);
-          localStorage.setItem(`user_${user.id}`, JSON.stringify(updatedUser));
+          localStorage.setItem(`user_${user!.id}`, JSON.stringify(updatedUser));
+          
+          // Add deposit transaction to history
+          const depositTransaction: Transaction = {
+            id: depositResult.id || `DEP_${Date.now()}`,
+            recipient: `Deposit from ${currency}`,
+            recipientId: 'deposit',
+            amount: amount.toString(),
+            currency: 'CBUSD',
+            convertedAmount: amount.toString(),
+            recipientCurrency: 'CBUSD',
+            status: 'completed',
+            date: new Date().toISOString(),
+            timestamp: Date.now(),
+            avatar: 'https://ui-avatars.com/api/?name=D&background=22c55e&color=fff',
+            referenceNumber: depositResult.reference_id || `DEP_${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+            exchangeRate: 1,
+            fee: '0.00',
+            totalPaid: amount.toString(),
+            category: 'other',
+            note: `Deposit from ${currency}`
+          };
+          
+          setTransactions(prev => [depositTransaction, ...prev]);
+          
+          NotificationService.addTransactionNotification(
+            'completed',
+            `Deposit from ${currency}`,
+            amount.toString(),
+            'CBUSD'
+          );
+        } catch (error) {
+          console.error('Failed to process deposit:', error);
         }
-        
-        navigateTo(isSuccess ? 'success' : 'failure');
-      }, 2000);
+      }, 3000); // Simulate 3 second processing time
+      
+    } catch (error: any) {
+      console.error('Deposit failed:', error);
+      alert(`Deposit failed: ${error.message}`);
+    }
+  };
+
+  const handleWithdraw = async (amount: number, bankDetails: any) => {
+    try {
+      const withdrawResult = await TransactionService.initiateWithdrawal({
+        amount,
+        currency: 'NGN', // Default to NGN for now
+        bank_code: '058', // GTBank code as example
+        account_number: bankDetails.accountNumber,
+        narration: `Withdrawal to ${bankDetails.bankName}`
+      });
+      
+      // Add withdrawal transaction to history
+      const withdrawTransaction: Transaction = {
+        id: withdrawResult.id,
+        recipient: `Withdraw to ${bankDetails.bankName}`,
+        recipientId: 'withdrawal',
+        amount: amount.toString(),
+        currency: 'CBUSD',
+        convertedAmount: (amount * 1600).toString(), // Mock NGN conversion
+        recipientCurrency: 'NGN',
+        status: withdrawResult.status as Transaction['status'],
+        date: withdrawResult.created_at || new Date().toISOString(),
+        timestamp: Date.now(),
+        avatar: 'https://ui-avatars.com/api/?name=W&background=ef4444&color=fff',
+        referenceNumber: withdrawResult.reference_id,
+        exchangeRate: 1600, // Mock NGN rate
+        fee: withdrawResult.fee?.toString() || '0.00',
+        totalPaid: withdrawResult.total?.toString() || amount.toString(),
+        category: 'other',
+        note: `Withdrawal to ${bankDetails.accountName}`
+      };
+      
+      setTransactions(prev => [withdrawTransaction, ...prev]);
+      
+      // Refresh balance
+      try {
+        const balanceData = await dashboardService.getWalletBalance();
+        const updatedUser = { ...user!, balance: balanceData.cbusd_balance };
+        setUser(updatedUser);
+        localStorage.setItem(`user_${user!.id}`, JSON.stringify(updatedUser));
+      } catch (error) {
+        console.error('Failed to refresh balance:', error);
+      }
+      
+      NotificationService.addTransactionNotification(
+        withdrawResult.status as any,
+        `Withdraw to ${bankDetails.bankName}`,
+        amount.toString(),
+        'NGN'
+      );
+      
+      alert(`Withdrawal initiated! Reference: ${withdrawResult.reference_id}`);
+      
+    } catch (error: any) {
+      console.error('Withdrawal failed:', error);
+      alert(`Withdrawal failed: ${error.message}`);
     }
   };
 
@@ -377,6 +539,8 @@ export default function App() {
                     onUpdateUser={setUser}
                     setTransactions={setTransactions}
                     onAddRecipient={handleAddRecipient}
+                    onWithdraw={handleWithdraw}
+                    onDeposit={handleDeposit}
                   />
                 )}
                 {currentScreen === 'recipients' && (
@@ -541,6 +705,8 @@ export default function App() {
                   onUpdateUser={setUser}
                   setTransactions={setTransactions}
                   onAddRecipient={handleAddRecipient}
+                  onWithdraw={handleWithdraw}
+                  onDeposit={handleDeposit}
                   isDesktop={true}
                 />
               )}

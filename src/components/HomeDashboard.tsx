@@ -22,6 +22,8 @@ interface HomeDashboardProps {
   onUpdateUser: (user: User) => void;
   setTransactions: (transactions: Transaction[]) => void;
   onAddRecipient: (recipient: Recipient) => void;
+  onWithdraw?: (amount: number, bankDetails: any) => void;
+  onDeposit?: (amount: number, currency: string) => void;
   isDesktop?: boolean;
 }
 
@@ -62,6 +64,8 @@ export function HomeDashboard({
   onUpdateUser, 
   setTransactions,
   onAddRecipient,
+  onWithdraw,
+  onDeposit,
   isDesktop = false 
 }: HomeDashboardProps) {
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
@@ -224,36 +228,67 @@ export function HomeDashboard({
   };
 
   const handleWithdraw = (amount: number, bankDetails: any) => {
-    // Create withdrawal transaction
-    const withdrawalTransaction = {
-      id: `WD${Date.now()}`,
-      recipient: bankDetails.bankName,
-      recipientId: 'withdrawal',
-      amount: amount.toString(),
-      currency: 'USDC',
-      convertedAmount: amount.toString(),
-      recipientCurrency: 'USD',
-      status: 'pending' as const,
-      date: new Date().toISOString(),
-      timestamp: Date.now(),
-      avatar: '',
-      referenceNumber: `WD${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-      exchangeRate: 1,
-      fee: (amount * 0.02).toFixed(2),
-      totalPaid: (amount + amount * 0.02).toFixed(2)
-    };
+    if (onWithdraw) {
+      // Call the parent's real backend withdrawal handler
+      onWithdraw(amount, bankDetails);
+    } else {
+      // Fallback to mock implementation if no handler provided
+      const withdrawalTransaction = {
+        id: `WD${Date.now()}`,
+        recipient: bankDetails.bankName,
+        recipientId: 'withdrawal',
+        amount: amount.toString(),
+        currency: 'USDC',
+        convertedAmount: amount.toString(),
+        recipientCurrency: 'USD',
+        status: 'pending' as const,
+        date: new Date().toISOString(),
+        timestamp: Date.now(),
+        avatar: '',
+        referenceNumber: `WD${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+        exchangeRate: 1,
+        fee: (amount * 0.02).toFixed(2),
+        totalPaid: (amount + amount * 0.02).toFixed(2)
+      };
 
-    const updatedTransactions = [withdrawalTransaction, ...transactions];
-    setTransactions(updatedTransactions);
+      const updatedTransactions = [withdrawalTransaction, ...transactions];
+      setTransactions(updatedTransactions);
 
-    // Update user balance
-    const totalDeduction = amount + amount * 0.02;
-    const updatedUser = { ...user, balance: user.balance - totalDeduction };
-    onUpdateUser(updatedUser);
-    localStorage.setItem(`user_${user.id}`, JSON.stringify(updatedUser));
-    localStorage.setItem(`transactions_${user.id}`, JSON.stringify(updatedTransactions));
+      // Update user balance
+      const totalDeduction = amount + amount * 0.02;
+      const updatedUser = { ...user, balance: user.balance - totalDeduction };
+      onUpdateUser(updatedUser);
+      localStorage.setItem(`user_${user.id}`, JSON.stringify(updatedUser));
+      localStorage.setItem(`transactions_${user.id}`, JSON.stringify(updatedTransactions));
 
-    toast.success('Withdrawal request submitted successfully');
+      toast.success('Withdrawal request submitted successfully');
+    }
+  };
+
+  const handleDepositMethod = (method: string) => {
+    switch (method) {
+      case 'card':
+        // For now, show a simple prompt for demo
+        const amount = prompt('Enter amount to deposit (minimum $10):');
+        if (amount && parseFloat(amount) >= 10) {
+          if (onDeposit) {
+            onDeposit(parseFloat(amount), 'USD');
+          } else {
+            toast.success(`Card deposit of $${amount} initiated`);
+          }
+        } else if (amount) {
+          toast.error('Minimum deposit amount is $10');
+        }
+        break;
+      case 'ussd':
+        toast.info('USSD deposit instructions will be sent via SMS');
+        break;
+      case 'qr':
+        toast.info('QR code deposit feature coming soon');
+        break;
+      default:
+        break;
+    }
   };
 
   const handleQRScan = (data: string) => {
@@ -337,7 +372,10 @@ export function HomeDashboard({
 
         {/* Other Deposit Options */}
         <div className="grid grid-cols-1 gap-4">
-          <button className="flex items-center gap-4 p-5 glass-card dark:dark-glass rounded-2xl border border-gray-200/30 dark:border-white/10 hover:bg-gray-100/50 dark:hover:bg-white/5 transition-all duration-300 group">
+          <button 
+            onClick={() => handleDepositMethod('card')}
+            className="flex items-center gap-4 p-5 glass-card dark:dark-glass rounded-2xl border border-gray-200/30 dark:border-white/10 hover:bg-gray-100/50 dark:hover:bg-white/5 transition-all duration-300 group"
+          >
             <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <CreditCard size={24} className="text-green-600 dark:text-green-400" />
             </div>
@@ -347,7 +385,10 @@ export function HomeDashboard({
             </div>
           </button>
 
-          <button className="flex items-center gap-4 p-5 glass-card dark:dark-glass rounded-2xl border border-gray-200/30 dark:border-white/10 hover:bg-gray-100/50 dark:hover:bg-white/5 transition-all duration-300 group">
+          <button 
+            onClick={() => handleDepositMethod('ussd')}
+            className="flex items-center gap-4 p-5 glass-card dark:dark-glass rounded-2xl border border-gray-200/30 dark:border-white/10 hover:bg-gray-100/50 dark:hover:bg-white/5 transition-all duration-300 group"
+          >
             <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <Smartphone size={24} className="text-orange-600 dark:text-orange-400" />
             </div>
@@ -357,7 +398,10 @@ export function HomeDashboard({
             </div>
           </button>
 
-          <button className="flex items-center gap-4 p-5 glass-card dark:dark-glass rounded-2xl border border-gray-200/30 dark:border-white/10 hover:bg-gray-100/50 dark:hover:bg-white/5 transition-all duration-300 group">
+          <button 
+            onClick={() => handleDepositMethod('qr')}
+            className="flex items-center gap-4 p-5 glass-card dark:dark-glass rounded-2xl border border-gray-200/30 dark:border-white/10 hover:bg-gray-100/50 dark:hover:bg-white/5 transition-all duration-300 group"
+          >
             <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <QrCode size={24} className="text-purple-600 dark:text-purple-400" />
             </div>

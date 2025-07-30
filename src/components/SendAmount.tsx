@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Fingerprint, RefreshCw, TrendingUp, TrendingDown, Tag, FileText } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Loader2, 
+  TrendingUp, 
+  TrendingDown,
+  Tag,
+  FileText,
+  RefreshCw,
+  Fingerprint
+} from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -8,12 +17,26 @@ import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Recipient } from '../App';
 import { ExchangeRateService } from '../services/ExchangeRateService';
+import { useTransaction } from '../hooks/useTransaction';
+import { QuoteRequest, SendMoneyRequest, WithdrawRequest, Quote } from '../types/transaction';
 
 interface SendAmountProps {
-  recipient: Recipient;
+  recipient: Recipient & {
+    phone?: string;
+    bankCode?: string;
+    accountNumber?: string;
+  };
+  type: 'app_transfer' | 'bank_withdrawal';
   exchangeRates: { [key: string]: number };
   onBack: () => void;
-  onConfirm: (amount: string, category?: string, note?: string) => void;
+  onConfirm: (params: {
+    amount: string;
+    category?: string;
+    note?: string;
+    transactionId?: string;
+    exchangeRate?: number;
+  }) => void;
+  onError?: (error: Error) => void;
 }
 
 // Transaction categories
@@ -29,7 +52,14 @@ const transactionCategories = [
   { value: 'other', label: '📌 Other', description: 'Miscellaneous transactions' },
 ];
 
-export function SendAmount({ recipient, exchangeRates, onBack, onConfirm }: SendAmountProps) {
+export function SendAmount({ 
+  recipient, 
+  type,
+  exchangeRates, 
+  onBack, 
+  onConfirm,
+  onError
+}: SendAmountProps) {
   const [amount, setAmount] = useState('');
   const [isConfirming, setIsConfirming] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
@@ -50,15 +80,66 @@ export function SendAmount({ recipient, exchangeRates, onBack, onConfirm }: Send
   const transferFee = numericAmount * 0.015; // 1.5% fee
   const totalPayable = numericAmount + transferFee;
 
+  const {
+    quote,
+    transaction,
+    loading,
+    error: txError,
+    getQuote,
+    sendMoney,
+    withdraw
+  } = useTransaction();
+
   const handleConfirm = async () => {
     if (numericAmount <= 0) return;
     
     setIsConfirming(true);
     
-    // Simulate biometric authentication delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    onConfirm(amount, category, note);
+    try {
+      // Get quote first to validate exchange rate
+      const quoteResult = await getQuote({
+        amount: numericAmount,
+        currency_from: 'USD',
+        currency_to: recipient.currency,
+        recipient_phone: type === 'app_transfer' ? recipient.phone : undefined,
+        recipient_country_code: recipient.country
+      });
+
+      if (Math.abs(quoteResult.exchange_rate - exchangeRate) > 0.01) {
+        throw new Error('Exchange rate has changed significantly. Please try again.');
+      }
+
+      if (type === 'app_transfer' && recipient.phone) {
+        await sendMoney({
+          recipient_phone: recipient.phone,
+          recipient_country_code: recipient.country,
+          amount: numericAmount,
+          narration: note
+        });
+      } else if (type === 'bank_withdrawal' && recipient.bankCode && recipient.accountNumber) {
+        await withdraw({
+          bank_code: recipient.bankCode,
+          account_number: recipient.accountNumber,
+          amount: numericAmount,
+          currency: recipient.currency,
+          narration: note
+        });
+      } else {
+        throw new Error('Invalid recipient information for the selected transfer type');
+      }
+
+      onConfirm({
+        amount: amount,
+        category,
+        note,
+        transactionId: transaction?.id,
+        exchangeRate: quoteResult.exchange_rate
+      });
+    } catch (err) {
+      onError?.(err instanceof Error ? err : new Error('Transaction failed'));
+    } finally {
+      setIsConfirming(false);
+    }
   };
 
   const getChangeIndicator = () => {

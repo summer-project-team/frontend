@@ -12,6 +12,7 @@ import { NotificationScreen } from './components/NotificationScreen';
 import { AnalyticsScreen } from './components/AnalyticsScreen';
 import { ExchangeRateService } from './services/ExchangeRateService';
 import { NotificationService } from './services/NotificationService';
+import { dashboardService } from './services/DashboardService';
 
 export type Recipient = {
   id: string;
@@ -126,6 +127,25 @@ export default function App() {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
+  // Refresh balance periodically when user is logged in
+  useEffect(() => {
+    if (!user) return;
+
+    const refreshBalance = async () => {
+      try {
+        const balance = await dashboardService.getWalletBalance();
+        setUser(prevUser => prevUser ? { ...prevUser, balance } : null);
+      } catch (error) {
+        console.error('Failed to refresh balance:', error);
+      }
+    };
+
+    // Refresh balance every 60 seconds
+    const interval = setInterval(refreshBalance, 60000);
+    
+    return () => clearInterval(interval);
+  }, [user?.id]); // Only depend on user ID to avoid recreating interval
+
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
@@ -136,22 +156,61 @@ export default function App() {
     setCurrentScreen(screen);
   };
 
-  const handleLogin = (userData: User) => {
-    setUser(userData);
-    // Load user's transaction history
-    const userTransactions = JSON.parse(localStorage.getItem(`transactions_${userData.id}`) || '[]');
-    setTransactions(userTransactions);
-    // Initialize notification service
-    NotificationService.initialize(userData.id);
-    navigateTo('home');
+  const handleLogin = async (userData: User) => {
+    try {
+      // Fetch real dashboard data from backend
+      const { user: dashboardUser, transactions: dashboardTransactions } = await dashboardService.getDashboardData();
+      
+      // Update user data with real balance from backend
+      const updatedUser = {
+        ...userData,
+        balance: dashboardUser.balance, // Real CBUSD balance from backend
+        verificationLevel: dashboardUser.verificationLevel
+      };
+      
+      setUser(updatedUser);
+      setTransactions(dashboardTransactions);
+      
+      // Initialize notification service
+      NotificationService.initialize(updatedUser.id);
+      navigateTo('home');
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+      // Fallback to original behavior if backend fails
+      setUser(userData);
+      const userTransactions = JSON.parse(localStorage.getItem(`transactions_${userData.id}`) || '[]');
+      setTransactions(userTransactions);
+      NotificationService.initialize(userData.id);
+      navigateTo('home');
+    }
   };
 
-  const handleSignup = (userData: User) => {
-    setUser(userData);
-    setTransactions([]);
-    // Initialize notification service
-    NotificationService.initialize(userData.id);
-    navigateTo('home');
+  const handleSignup = async (userData: User) => {
+    try {
+      // For signup, user likely has 0 balance, but let's fetch anyway
+      const { user: dashboardUser, transactions: dashboardTransactions } = await dashboardService.getDashboardData();
+      
+      // Update user data with real balance from backend
+      const updatedUser = {
+        ...userData,
+        balance: dashboardUser.balance, // Real CBUSD balance from backend
+        verificationLevel: dashboardUser.verificationLevel
+      };
+      
+      setUser(updatedUser);
+      setTransactions(dashboardTransactions);
+      
+      // Initialize notification service
+      NotificationService.initialize(updatedUser.id);
+      navigateTo('home');
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+      // Fallback to original behavior if backend fails
+      setUser(userData);
+      setTransactions([]);
+      NotificationService.initialize(userData.id);
+      navigateTo('home');
+    }
   };
 
   const handleLogout = () => {

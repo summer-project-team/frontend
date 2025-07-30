@@ -3,7 +3,8 @@ import type { ApiResponse } from './api';
 
 // Types for authentication
 export interface LoginRequest {
-  email: string;
+  phone_number: string;
+  country_code: string;
   password: string;
 }
 

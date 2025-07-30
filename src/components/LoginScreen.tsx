@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Phone, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { User } from '../App';
@@ -12,22 +12,46 @@ interface LoginScreenProps {
 }
 
 export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Parse phone number to extract country code and number
+  const parsePhoneNumber = (phone: string) => {
+    // Remove any non-numeric characters except +
+    const cleaned = phone.replace(/[^+\d]/g, '');
+    
+    // Default mappings for common country codes
+    if (cleaned.startsWith('+234') || cleaned.startsWith('234')) {
+      return { country_code: 'NG', phone_number: cleaned.replace(/^\+?234/, '') };
+    } else if (cleaned.startsWith('+44') || cleaned.startsWith('44')) {
+      return { country_code: 'GB', phone_number: cleaned.replace(/^\+?44/, '') };
+    } else if (cleaned.startsWith('+1') || cleaned.startsWith('1')) {
+      return { country_code: 'US', phone_number: cleaned.replace(/^\+?1/, '') };
+    } else {
+      // Default to Nigeria if no country code detected
+      return {
+        country_code: 'NG',
+        phone_number: cleaned.startsWith('0') ? cleaned.substring(1) : cleaned
+      };
+    }
+  };
+
   const handleLogin = async () => {
-    if (!email || !password) {
-      toast.error('Please enter both email and password');
+    if (!phone || !password) {
+      toast.error('Please enter both phone number and password');
       return;
     }
     
     setIsLoading(true);
     
     try {
+      // Parse phone number
+      const { country_code, phone_number } = parsePhoneNumber(phone);
+      
       // Call real backend login API
-      const response = await authService.login({ email, password });
+      const response = await authService.login({ phone_number, country_code, password });
       
       if (response.success) {
         // Convert backend user to frontend User type
@@ -81,16 +105,16 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
         {/* Login Form */}
         <div className="backdrop-blur-lg bg-white/30 rounded-3xl p-8 border border-white/40 shadow-2xl mb-6">
           <div className="space-y-6">
-            {/* Email Input */}
+            {/* Phone Input */}
             <div>
-              <label className="block text-gray-700 mb-2">Email</label>
+              <label className="block text-gray-700 mb-2">Phone Number</label>
               <div className="relative">
-                <Mail size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Phone size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="tel"
+                  placeholder="Enter your phone number (e.g., +2348012345678)"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   onKeyPress={handleKeyPress}
                   className="pl-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-14 focus:bg-white/40 transition-all duration-300"
                 />
@@ -130,7 +154,7 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
             {/* Login Button */}
             <Button
               onClick={handleLogin}
-              disabled={!email || !password || isLoading}
+              disabled={!phone || !password || isLoading}
               className="w-full h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
             >
               {isLoading ? (

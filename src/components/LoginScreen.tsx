@@ -3,6 +3,8 @@ import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { User } from '../App';
+import { authService } from '../services/AuthService';
+import { toast } from 'sonner';
 
 interface LoginScreenProps {
   onLogin: (user: User) => void;
@@ -16,30 +18,48 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) return;
+    if (!email || !password) {
+      toast.error('Please enter both email and password');
+      return;
+    }
     
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Mock user data - in real app, this would come from API
-    const mockUser: User = {
-      id: 'user_123',
-      name: 'John Smith',
-      email: email,
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
-      balance: 2547.85,
-      currency: 'USD',
-      phoneNumber: '+1 (555) 123-4567',
-      verificationLevel: 'verified'
-    };
-    
-    // Save user data to localStorage
-    localStorage.setItem(`user_${mockUser.id}`, JSON.stringify(mockUser));
-    
-    setIsLoading(false);
-    onLogin(mockUser);
+    try {
+      // Call real backend login API
+      const response = await authService.login({ email, password });
+      
+      if (response.success) {
+        // Convert backend user to frontend User type
+        const userObj: User = {
+          id: response.user.id.toString(),
+          name: `${response.user.first_name} ${response.user.last_name}`,
+          email: response.user.email,
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(response.user.first_name + ' ' + response.user.last_name)}&background=6366f1&color=fff`,
+          balance: 1000, // Default balance for new users
+          currency: 'USDC',
+          phoneNumber: response.user.phone_number || '',
+          verificationLevel: response.user.kyc_status === 'verified' ? 'verified' : 'basic'
+        };
+        
+        // Save user data to localStorage (already done in authService, but for compatibility)
+        localStorage.setItem(`user_${userObj.id}`, JSON.stringify(userObj));
+        
+        toast.success('Login successful!');
+        onLogin(userObj);
+      }
+    } catch (error: any) {
+      console.error('Login failed:', error);
+      toast.error(error.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
   };
 
   return (
@@ -71,6 +91,7 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onKeyPress={handleKeyPress}
                   className="pl-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-14 focus:bg-white/40 transition-all duration-300"
                 />
               </div>
@@ -86,6 +107,7 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyPress={handleKeyPress}
                   className="pl-12 pr-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-14 focus:bg-white/40 transition-all duration-300"
                 />
                 <button

@@ -181,7 +181,8 @@ export default function App() {
     localStorage.setItem('saved_recipients', JSON.stringify(updatedRecipients));
   };
 
-  const handleAmountConfirm = (amount: string, category?: string, note?: string) => {
+  const handleAmountConfirm = (params: { amount: string; category?: string; note?: string; transactionId?: string; exchangeRate?: number; }) => {
+    const { amount, category, note } = params;
     setSendAmount(amount);
     
     if (selectedRecipient && user) {
@@ -328,6 +329,7 @@ export default function App() {
                 {currentScreen === 'amount' && selectedRecipient && (
                   <SendAmount
                     recipient={selectedRecipient}
+                    type="bank_withdrawal"
                     exchangeRates={exchangeRates}
                     onBack={() => navigateTo('recipients')}
                     onConfirm={handleAmountConfirm}
@@ -498,6 +500,7 @@ export default function App() {
                   <div className="w-full max-w-lg">
                     <SendAmount
                       recipient={selectedRecipient}
+                      type="bank_withdrawal"
                       exchangeRates={exchangeRates}
                       onBack={() => navigateTo('recipients')}
                       onConfirm={handleAmountConfirm}

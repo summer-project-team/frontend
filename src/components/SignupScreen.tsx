@@ -3,6 +3,8 @@ import { Mail, Lock, User as UserIcon, Phone, Eye, EyeOff } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { User } from '../App';
+import { authService } from '../services/AuthService';
+import { toast } from 'sonner';
 
 interface SignupScreenProps {
   onSignup: (user: User) => void;
@@ -11,9 +13,11 @@ interface SignupScreenProps {
 
 export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
+    countryCode: 'NG', // Default to Nigeria
     password: '',
     confirmPassword: ''
   });
@@ -25,39 +29,80 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSignup = async () => {
-    const { name, email, phone, password, confirmPassword } = formData;
+  // Parse phone number to extract country code and number
+  const parsePhoneNumber = (phone: string) => {
+    // Remove any non-numeric characters except +
+    const cleaned = phone.replace(/[^+\d]/g, '');
     
-    if (!name || !email || !phone || !password || !confirmPassword) return;
-    if (password !== confirmPassword) return;
+    // Default mappings for common country codes
+    if (cleaned.startsWith('+234') || cleaned.startsWith('234')) {
+      return { country_code: 'NG', phone_number: cleaned.replace(/^\+?234/, '') };
+    } else if (cleaned.startsWith('+44') || cleaned.startsWith('44')) {
+      return { country_code: 'GB', phone_number: cleaned.replace(/^\+?44/, '') };
+    } else if (cleaned.startsWith('+1') || cleaned.startsWith('1')) {
+      return { country_code: 'US', phone_number: cleaned.replace(/^\+?1/, '') };
+    } else {
+      // Default to the selected country code
+      return { 
+        country_code: formData.countryCode, 
+        phone_number: cleaned.replace(/^\+/, '') 
+      };
+    }
+  };
+
+  const handleSignup = async () => {
+    const { firstName, lastName, email, phone, password, confirmPassword } = formData;
+    
+    if (!firstName || !lastName || !email || !phone || !password || !confirmPassword) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 8) {
+      toast.error('Password must be at least 8 characters long');
+      return;
+    }
     
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Create new user
-    const newUser: User = {
-      id: `user_${Date.now()}`,
-      name: name,
-      email: email,
-      avatar: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face`,
-      balance: 100.00, // Welcome bonus
-      currency: 'USD',
-      phoneNumber: phone,
-      verificationLevel: 'basic'
-    };
-    
-    // Save user data to localStorage
-    localStorage.setItem(`user_${newUser.id}`, JSON.stringify(newUser));
-    
-    setIsLoading(false);
-    onSignup(newUser);
+    try {
+      // Parse phone number
+      const { country_code, phone_number } = parsePhoneNumber(phone);
+      
+      // Call real backend registration API
+      const response = await authService.register({
+        phone_number,
+        country_code,
+        email,
+        password,
+        first_name: firstName,
+        last_name: lastName
+      });
+      
+      if (response.success) {
+        toast.success('Registration successful! Please check your phone for verification code.');
+        
+        // For now, we'll redirect to login since phone verification isn't implemented in frontend yet
+        // In a real app, you'd show a phone verification screen here
+        toast.info('Please login with your credentials');
+        onSwitchToLogin();
+      }
+    } catch (error: any) {
+      console.error('Registration failed:', error);
+      toast.error(error.message || 'Registration failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isFormValid = () => {
-    const { name, email, phone, password, confirmPassword } = formData;
-    return name && email && phone && password && confirmPassword && password === confirmPassword;
+    const { firstName, lastName, email, phone, password, confirmPassword } = formData;
+    return firstName && lastName && email && phone && password && confirmPassword && password === confirmPassword;
   };
 
   return (
@@ -79,16 +124,31 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
         {/* Signup Form */}
         <div className="backdrop-blur-lg bg-white/30 rounded-3xl p-8 border border-white/40 shadow-2xl mb-6">
           <div className="space-y-5">
-            {/* Full Name */}
+            {/* First Name */}
             <div>
-              <label className="block text-gray-700 mb-2">Full Name</label>
+              <label className="block text-gray-700 mb-2">First Name</label>
               <div className="relative">
                 <UserIcon size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="Enter your full name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  placeholder="Enter your first name"
+                  value={formData.firstName}
+                  onChange={(e) => handleInputChange('firstName', e.target.value)}
+                  className="pl-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-12 focus:bg-white/40 transition-all duration-300"
+                />
+              </div>
+            </div>
+
+            {/* Last Name */}
+            <div>
+              <label className="block text-gray-700 mb-2">Last Name</label>
+              <div className="relative">
+                <UserIcon size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Enter your last name"
+                  value={formData.lastName}
+                  onChange={(e) => handleInputChange('lastName', e.target.value)}
                   className="pl-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-12 focus:bg-white/40 transition-all duration-300"
                 />
               </div>
@@ -112,15 +172,26 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
             {/* Phone Number */}
             <div>
               <label className="block text-gray-700 mb-2">Phone Number</label>
-              <div className="relative">
-                <Phone size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <Input
-                  type="tel"
-                  placeholder="+1 (555) 123-4567"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className="pl-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-12 focus:bg-white/40 transition-all duration-300"
-                />
+              <div className="flex space-x-3">
+                <select
+                  value={formData.countryCode}
+                  onChange={(e) => handleInputChange('countryCode', e.target.value)}
+                  className="w-20 backdrop-blur-md bg-white/30 border border-white/40 rounded-2xl h-12 px-3 focus:bg-white/40 transition-all duration-300"
+                >
+                  <option value="NG">🇳🇬</option>
+                  <option value="GB">🇬🇧</option>
+                  <option value="US">🇺🇸</option>
+                </select>
+                <div className="relative flex-1">
+                  <Phone size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Input
+                    type="tel"
+                    placeholder="+234 801 234 5678"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    className="pl-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-12 focus:bg-white/40 transition-all duration-300"
+                  />
+                </div>
               </div>
             </div>
 

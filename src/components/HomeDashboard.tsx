@@ -30,17 +30,17 @@ const nigerianBanks = [
   { code: '044', name: 'Access Bank' },
   { code: '014', name: 'Afribank Nigeria Plc' },
   { code: '023', name: 'Citibank Nigeria Limited' },
-  { code: '058', name: 'Diamond Bank' },
+  { code: '063', name: 'Diamond Bank' },
   { code: '011', name: 'First Bank of Nigeria' },
   { code: '214', name: 'First City Monument Bank' },
   { code: '070', name: 'Fidelity Bank' },
-  { code: '221', name: 'Globus Bank' },
+  { code: '103', name: 'Globus Bank' },
   { code: '058', name: 'Guaranty Trust Bank' },
   { code: '030', name: 'Heritage Bank' },
   { code: '301', name: 'Jaiz Bank' },
   { code: '082', name: 'Keystone Bank' },
   { code: '090', name: 'MainStreet Bank' },
-  { code: '057', name: 'Polaris Bank' },
+  { code: '101', name: 'Polaris Bank' },
   { code: '076', name: 'Skye Bank' },
   { code: '221', name: 'Stanbic IBTC Bank' },
   { code: '068', name: 'Standard Chartered Bank' },
@@ -155,6 +155,18 @@ export function HomeDashboard({
 
   const handleAddRecipient = () => {
     if (recipientType === 'bank' && newRecipient.name && newRecipient.accountNumber && newRecipient.bankCode) {
+      // Check if bank recipient already exists
+      const existingBankRecipient = recipients.find(r => 
+        r.name === newRecipient.name && 
+        r.country === newRecipient.country &&
+        r.currency !== 'USDC' // Bank recipients don't use USDC
+      );
+      
+      if (existingBankRecipient) {
+        toast.error('This recipient already exists');
+        return;
+      }
+
       const recipient: Recipient = {
         id: `recipient_${Date.now()}`,
         name: newRecipient.name,
@@ -169,8 +181,19 @@ export function HomeDashboard({
       setNewRecipient({ name: '', accountNumber: '', bankCode: '', bankName: '', phoneNumber: '', country: 'Nigeria' });
       setRecipientType(null);
     } else if (recipientType === 'phone' && newRecipient.name && newRecipient.phoneNumber) {
+      // Check if phone recipient already exists
+      const existingPhoneRecipient = recipients.find(r => 
+        r.name === newRecipient.name && 
+        r.country === 'App User'
+      );
+      
+      if (existingPhoneRecipient) {
+        toast.error('This recipient already exists');
+        return;
+      }
+
       const recipient: Recipient = {
-        id: `phone_${newRecipient.phoneNumber}`,
+        id: `phone_${newRecipient.phoneNumber}_${Date.now()}`,
         name: newRecipient.name,
         avatar: `https://images.unsplash.com/photo-1494790108755-2616b6e08c3c?w=150&h=150&fit=crop&crop=face`,
         country: 'App User',

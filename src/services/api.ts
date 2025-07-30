@@ -46,11 +46,11 @@ api.interceptors.response.use(
           refresh_token: refreshToken,
         });
 
-        const { access_token } = response.data;
-        localStorage.setItem('accessToken', access_token);
+        const { token } = response.data;
+        localStorage.setItem('accessToken', token);
 
         // Retry original request with new token
-        originalRequest.headers.Authorization = `Bearer ${access_token}`;
+        originalRequest.headers.Authorization = `Bearer ${token}`;
         return axios(originalRequest);
       } catch (refreshError) {
         // If refresh fails, logout user

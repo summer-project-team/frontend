@@ -18,7 +18,7 @@ import { Label } from './ui/label';
 import { Recipient } from '../App';
 import { ExchangeRateService } from '../services/ExchangeRateService';
 import { useTransaction } from '../hooks/useTransaction';
-import { QuoteRequest, SendMoneyRequest, WithdrawRequest, Quote } from '../types/transaction';
+import { SendMoneyRequest, WithdrawRequest } from '../types/transaction';
 
 interface SendAmountProps {
   recipient: Recipient & {
@@ -81,61 +81,60 @@ export function SendAmount({
   const totalPayable = numericAmount + transferFee;
 
   const {
-    quote,
     transaction,
     loading,
     error: txError,
-    getQuote,
     sendMoney,
     withdraw
   } = useTransaction();
 
   const handleConfirm = async () => {
-    if (numericAmount <= 0) return;
+    if (numericAmount <= 0) {
+      return;
+    }
     
     setIsConfirming(true);
     
     try {
-      // Get quote first to validate exchange rate
-      const quoteResult = await getQuote({
-        amount: numericAmount,
-        currency_from: 'USD',
-        currency_to: recipient.currency,
-        recipient_phone: type === 'app_transfer' ? recipient.phone : undefined,
-        recipient_country_code: recipient.country
-      });
-
-      if (Math.abs(quoteResult.exchange_rate - exchangeRate) > 0.01) {
-        throw new Error('Exchange rate has changed significantly. Please try again.');
-      }
-
+      // Direct transaction calls without quote dependency
       if (type === 'app_transfer' && recipient.phone) {
-        await sendMoney({
+        const result = await sendMoney({
           recipient_phone: recipient.phone,
-          recipient_country_code: recipient.country,
+          recipient_country_code: `+${recipient.country}`, // Format country code
           amount: numericAmount,
           narration: note
         });
-      } else if (type === 'bank_withdrawal' && recipient.bankCode && recipient.accountNumber) {
-        await withdraw({
-          bank_code: recipient.bankCode,
-          account_number: recipient.accountNumber,
+        
+        // Call onConfirm with the actual transaction ID from backend
+        onConfirm({
+          amount: amount,
+          category,
+          note,
+          transactionId: result.id,
+          exchangeRate: exchangeRate
+        });
+      } else if (type === 'bank_withdrawal' && recipient.accountNumber) {
+        const result = await withdraw({
           amount: numericAmount,
           currency: recipient.currency,
-          narration: note
+          bank_account_number: recipient.accountNumber,
+          bank_name: recipient.bankName || 'Unknown Bank',
+          account_holder_name: recipient.name
+        });
+        
+        // Call onConfirm with the actual transaction ID from backend
+        onConfirm({
+          amount: amount,
+          category,
+          note,
+          transactionId: result.id,
+          exchangeRate: exchangeRate
         });
       } else {
         throw new Error('Invalid recipient information for the selected transfer type');
       }
-
-      onConfirm({
-        amount: amount,
-        category,
-        note,
-        transactionId: transaction?.id,
-        exchangeRate: quoteResult.exchange_rate
-      });
     } catch (err) {
+      console.error('Transaction failed:', err);
       onError?.(err instanceof Error ? err : new Error('Transaction failed'));
     } finally {
       setIsConfirming(false);

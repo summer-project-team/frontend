@@ -5,6 +5,8 @@ import { Input } from './ui/input';
 import { User } from '../App';
 import { authService } from '../services/AuthService';
 import { toast } from 'sonner';
+import { parseError, ErrorInfo } from '../utils/errorHandler';
+import ErrorDisplay from './ErrorDisplay';
 
 interface LoginScreenProps {
   onLogin: (user: User) => void;
@@ -16,6 +18,7 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<ErrorInfo | null>(null);
 
   // Parse phone number to extract country code and number
   const parsePhoneNumber = (phone: string) => {
@@ -39,8 +42,18 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
   };
 
   const handleLogin = async () => {
+    // Clear any previous errors
+    setError(null);
+    
     if (!phone || !password) {
-      toast.error('Please enter both phone number and password');
+      setError({
+        message: 'Please enter both phone number and password',
+        type: 'validation',
+        suggestions: [
+          'Make sure your phone number includes the country code',
+          'Check that your password is not empty'
+        ]
+      });
       return;
     }
     
@@ -55,26 +68,28 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
       
       if (response.success) {
         // Convert backend user to frontend User type
-        const userObj: User = {
+        const userWithDefaults = {
           id: response.user.id.toString(),
           name: `${response.user.first_name} ${response.user.last_name}`,
           email: response.user.email,
           avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(response.user.first_name + ' ' + response.user.last_name)}&background=6366f1&color=fff`,
-          balance: 1000, // Default balance for new users
-          currency: 'USDC',
+          balance: 1000, // Default balance
+          currency: 'CBUSD',
           phoneNumber: response.user.phone_number || '',
-          verificationLevel: response.user.kyc_status === 'verified' ? 'verified' : 'basic'
-        };
-        
-        // Save user data to localStorage (already done in authService, but for compatibility)
-        localStorage.setItem(`user_${userObj.id}`, JSON.stringify(userObj));
+          verificationLevel: (response.user.kyc_status === 'verified' ? 'verified' : 'basic') as 'verified' | 'basic' | 'premium',
+        };        // Save user data to localStorage (already done in authService, but for compatibility)
+        localStorage.setItem(`user_${userWithDefaults.id}`, JSON.stringify(userWithDefaults));
         
         toast.success('Login successful!');
-        onLogin(userObj);
+        onLogin(userWithDefaults);
       }
     } catch (error: any) {
       console.error('Login failed:', error);
-      toast.error(error.message || 'Login failed. Please check your credentials.');
+      const errorInfo = parseError(error);
+      setError(errorInfo);
+      
+      // Still show toast for backwards compatibility
+      toast.error(errorInfo.message);
     } finally {
       setIsLoading(false);
     }
@@ -114,7 +129,11 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
                   type="tel"
                   placeholder="Enter your phone number (e.g., +2348012345678)"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    // Clear error when user starts typing
+                    if (error) setError(null);
+                  }}
                   onKeyPress={handleKeyPress}
                   className="pl-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-14 focus:bg-white/40 transition-all duration-300"
                 />
@@ -130,7 +149,11 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    // Clear error when user starts typing
+                    if (error) setError(null);
+                  }}
                   onKeyPress={handleKeyPress}
                   className="pl-12 pr-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-14 focus:bg-white/40 transition-all duration-300"
                 />
@@ -143,6 +166,15 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
                 </button>
               </div>
             </div>
+
+            {/* Error Display */}
+            {error && (
+              <ErrorDisplay 
+                error={error} 
+                onDismiss={() => setError(null)}
+                className="mt-4"
+              />
+            )}
 
             {/* Forgot Password */}
             <div className="text-right">

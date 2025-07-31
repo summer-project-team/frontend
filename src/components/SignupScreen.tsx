@@ -5,6 +5,8 @@ import { Input } from './ui/input';
 import { User } from '../App';
 import { authService } from '../services/AuthService';
 import { toast } from 'sonner';
+import { parseError, ErrorInfo } from '../utils/errorHandler';
+import ErrorDisplay from './ErrorDisplay';
 
 interface SignupScreenProps {
   onSignup: (user: User) => void;
@@ -24,9 +26,12 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<ErrorInfo | null>(null);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (error) setError(null);
   };
 
   // Parse phone number to extract country code and number
@@ -51,20 +56,44 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
   };
 
   const handleSignup = async () => {
+    // Clear any previous errors
+    setError(null);
+    
     const { firstName, lastName, email, phone, password, confirmPassword } = formData;
     
     if (!firstName || !lastName || !email || !phone || !password || !confirmPassword) {
-      toast.error('Please fill in all fields');
+      setError({
+        message: 'Please fill in all fields',
+        type: 'validation',
+        suggestions: [
+          'Make sure all required fields are completed',
+          'Check that your phone number includes the country code'
+        ]
+      });
       return;
     }
     
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
+      setError({
+        message: 'Passwords do not match',
+        type: 'validation',
+        suggestions: [
+          'Make sure both password fields contain the same text',
+          'Try typing your password again carefully'
+        ]
+      });
       return;
     }
 
     if (password.length < 8) {
-      toast.error('Password must be at least 8 characters long');
+      setError({
+        message: 'Password must be at least 8 characters long',
+        type: 'validation',
+        suggestions: [
+          'Use a longer password for better security',
+          'Include a mix of letters, numbers, and symbols'
+        ]
+      });
       return;
     }
     
@@ -94,7 +123,11 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
       }
     } catch (error: any) {
       console.error('Registration failed:', error);
-      toast.error(error.message || 'Registration failed. Please try again.');
+      const errorInfo = parseError(error);
+      setError(errorInfo);
+      
+      // Still show toast for backwards compatibility
+      toast.error(errorInfo.message);
     } finally {
       setIsLoading(false);
     }
@@ -241,6 +274,15 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
                 <p className="text-red-500 text-sm mt-1">Passwords do not match</p>
               )}
             </div>
+
+            {/* Error Display */}
+            {error && (
+              <ErrorDisplay 
+                error={error} 
+                onDismiss={() => setError(null)}
+                className="mt-4"
+              />
+            )}
 
             {/* Terms */}
             <div className="text-center">

@@ -130,6 +130,48 @@ export interface Notification {
       }
     }
   
+    // Authentication notifications
+    addLoginNotification(deviceInfo?: string) {
+      return this.addNotification({
+        title: 'Welcome Back!',
+        message: `You've successfully logged in${deviceInfo ? ` from ${deviceInfo}` : ''}`,
+        type: 'security',
+        priority: 'low',
+        data: { action: 'login', timestamp: Date.now() }
+      });
+    }
+
+    addLogoutNotification() {
+      return this.addNotification({
+        title: 'Logged Out',
+        message: 'You have been successfully logged out of your account',
+        type: 'security',
+        priority: 'low',
+        data: { action: 'logout', timestamp: Date.now() }
+      });
+    }
+
+    // Payment and transaction notifications
+    addDepositNotification(amount: string, currency: string, method: string) {
+      return this.addNotification({
+        title: 'Deposit Received',
+        message: `${currency} ${amount} has been added to your wallet via ${method}`,
+        type: 'transaction',
+        priority: 'medium',
+        data: { type: 'deposit', amount, currency, method }
+      });
+    }
+
+    addWithdrawalNotification(amount: string, currency: string, bankName: string) {
+      return this.addNotification({
+        title: 'Withdrawal Processed',
+        message: `${currency} ${amount} has been sent to your ${bankName} account`,
+        type: 'transaction',
+        priority: 'medium',
+        data: { type: 'withdrawal', amount, currency, bankName }
+      });
+    }
+
     // Transaction-specific notifications
     addTransactionNotification(type: 'sent' | 'received' | 'completed' | 'failed', recipientName: string, amount: string, currency: string) {
       let title = '';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Home, Send, Activity, User as UserIcon, Plus, Eye, EyeOff, Copy, Share2, CreditCard, Smartphone, QrCode, ArrowRight, Upload, Download, Camera, BarChart3, Moon, Sun } from 'lucide-react';
+import { Bell, Home, Send, Activity, User as UserIcon, Plus, Eye, EyeOff, Copy, Share2, CreditCard, Smartphone, QrCode, ArrowRight, Upload, Download, Camera, BarChart3, Moon, Sun, Building2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from './ui/sheet';
@@ -24,6 +24,7 @@ interface HomeDashboardProps {
   onAddRecipient: (recipient: Recipient) => void;
   onWithdraw?: (amount: number, bankDetails: any) => void;
   onDeposit?: (amount: number, currency: string) => void;
+  onShowDepositModal?: (method?: string) => void;
   isDesktop?: boolean;
 }
 
@@ -66,6 +67,7 @@ export function HomeDashboard({
   onAddRecipient,
   onWithdraw,
   onDeposit,
+  onShowDepositModal,
   isDesktop = false 
 }: HomeDashboardProps) {
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
@@ -73,6 +75,7 @@ export function HomeDashboard({
   const [isAddRecipientOpen, setIsAddRecipientOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
+  const [selectedDepositMethod, setSelectedDepositMethod] = useState<string | null>(null);
   const [recipientType, setRecipientType] = useState<'bank' | 'phone' | null>(null);
   const [newRecipient, setNewRecipient] = useState({
     name: '',
@@ -163,7 +166,7 @@ export function HomeDashboard({
       const existingBankRecipient = recipients.find(r => 
         r.name === newRecipient.name && 
         r.country === newRecipient.country &&
-        r.currency !== 'USDC' // Bank recipients don't use USDC
+        r.currency !== 'CBUSD' // Bank recipients don't use CBUSD
       );
       
       if (existingBankRecipient) {
@@ -176,7 +179,9 @@ export function HomeDashboard({
         name: newRecipient.name,
         avatar: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face`,
         country: newRecipient.country,
-        currency: newRecipient.country === 'Nigeria' ? 'NGN' : newRecipient.country === 'United Kingdom' ? 'GBP' : 'USD'
+        currency: newRecipient.country === 'Nigeria' ? 'NGN' : newRecipient.country === 'United Kingdom' ? 'GBP' : 'USD',
+        bankCode: newRecipient.bankCode,
+        accountNumber: newRecipient.accountNumber
       };
       
       onAddRecipient(recipient);
@@ -201,7 +206,8 @@ export function HomeDashboard({
         name: newRecipient.name,
         avatar: `https://images.unsplash.com/photo-1494790108755-2616b6e08c3c?w=150&h=150&fit=crop&crop=face`,
         country: 'App User',
-        currency: 'USDC'
+        currency: 'CBUSD',
+        phone: newRecipient.phoneNumber
       };
       
       onAddRecipient(recipient);
@@ -238,7 +244,7 @@ export function HomeDashboard({
         recipient: bankDetails.bankName,
         recipientId: 'withdrawal',
         amount: amount.toString(),
-        currency: 'USDC',
+        currency: 'CBUSD',
         convertedAmount: amount.toString(),
         recipientCurrency: 'USD',
         status: 'pending' as const,
@@ -248,7 +254,8 @@ export function HomeDashboard({
         referenceNumber: `WD${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
         exchangeRate: 1,
         fee: (amount * 0.02).toFixed(2),
-        totalPaid: (amount + amount * 0.02).toFixed(2)
+        totalPaid: (amount + amount * 0.02).toFixed(2),
+        type: 'withdrawal' as const
       };
 
       const updatedTransactions = [withdrawalTransaction, ...transactions];
@@ -266,25 +273,29 @@ export function HomeDashboard({
   };
 
   const handleDepositMethod = (method: string) => {
+    setSelectedDepositMethod(method);
+    
     switch (method) {
+      case 'bank':
       case 'card':
-        // For now, show a simple prompt for demo
-        const amount = prompt('Enter amount to deposit (minimum $10):');
-        if (amount && parseFloat(amount) >= 10) {
-          if (onDeposit) {
-            onDeposit(parseFloat(amount), 'USD');
-          } else {
-            toast.success(`Card deposit of $${amount} initiated`);
-          }
-        } else if (amount) {
-          toast.error('Minimum deposit amount is $10');
-        }
-        break;
       case 'ussd':
-        toast.info('USSD deposit instructions will be sent via SMS');
-        break;
       case 'qr':
-        toast.info('QR code deposit feature coming soon');
+        // Show the deposit amount modal for all methods, pass method to parent
+        if (onShowDepositModal) {
+          onShowDepositModal(method);
+        } else {
+          // Fallback to simple prompt for demo
+          const amount = prompt('Enter amount to deposit (minimum $10):');
+          if (amount && parseFloat(amount) >= 10) {
+            if (onDeposit) {
+              onDeposit(parseFloat(amount), 'USD');
+            } else {
+              toast.success(`Deposit of $${amount} initiated`);
+            }
+          } else if (amount) {
+            toast.error('Minimum deposit amount is $10');
+          }
+        }
         break;
       default:
         break;
@@ -301,6 +312,8 @@ export function HomeDashboard({
     }
   };
 
+  const getSelectedDepositMethod = () => selectedDepositMethod;
+
   const handleNotificationClick = () => {
     onNavigate('notifications');
   };
@@ -309,8 +322,10 @@ export function HomeDashboard({
     onNavigate('analytics');
   };
 
-  // Use only custom recipients (no static ones)
-  const allRecipients = recipients;
+  // Use only custom recipients (no static ones) and ensure uniqueness
+  const allRecipients = recipients.filter((recipient, index, arr) => 
+    arr.findIndex(r => r.id === recipient.id) === index
+  );
 
   // Deposit Modal Content Component
   const DepositSheetContent = () => (
@@ -324,89 +339,56 @@ export function HomeDashboard({
         </DialogDescription>
       </DialogHeader>
       
-      <div className="space-y-6 px-2 hide-scrollbar overflow-y-auto max-h-[60vh]">
-        {/* Account Details Section */}
-        <div className="glass-card dark:dark-glass rounded-2xl p-6 border border-gray-200/30 dark:border-white/10">
-          <h3 className="text-lg mb-4 text-gray-800 dark:text-white">Your Account Details</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-gray-100/30 dark:bg-gray-900/30 rounded-xl border border-gray-200/30 dark:border-white/10">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Account Name</p>
-                <p className="text-gray-800 dark:text-white">{user.name}</p>
-              </div>
-              <button
-                onClick={() => copyToClipboard(user.name, 'Account name')}
-                className="p-2 rounded-lg hover:bg-gray-200/30 dark:hover:bg-white/10 transition-all duration-200"
-              >
-                <Copy size={18} className="text-gray-600 dark:text-gray-400" />
-              </button>
-            </div>
-            
-            <div className="flex items-center justify-between p-4 bg-gray-100/30 dark:bg-gray-900/30 rounded-xl border border-gray-200/30 dark:border-white/10">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Account Number</p>
-                <p className="text-gray-800 dark:text-white font-mono">{accountNumber}</p>
-              </div>
-              <button
-                onClick={() => copyToClipboard(accountNumber, 'Account number')}
-                className="p-2 rounded-lg hover:bg-gray-200/30 dark:hover:bg-white/10 transition-all duration-200"
-              >
-                <Copy size={18} className="text-gray-600 dark:text-gray-400" />
-              </button>
-            </div>
-            
-            <div className="flex items-center justify-between p-4 bg-gray-100/30 dark:bg-gray-900/30 rounded-xl border border-gray-200/30 dark:border-white/10">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Bank Name</p>
-                <p className="text-gray-800 dark:text-white">SecureRemit Bank</p>
-              </div>
-              <button
-                onClick={shareAccountDetails}
-                className="p-2 rounded-lg hover:bg-gray-200/30 dark:hover:bg-white/10 transition-all duration-200"
-              >
-                <Share2 size={18} className="text-gray-600 dark:text-gray-400" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Other Deposit Options */}
-        <div className="grid grid-cols-1 gap-4">
+      <div className="space-y-4 p-4 hide-scrollbar overflow-y-auto max-h-[60vh] bg-gray-50/20 dark:bg-gray-900/10 rounded-2xl border border-gray-200/40 dark:border-white/15 backdrop-blur-sm">
+        {/* Deposit Options */}
+        <div className="grid grid-cols-1 gap-3">
           <button 
-            onClick={() => handleDepositMethod('card')}
-            className="flex items-center gap-4 p-5 glass-card dark:dark-glass rounded-2xl border border-gray-200/30 dark:border-white/10 hover:bg-gray-100/50 dark:hover:bg-white/5 transition-all duration-300 group"
+            onClick={() => handleDepositMethod('bank')}
+            className="flex items-center gap-4 p-4 glass-card dark:dark-glass rounded-2xl border border-gray-200/30 dark:border-white/10 hover:bg-gray-100/50 dark:hover:bg-white/5 transition-all duration-300 group shadow-sm hover:shadow-md"
           >
-            <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <CreditCard size={24} className="text-green-600 dark:text-green-400" />
+            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <Building2 size={22} className="text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1 text-left">
-              <h4 className="text-gray-800 dark:text-white">Top up with Card</h4>
+              <h4 className="text-base font-semibold text-gray-800 dark:text-white">Top up with Bank Transfer</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Transfer money from your bank account</p>
+            </div>
+          </button>
+          <button 
+            onClick={() => handleDepositMethod('card')}
+            className="flex items-center gap-4 p-4 glass-card dark:dark-glass rounded-2xl border border-gray-200/30 dark:border-white/10 hover:bg-gray-100/50 dark:hover:bg-white/5 transition-all duration-300 group shadow-sm hover:shadow-md"
+          >
+            <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <CreditCard size={22} className="text-green-600 dark:text-green-400" />
+            </div>
+            <div className="flex-1 text-left">
+              <h4 className="text-base font-semibold text-gray-800 dark:text-white">Top up with Card</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">Add money using your debit/credit card</p>
             </div>
           </button>
 
           <button 
             onClick={() => handleDepositMethod('ussd')}
-            className="flex items-center gap-4 p-5 glass-card dark:dark-glass rounded-2xl border border-gray-200/30 dark:border-white/10 hover:bg-gray-100/50 dark:hover:bg-white/5 transition-all duration-300 group"
+            className="flex items-center gap-4 p-4 glass-card dark:dark-glass rounded-2xl border border-gray-200/30 dark:border-white/10 hover:bg-gray-100/50 dark:hover:bg-white/5 transition-all duration-300 group shadow-sm hover:shadow-md"
           >
             <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <Smartphone size={24} className="text-orange-600 dark:text-orange-400" />
+              <Smartphone size={22} className="text-orange-600 dark:text-orange-400" />
             </div>
             <div className="flex-1 text-left">
-              <h4 className="text-gray-800 dark:text-white">Bank USSD</h4>
+              <h4 className="text-base font-semibold text-gray-800 dark:text-white">Bank USSD</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">Transfer using *737*000#</p>
             </div>
           </button>
 
           <button 
             onClick={() => handleDepositMethod('qr')}
-            className="flex items-center gap-4 p-5 glass-card dark:dark-glass rounded-2xl border border-gray-200/30 dark:border-white/10 hover:bg-gray-100/50 dark:hover:bg-white/5 transition-all duration-300 group"
+            className="flex items-center gap-4 p-4 glass-card dark:dark-glass rounded-2xl border border-gray-200/30 dark:border-white/10 hover:bg-gray-100/50 dark:hover:bg-white/5 transition-all duration-300 group shadow-sm hover:shadow-md"
           >
             <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <QrCode size={24} className="text-purple-600 dark:text-purple-400" />
+              <QrCode size={22} className="text-purple-600 dark:text-purple-400" />
             </div>
             <div className="flex-1 text-left">
-              <h4 className="text-gray-800 dark:text-white">Scan QR Code</h4>
+              <h4 className="text-base font-semibold text-gray-800 dark:text-white">Scan QR Code</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">Show QR at partner locations</p>
             </div>
           </button>
@@ -483,9 +465,9 @@ export function HomeDashboard({
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Quick Recipients</h3>
           <div className="grid grid-cols-6 gap-4">
-            {allRecipients.slice(0, 6).map((recipient) => (
+            {allRecipients.slice(0, 6).map((recipient, index) => (
               <button
-                key={recipient.id}
+                key={`desktop-${recipient.id}-${index}`}
                 onClick={() => handleQuickSend(recipient)}
                 className="flex flex-col items-center p-4 rounded-2xl hover:bg-white/30 dark:hover:bg-black/30 transition-all duration-300 group"
               >
@@ -531,8 +513,12 @@ export function HomeDashboard({
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-red-600 dark:text-red-400 font-medium">
-                      -${transaction.amount}
+                    <p className={`font-medium ${
+                      transaction.type === 'deposit' || transaction.status === 'received' || transaction.recipient.includes('Deposit') 
+                        ? 'text-green-600 dark:text-green-400' 
+                        : 'text-red-600 dark:text-red-400'
+                    }`}>
+                      {transaction.type === 'deposit' || transaction.status === 'received' || transaction.recipient.includes('Deposit') ? '+' : '-'}${transaction.amount}
                     </p>
                     <div className={`inline-flex px-2 py-1 rounded-full text-xs ${
                       transaction.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
@@ -744,7 +730,7 @@ export function HomeDashboard({
                       </div>
                       <div className="flex-1 text-left">
                         <h4 className="text-gray-800 dark:text-white">App User</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Send USDC to another app user</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Send CBUSD to another app user</p>
                       </div>
                       <ArrowRight size={20} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white transition-colors" />
                     </button>
@@ -830,9 +816,9 @@ export function HomeDashboard({
         </div>
         
         <div className="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
-          {allRecipients.length > 0 ? allRecipients.slice(0, 5).map((recipient) => (
+          {allRecipients.length > 0 ? allRecipients.slice(0, 5).map((recipient, index) => (
             <button
-              key={recipient.id}
+              key={`mobile-${recipient.id}-${index}`}
               onClick={() => handleQuickSend(recipient)}
               className="flex flex-col items-center min-w-[80px] p-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-black/20 border-2 border-gray-300/80 dark:border-gray-600/60 shadow-lg shadow-gray-200/20 dark:shadow-black/40 hover:bg-white/20 dark:hover:bg-black/30 hover:border-gray-400/90 dark:hover:border-gray-500/70 hover:shadow-xl hover:shadow-gray-300/30 dark:hover:shadow-black/50 transition-all duration-300"
             >
@@ -884,8 +870,12 @@ export function HomeDashboard({
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-red-600 dark:text-red-400">
-                    -${transaction.amount}
+                  <p className={`${
+                    transaction.type === 'deposit' || transaction.status === 'received' || transaction.recipient.includes('Deposit') 
+                      ? 'text-green-600 dark:text-green-400' 
+                      : 'text-red-600 dark:text-red-400'
+                  }`}>
+                    {transaction.type === 'deposit' || transaction.status === 'received' || transaction.recipient.includes('Deposit') ? '+' : '-'}${transaction.amount}
                   </p>
                   <div className={`inline-flex px-2 py-1 rounded-full text-xs ${
                     transaction.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :

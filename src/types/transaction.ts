@@ -38,11 +38,12 @@ export interface SendMoneyRequest {
 }
 
 export interface WithdrawRequest {
-  bank_code: string;
-  account_number: string;
   amount: number;
   currency: string;
-  narration?: string;
+  bank_account_number: string;  // Fixed: backend expects this field name
+  bank_name: string;           // Added: required by backend
+  account_holder_name: string; // Added: required by backend  
+  two_factor_code?: string;    // Added: for high-value transfers
 }
 
 export interface DepositRequest {

@@ -3,76 +3,10 @@ import { Quote, QuoteRequest, RateLock, SendMoneyRequest, WithdrawRequest,
 import { api } from './api';
 
 export default class TransactionService {
-  // Quote and Rate Management
-  static async getQuote(params: QuoteRequest): Promise<Quote> {
-    try {
-      const response = await api.post('/transactions/quote', params);
-      return response.data.quote;
-    } catch (error) {
-      console.error('Error getting quote:', error);
-      throw this.handleError(error);
-    }
-  }
-
-  static async lockRate(quoteId: string, duration?: number): Promise<RateLock> {
-    try {
-      const response = await api.post('/transactions/lock-rate', {
-        quote_id: quoteId,
-        duration
-      });
-      return response.data.lock;
-    } catch (error) {
-      console.error('Error locking rate:', error);
-      throw this.handleError(error);
-    }
-  }
-
-  static async verifyRateLock(lockId: string): Promise<boolean> {
-    try {
-      const response = await api.get(`/transactions/verify-lock/${lockId}`);
-      return response.data.is_valid;
-    } catch (error) {
-      console.error('Error verifying rate lock:', error);
-      throw this.handleError(error);
-    }
-  }
-
-  // Bank Account Operations
-  static async verifyBankAccount(bankCode: string, accountNumber: string): Promise<{ 
-    accountName: string;
-    accountType: string;
-    isVerified: boolean;
-  }> {
-    try {
-      const response = await api.post('/banking/verify-account', {
-        bank_code: bankCode,
-        account_number: accountNumber
-      });
-      return response.data.account;
-    } catch (error) {
-      console.error('Error verifying bank account:', error);
-      throw this.handleError(error);
-    }
-  }
-
-  // Rate Monitoring
-  static async checkRateChange(quoteId: string): Promise<{
-    hasChanged: boolean;
-    newRate: number;
-    percentageChange: number;
-  }> {
-    try {
-      const response = await api.get(`/transactions/quote/${quoteId}/check-rate`);
-      return response.data;
-    } catch (error) {
-      console.error('Error checking rate change:', error);
-      throw this.handleError(error);
-    }
-  }
-
-  // Transaction Operations
+  // Transaction Operations - Direct calls without quotes
   static async sendMoney(params: SendMoneyRequest): Promise<Transaction> {
     try {
+      console.log('Sending money with params:', params);
       const response = await api.post('/transactions/send', params);
       return response.data.transaction;
     } catch (error) {
@@ -83,6 +17,7 @@ export default class TransactionService {
 
   static async initiateWithdrawal(params: WithdrawRequest): Promise<Transaction> {
     try {
+      console.log('Initiating withdrawal with params:', params);
       const response = await api.post('/transactions/app-to-bank', params);
       return response.data.transaction;
     } catch (error) {
@@ -91,10 +26,23 @@ export default class TransactionService {
     }
   }
 
-  static async initiateDeposit(params: DepositRequest): Promise<Transaction> {
+  static async initiateDeposit(params: DepositRequest): Promise<{
+    success: boolean;
+    message: string;
+    demo_notice?: string;
+    deposit_instructions: {
+      amount: number;
+      currency: string;
+      bank_account: string;
+      reference_code: string;
+      bank_name: string;
+      instructions: string;
+      expires_at: string;
+    };
+  }> {
     try {
       const response = await api.post('/transactions/bank-to-app', params);
-      return response.data.transaction;
+      return response.data;
     } catch (error) {
       console.error('Error initiating deposit:', error);
       throw this.handleError(error);

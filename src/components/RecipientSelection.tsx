@@ -93,7 +93,7 @@ export function RecipientSelection({ onBack, onRecipientSelect }: RecipientSelec
       const existingBankRecipient = savedRecipients.find(r => 
         r.name === newRecipient.name && 
         r.country === newRecipient.country &&
-        r.currency !== 'USDC' // Bank recipients don't use USDC
+        r.currency !== 'CBUSD' // Bank recipients don't use CBUSD
       );
       
       if (existingBankRecipient) {
@@ -106,7 +106,9 @@ export function RecipientSelection({ onBack, onRecipientSelect }: RecipientSelec
         name: newRecipient.name,
         avatar: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face`,
         country: newRecipient.country,
-        currency: newRecipient.country === 'Nigeria' ? 'NGN' : newRecipient.country === 'United Kingdom' ? 'GBP' : 'USD'
+        currency: newRecipient.country === 'Nigeria' ? 'NGN' : newRecipient.country === 'United Kingdom' ? 'GBP' : 'USD',
+        bankCode: newRecipient.bankCode,
+        accountNumber: newRecipient.accountNumber
       };
       
       const updatedRecipients = [...savedRecipients, recipient];
@@ -134,7 +136,8 @@ export function RecipientSelection({ onBack, onRecipientSelect }: RecipientSelec
         name: newRecipient.name,
         avatar: `https://images.unsplash.com/photo-1494790108755-2616b6e08c3c?w=150&h=150&fit=crop&crop=face`,
         country: 'App User',
-        currency: 'USDC'
+        currency: 'CBUSD',
+        phone: newRecipient.phoneNumber
       };
       
       const updatedRecipients = [...savedRecipients, recipient];
@@ -238,7 +241,7 @@ export function RecipientSelection({ onBack, onRecipientSelect }: RecipientSelec
                     </div>
                     <div className="flex-1 text-left">
                       <h4 className="text-gray-800 dark:text-white">App User</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Send USDC to another app user</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Send CBUSD to another app user</p>
                     </div>
                     <ArrowRight size={20} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white transition-colors" />
                   </button>

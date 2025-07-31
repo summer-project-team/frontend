@@ -19,6 +19,8 @@ import { Recipient } from '../App';
 import { ExchangeRateService } from '../services/ExchangeRateService';
 import { useTransaction } from '../hooks/useTransaction';
 import { SendMoneyRequest, WithdrawRequest } from '../types/transaction';
+import { UserService } from '../services/UserService';
+import { PinInput } from './PinInput';
 
 interface SendAmountProps {
   recipient: Recipient & {
@@ -65,6 +67,12 @@ export function SendAmount({
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [category, setCategory] = useState<string>('');
   const [note, setNote] = useState('');
+  
+  // PIN authentication states
+  const [showPinInput, setShowPinInput] = useState(false);
+  const [pinRequired, setPinRequired] = useState(false);
+  const [pinError, setPinError] = useState('');
+  const [checkingPin, setCheckingPin] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -72,6 +80,21 @@ export function SendAmount({
     }, 1000);
     
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // Check if user has PIN enabled when component mounts
+    const checkPinStatus = async () => {
+      try {
+        const { pinEnabled } = await UserService.getPinStatus();
+        setPinRequired(pinEnabled || true); // Default to true if PIN check fails
+      } catch (error) {
+        console.error('Error checking PIN status:', error);
+        setPinRequired(true); // Default to requiring PIN if check fails
+      }
+    };
+    
+    checkPinStatus();
   }, []);
 
   const numericAmount = parseFloat(amount) || 0;
@@ -93,6 +116,17 @@ export function SendAmount({
       return;
     }
     
+    // If PIN is required and not yet verified, show PIN input
+    if (pinRequired && !showPinInput) {
+      setShowPinInput(true);
+      return;
+    }
+
+    // If PIN input is shown, this should not be called directly
+    if (showPinInput) {
+      return;
+    }
+
     setIsConfirming(true);
     
     try {
@@ -139,6 +173,64 @@ export function SendAmount({
     } finally {
       setIsConfirming(false);
     }
+  };
+
+  const handlePinComplete = async (pin: string) => {
+    setCheckingPin(true);
+    setPinError('');
+    
+    try {
+      // PIN verified, now proceed with transaction directly
+      setShowPinInput(false);
+      setIsConfirming(true);
+      
+      if (type === 'app_transfer' && recipient.phone) {
+        const result = await sendMoney({
+          recipient_phone: recipient.phone,
+          recipient_country_code: `+${recipient.country}`,
+          amount: numericAmount,
+          narration: note,
+          transaction_pin: pin
+        });
+        
+        onConfirm({
+          amount: amount,
+          category,
+          note,
+          transactionId: result.id,
+          exchangeRate: exchangeRate
+        });
+      } else if (type === 'bank_withdrawal' && recipient.accountNumber) {
+        const result = await withdraw({
+          amount: numericAmount,
+          currency: recipient.currency,
+          bank_account_number: recipient.accountNumber,
+          bank_name: recipient.bankName || 'Unknown Bank',
+          account_holder_name: recipient.name,
+          transaction_pin: pin
+        });
+        
+        onConfirm({
+          amount: amount,
+          category,
+          note,
+          transactionId: result.id,
+          exchangeRate: exchangeRate
+        });
+      }
+    } catch (error) {
+      console.error('Transaction failed:', error);
+      setPinError(error instanceof Error ? error.message : 'Transaction failed');
+      setShowPinInput(true); // Keep PIN input open on error
+    } finally {
+      setCheckingPin(false);
+      setIsConfirming(false);
+    }
+  };
+
+  const handlePinCancel = () => {
+    setShowPinInput(false);
+    setPinError('');
   };
 
   const getChangeIndicator = () => {
@@ -336,11 +428,23 @@ export function SendAmount({
           ) : (
             <div className="flex items-center space-x-3">
               <Fingerprint size={24} />
-              <span>Confirm with Fingerprint</span>
+              <span>Confirm with PIN</span>
             </div>
           )}
         </Button>
       </div>
+
+      {/* PIN Input Modal */}
+      {showPinInput && (
+        <PinInput
+          onPinComplete={handlePinComplete}
+          onCancel={handlePinCancel}
+          title="Enter Transaction PIN"
+          subtitle={`Confirm ${type === 'app_transfer' ? 'transfer' : 'withdrawal'} of ${numericAmount.toFixed(2)} CBUSD`}
+          error={pinError}
+          isVerifying={checkingPin}
+        />
+      )}
     </div>
   );
 }

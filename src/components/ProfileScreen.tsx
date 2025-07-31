@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Edit3, Shield, CreditCard, Settings, LogOut, Camera, Check, X, Bell, Lock, Smartphone, Globe, Moon, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Edit3, Shield, CreditCard, Settings, LogOut, Camera, Check, X, Bell, Lock, Smartphone, Globe, Moon, ChevronRight, Trash2, AlertTriangle, KeyRound } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Switch } from './ui/switch';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { toast } from 'sonner';
 import { User } from '../App';
+import { UserService } from '../services/UserService';
 
 interface ProfileScreenProps {
   user: User;
@@ -45,6 +46,40 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
     }
   });
 
+  // Delete account state
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [deleteEligibility, setDeleteEligibility] = useState<{
+    canDelete: boolean;
+    reasons?: string[];
+  } | null>(null);
+  const [isCheckingEligibility, setIsCheckingEligibility] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  // PIN management state
+  const [pinEnabled, setPinEnabled] = useState(false);
+  const [pinDialog, setPinDialog] = useState<'setup' | 'change' | 'disable' | null>(null);
+  const [pinForm, setPinForm] = useState({
+    currentPin: '',
+    newPin: '',
+    confirmPin: ''
+  });
+  const [pinLoading, setPinLoading] = useState(false);
+  const [pinError, setPinError] = useState('');
+
+  // Check PIN status on mount
+  useEffect(() => {
+    const checkPinStatus = async () => {
+      try {
+        const { pinEnabled: enabled } = await UserService.getPinStatus();
+        setPinEnabled(enabled);
+      } catch (error) {
+        console.error('Error checking PIN status:', error);
+      }
+    };
+    
+    checkPinStatus();
+  }, []);
+
   const handleSaveProfile = () => {
     const updatedUser = { ...user, ...editForm };
     onUpdateUser(updatedUser);
@@ -73,15 +108,93 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
     toast.success('Setting updated');
   };
 
-  const handleSelectChange = (category: string, setting: string, value: string) => {
+    const handleSelectChange = (category: string, key: string, value: string) => {
     setSettings(prev => ({
       ...prev,
       [category]: {
         ...prev[category as keyof typeof prev],
-        [setting]: value
+        [key]: value
       }
     }));
-    toast.success('Setting updated');
+  };
+
+  const handleDeleteAccountClick = async () => {
+    setIsCheckingEligibility(true);
+    try {
+      const eligibility = await UserService.canDeleteAccount();
+      setDeleteEligibility(eligibility);
+      setDeleteDialog(true);
+    } catch (error) {
+      toast.error('Failed to check account deletion eligibility');
+    } finally {
+      setIsCheckingEligibility(false);
+    }
+  };
+
+  // PIN management functions
+  const handlePinSetup = async () => {
+    setPinLoading(true);
+    setPinError('');
+    
+    try {
+      await UserService.setupTransactionPin(pinForm.newPin, pinForm.confirmPin);
+      setPinEnabled(true);
+      setPinDialog(null);
+      setPinForm({ currentPin: '', newPin: '', confirmPin: '' });
+      toast.success('Transaction PIN set successfully');
+    } catch (error) {
+      setPinError(error instanceof Error ? error.message : 'Failed to set PIN');
+    } finally {
+      setPinLoading(false);
+    }
+  };
+
+  const handlePinChange = async () => {
+    setPinLoading(true);
+    setPinError('');
+    
+    try {
+      await UserService.changeTransactionPin(pinForm.currentPin, pinForm.newPin, pinForm.confirmPin);
+      setPinDialog(null);
+      setPinForm({ currentPin: '', newPin: '', confirmPin: '' });
+      toast.success('Transaction PIN changed successfully');
+    } catch (error) {
+      setPinError(error instanceof Error ? error.message : 'Failed to change PIN');
+    } finally {
+      setPinLoading(false);
+    }
+  };
+
+  const handlePinDisable = async () => {
+    setPinLoading(true);
+    setPinError('');
+    
+    try {
+      await UserService.disableTransactionPin(pinForm.currentPin);
+      setPinEnabled(false);
+      setPinDialog(null);
+      setPinForm({ currentPin: '', newPin: '', confirmPin: '' });
+      toast.success('Transaction PIN disabled successfully');
+    } catch (error) {
+      setPinError(error instanceof Error ? error.message : 'Failed to disable PIN');
+    } finally {
+      setPinLoading(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeletingAccount(true);
+    try {
+      await UserService.deleteAccount();
+      toast.success('Account deleted successfully');
+      setDeleteDialog(false);
+      // Logout user after successful deletion
+      onLogout();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete account');
+    } finally {
+      setIsDeletingAccount(false);
+    }
   };
 
   const getVerificationBadge = () => {
@@ -310,6 +423,51 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
               </SelectContent>
             </Select>
           </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-orange-500/20 rounded-xl flex items-center justify-center">
+                <KeyRound size={18} className="text-orange-600" />
+              </div>
+              <div>
+                <p className="text-gray-800">Transaction PIN</p>
+                <p className="text-sm text-gray-600">
+                  {pinEnabled ? 'PIN is enabled for transactions' : 'Set up PIN for transactions'}
+                </p>
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              {pinEnabled ? (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPinDialog('change')}
+                    className="backdrop-blur-sm bg-white/30 border-white/40 text-xs"
+                  >
+                    Change
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPinDialog('disable')}
+                    className="backdrop-blur-sm bg-white/30 border-white/40 text-xs text-red-600"
+                  >
+                    Disable
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPinDialog('setup')}
+                  className="backdrop-blur-sm bg-white/30 border-white/40 text-xs"
+                >
+                  Setup
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -462,6 +620,96 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
           </div>
         </div>
       </div>
+
+      {/* Danger Zone */}
+      <div className="backdrop-blur-md bg-red-50/50 rounded-2xl p-6 border border-red-200/50">
+        <h3 className="text-lg mb-4 text-red-800">Danger Zone</h3>
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center">
+                <Trash2 size={18} className="text-red-600" />
+              </div>
+              <div>
+                <p className="text-red-800 font-medium">Delete Account</p>
+                <p className="text-sm text-red-600">Permanently delete your account and all data</p>
+              </div>
+            </div>
+            <Dialog open={deleteDialog} onOpenChange={setDeleteDialog}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-red-300 text-red-700 hover:bg-red-50"
+                  onClick={handleDeleteAccountClick}
+                  disabled={isCheckingEligibility}
+                >
+                  {isCheckingEligibility ? 'Checking...' : 'Delete'}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-white/95 backdrop-blur-2xl border-red-200/30">
+                <DialogHeader>
+                  <DialogTitle className="text-red-800 flex items-center gap-2">
+                    <AlertTriangle size={20} />
+                    Delete Account
+                  </DialogTitle>
+                  <DialogDescription className="text-red-600">
+                    This action cannot be undone. Your account and all associated data will be permanently deleted.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4">
+                  {deleteEligibility && !deleteEligibility.canDelete && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <h4 className="text-yellow-800 font-medium mb-2">Cannot delete account</h4>
+                      <ul className="text-sm text-yellow-700 space-y-1">
+                        {deleteEligibility.reasons?.map((reason, index) => (
+                          <li key={index}>• {reason}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {deleteEligibility?.canDelete && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-red-800 text-sm">
+                        Are you absolutely sure? This will:
+                      </p>
+                      <ul className="text-sm text-red-700 mt-2 space-y-1">
+                        <li>• Delete your profile and personal information</li>
+                        <li>• Remove all transaction history</li>
+                        <li>• Close your wallet permanently</li>
+                        <li>• Prevent you from accessing the account</li>
+                      </ul>
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setDeleteDialog(false)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    {deleteEligibility?.canDelete && (
+                      <Button
+                        variant="destructive"
+                        onClick={handleConfirmDelete}
+                        disabled={isDeletingAccount}
+                        className="flex-1 bg-red-600 hover:bg-red-700"
+                      >
+                        {isDeletingAccount ? 'Deleting...' : 'Delete Account'}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
@@ -502,6 +750,114 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
         {currentView === 'payment' && renderPaymentView()}
         {currentView === 'settings' && renderSettingsView()}
       </div>
+
+      {/* PIN Management Dialogs */}
+      {pinDialog && (
+        <Dialog open={!!pinDialog} onOpenChange={() => setPinDialog(null)}>
+          <DialogContent className="bg-white/95 backdrop-blur-2xl border-blue-200/30">
+            <DialogHeader>
+              <DialogTitle className="text-gray-800">
+                {pinDialog === 'setup' && 'Set Up Transaction PIN'}
+                {pinDialog === 'change' && 'Change Transaction PIN'}
+                {pinDialog === 'disable' && 'Disable Transaction PIN'}
+              </DialogTitle>
+              <DialogDescription className="text-gray-600">
+                {pinDialog === 'setup' && 'Create a 4-digit PIN to secure your transactions'}
+                {pinDialog === 'change' && 'Enter your current PIN and choose a new one'}
+                {pinDialog === 'disable' && 'Enter your current PIN to disable transaction security'}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 mt-4">
+              {pinError && (
+                <div className="p-3 bg-red-100 border border-red-200 rounded-lg text-red-700 text-sm">
+                  {pinError}
+                </div>
+              )}
+
+              {pinDialog !== 'setup' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Current PIN
+                  </label>
+                  <Input
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={4}
+                    value={pinForm.currentPin}
+                    onChange={(e) => setPinForm(prev => ({ ...prev, currentPin: e.target.value }))}
+                    placeholder="Enter current PIN"
+                    className="bg-white/50 border-white/20"
+                  />
+                </div>
+              )}
+
+              {pinDialog !== 'disable' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {pinDialog === 'setup' ? 'New PIN' : 'New PIN'}
+                    </label>
+                    <Input
+                      type="password"
+                      inputMode="numeric"
+                      maxLength={4}
+                      value={pinForm.newPin}
+                      onChange={(e) => setPinForm(prev => ({ ...prev, newPin: e.target.value }))}
+                      placeholder="Enter 4-digit PIN"
+                      className="bg-white/50 border-white/20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Confirm PIN
+                    </label>
+                    <Input
+                      type="password"
+                      inputMode="numeric"
+                      maxLength={4}
+                      value={pinForm.confirmPin}
+                      onChange={(e) => setPinForm(prev => ({ ...prev, confirmPin: e.target.value }))}
+                      placeholder="Confirm PIN"
+                      className="bg-white/50 border-white/20"
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setPinDialog(null)}
+                  disabled={pinLoading}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (pinDialog === 'setup') handlePinSetup();
+                    else if (pinDialog === 'change') handlePinChange();
+                    else if (pinDialog === 'disable') handlePinDisable();
+                  }}
+                  disabled={pinLoading || 
+                    (pinDialog === 'setup' && (!pinForm.newPin || !pinForm.confirmPin)) ||
+                    (pinDialog === 'change' && (!pinForm.currentPin || !pinForm.newPin || !pinForm.confirmPin)) ||
+                    (pinDialog === 'disable' && !pinForm.currentPin)
+                  }
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  {pinLoading ? 'Processing...' : 
+                   pinDialog === 'setup' ? 'Set PIN' :
+                   pinDialog === 'change' ? 'Change PIN' :
+                   'Disable PIN'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

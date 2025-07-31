@@ -35,6 +35,7 @@ export interface SendMoneyRequest {
   narration?: string;
   two_factor_code?: string;
   rate_lock_id?: string;
+  transaction_pin?: string;
 }
 
 export interface WithdrawRequest {
@@ -44,6 +45,7 @@ export interface WithdrawRequest {
   bank_name: string;           // Added: required by backend
   account_holder_name: string; // Added: required by backend  
   two_factor_code?: string;    // Added: for high-value transfers
+  transaction_pin?: string;    // Added: for PIN authentication
 }
 
 export interface DepositRequest {

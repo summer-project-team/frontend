@@ -6,7 +6,7 @@ import { Label } from './ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from './ui/dialog';
 import { Recipient } from '../App';
-import { User } from '../types/user';
+import { User } from '../types/user.ts';
 import { toast } from 'sonner';
 
 interface RecipientSelectionProps {

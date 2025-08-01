@@ -20,11 +20,12 @@ import { ExchangeRateService } from '../services/ExchangeRateService';
 import { useTransaction } from '../hooks/useTransaction';
 import { SendMoneyRequest, WithdrawRequest } from '../types/transaction';
 import { UserService } from '../services/UserService';
+import PinService from '../services/PinService';
 import { PinInput } from './PinInput';
 
 interface SendAmountProps {
   recipient: Recipient & {
-    phone?: string;
+    phoneNumber?: string;
     bankCode?: string;
     accountNumber?: string;
   };
@@ -62,6 +63,13 @@ export function SendAmount({
   onConfirm,
   onError
 }: SendAmountProps) {
+  console.log('SendAmount: Component mounted with:', { 
+    recipient: recipient.name, 
+    type, 
+    currency: recipient.currency,
+    hasPhone: !!(recipient.phone || recipient.phoneNumber),
+    hasAccount: !!recipient.accountNumber
+  });
   const [amount, setAmount] = useState('');
   const [isConfirming, setIsConfirming] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
@@ -73,6 +81,7 @@ export function SendAmount({
   const [pinRequired, setPinRequired] = useState(false);
   const [pinError, setPinError] = useState('');
   const [checkingPin, setCheckingPin] = useState(false);
+  const [pinAttempts, setPinAttempts] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -86,10 +95,12 @@ export function SendAmount({
     // Check if user has PIN enabled when component mounts
     const checkPinStatus = async () => {
       try {
+        console.log('SendAmount: Checking PIN status...');
         const { pinEnabled } = await UserService.getPinStatus();
+        console.log('SendAmount: PIN status retrieved:', { pinEnabled });
         setPinRequired(pinEnabled || true); // Default to true if PIN check fails
       } catch (error) {
-        console.error('Error checking PIN status:', error);
+        console.error('SendAmount: Error checking PIN status:', error);
         setPinRequired(true); // Default to requiring PIN if check fails
       }
     };
@@ -112,28 +123,39 @@ export function SendAmount({
   } = useTransaction();
 
   const handleConfirm = async () => {
+    console.log('SendAmount: handleConfirm called with amount:', numericAmount);
+    console.log('SendAmount: PIN required:', pinRequired, 'PIN input shown:', showPinInput);
+    
     if (numericAmount <= 0) {
+      console.log('SendAmount: Invalid amount, returning');
       return;
     }
     
     // If PIN is required and not yet verified, show PIN input
     if (pinRequired && !showPinInput) {
+      console.log('SendAmount: Showing PIN input');
       setShowPinInput(true);
       return;
     }
 
     // If PIN input is shown, this should not be called directly
     if (showPinInput) {
+      console.log('SendAmount: PIN input is shown, returning');
       return;
     }
 
+    console.log('SendAmount: Starting transaction without PIN...');
     setIsConfirming(true);
     
     try {
       // Direct transaction calls without quote dependency
-      if (type === 'app_transfer' && recipient.phone) {
+      if (type === 'app_transfer' && (recipient.phone || recipient.phoneNumber)) {
+        const phoneNumber = recipient.phone || recipient.phoneNumber;
+        if (!phoneNumber) {
+          throw new Error('Phone number is required for app transfer');
+        }
         const result = await sendMoney({
-          recipient_phone: recipient.phone,
+          recipient_phone: phoneNumber,
           recipient_country_code: `+${recipient.country}`, // Format country code
           amount: numericAmount,
           narration: note
@@ -176,23 +198,42 @@ export function SendAmount({
   };
 
   const handlePinComplete = async (pin: string) => {
+    console.log('PIN verification started...');
     setCheckingPin(true);
     setPinError('');
     
     try {
-      // PIN verified, now proceed with transaction directly
+      // First verify the PIN
+      console.log('Verifying PIN...');
+      await PinService.verifyPin({ pin });
+      console.log('PIN verified successfully');
+      
+      // PIN verified successfully, proceed with transaction
       setShowPinInput(false);
       setIsConfirming(true);
+      setPinAttempts(0); // Reset attempts on success
       
-      if (type === 'app_transfer' && recipient.phone) {
+      console.log('Starting transaction...');
+      console.log('Transaction type:', type);
+      console.log('Recipient:', recipient);
+      console.log('Phone number check:', recipient.phone || recipient.phoneNumber);
+      console.log('Account number check:', recipient.accountNumber);
+      
+      if (type === 'app_transfer' && (recipient.phone || recipient.phoneNumber)) {
+        const phoneNumber = recipient.phone || recipient.phoneNumber;
+        if (!phoneNumber) {
+          throw new Error('Phone number is required for app transfer');
+        }
+        console.log('Making app transfer with phone:', phoneNumber);
         const result = await sendMoney({
-          recipient_phone: recipient.phone,
+          recipient_phone: phoneNumber,
           recipient_country_code: `+${recipient.country}`,
           amount: numericAmount,
           narration: note,
           transaction_pin: pin
         });
         
+        console.log('Transfer successful:', result);
         onConfirm({
           amount: amount,
           category,
@@ -201,6 +242,7 @@ export function SendAmount({
           exchangeRate: exchangeRate
         });
       } else if (type === 'bank_withdrawal' && recipient.accountNumber) {
+        console.log('Making bank withdrawal with account:', recipient.accountNumber);
         const result = await withdraw({
           amount: numericAmount,
           currency: recipient.currency,
@@ -210,6 +252,7 @@ export function SendAmount({
           transaction_pin: pin
         });
         
+        console.log('Withdrawal successful:', result);
         onConfirm({
           amount: amount,
           category,
@@ -217,11 +260,26 @@ export function SendAmount({
           transactionId: result.id,
           exchangeRate: exchangeRate
         });
+      } else if (type === 'bank_withdrawal' && !recipient.accountNumber) {
+        // Special case: bank withdrawal but missing account details
+        throw new Error(`Cannot process bank withdrawal for "${recipient.name}". Account details are missing. Please update this recipient with their bank account information.`);
+      } else {
+        // Neither condition met - log what we have
+        console.error('Transaction type/recipient mismatch:');
+        console.error('Type:', type);
+        console.error('Has phone:', !!(recipient.phone || recipient.phoneNumber));
+        console.error('Has account:', !!recipient.accountNumber);
+        console.error('Full recipient:', recipient);
+        throw new Error(`Cannot process ${type} transaction with current recipient data`);
       }
     } catch (error) {
-      console.error('Transaction failed:', error);
-      setPinError(error instanceof Error ? error.message : 'Transaction failed');
-      setShowPinInput(true); // Keep PIN input open on error
+      console.error('PIN verification or transaction failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
+      setPinError(errorMessage);
+      setPinAttempts(prev => prev + 1);
+      
+      // Keep PIN input open on error for retry
+      setShowPinInput(true);
     } finally {
       setCheckingPin(false);
       setIsConfirming(false);
@@ -230,6 +288,11 @@ export function SendAmount({
 
   const handlePinCancel = () => {
     setShowPinInput(false);
+    setPinError('');
+    setPinAttempts(0);
+  };
+
+  const handlePinClear = () => {
     setPinError('');
   };
 
@@ -439,10 +502,13 @@ export function SendAmount({
         <PinInput
           onPinComplete={handlePinComplete}
           onCancel={handlePinCancel}
+          onClear={handlePinClear}
           title="Enter Transaction PIN"
-          subtitle={`Confirm ${type === 'app_transfer' ? 'transfer' : 'withdrawal'} of ${numericAmount.toFixed(2)} CBUSD`}
+          subtitle={`Confirm ${type === 'app_transfer' ? 'transfer' : 'withdrawal'} of $${numericAmount.toFixed(2)}`}
           error={pinError}
           isVerifying={checkingPin}
+          currentAttempt={pinAttempts}
+          maxAttempts={3}
         />
       )}
     </div>

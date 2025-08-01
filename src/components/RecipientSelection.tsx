@@ -57,8 +57,34 @@ export function RecipientSelection({ onBack, onRecipientSelect }: RecipientSelec
 
   // Load saved recipients from localStorage
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('saved_recipients') || '[]');
-    setSavedRecipients(saved);
+    const saved = localStorage.getItem('saved_recipients');
+    if (saved) {
+      try {
+        const recipients = JSON.parse(saved);
+        // Migrate old recipients that might be missing required fields
+        const migratedRecipients = recipients.map((recipient: any) => {
+          // If it's a bank recipient (non-CBUSD currency) but missing account details
+          if (recipient.currency !== 'CBUSD' && (!recipient.accountNumber || !recipient.bankCode)) {
+            console.warn(`Recipient "${recipient.name}" is missing bank details. Please update this recipient.`);
+            // We can't auto-fix this as we don't have the user's actual account details
+            // But we can at least ensure the structure is consistent
+            return {
+              ...recipient,
+              accountNumber: recipient.accountNumber || null,
+              bankCode: recipient.bankCode || null,
+              bankName: recipient.bankName || 'Unknown Bank'
+            };
+          }
+          return recipient;
+        });
+        setSavedRecipients(migratedRecipients);
+      } catch (error) {
+        console.error('Error loading saved recipients:', error);
+        setSavedRecipients([]);
+      }
+    } else {
+      setSavedRecipients([]);
+    }
   }, []);
 
   // Use only saved recipients (no mock ones)
@@ -132,7 +158,7 @@ export function RecipientSelection({ onBack, onRecipientSelect }: RecipientSelec
       }
 
       const recipient: Recipient = {
-        id: `phone_${newRecipient.phoneNumber}_${Date.now()}`,
+        id: `phone_${newRecipient.phoneNumber.replace(/\D/g, '')}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         name: newRecipient.name,
         avatar: `https://images.unsplash.com/photo-1494790108755-2616b6e08c3c?w=150&h=150&fit=crop&crop=face`,
         country: 'App User',

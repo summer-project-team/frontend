@@ -263,7 +263,7 @@ export function HomeDashboard({
 
       // Update user balance
       const totalDeduction = amount + amount * 0.02;
-      const updatedUser = { ...user, balance: user.balance - totalDeduction };
+      const updatedUser = { ...user, balance: (user.balance || 0) - totalDeduction };
       onUpdateUser(updatedUser);
       localStorage.setItem(`user_${user.id}`, JSON.stringify(updatedUser));
       localStorage.setItem(`transactions_${user.id}`, JSON.stringify(updatedTransactions));
@@ -538,7 +538,7 @@ export function HomeDashboard({
         <WithdrawDialog
           isOpen={isWithdrawOpen}
           onClose={() => setIsWithdrawOpen(false)}
-          userBalance={user.balance}
+          userBalance={user.balance || 0}
           onWithdraw={handleWithdraw}
         />
 
@@ -603,7 +603,7 @@ export function HomeDashboard({
                   <div className="flex items-center gap-4">
                     <h1 className="text-white text-4xl font-bold">
                       {isBalanceVisible 
-                        ? `$ ${formatBalance(user.balance)}`
+                        ? `$ ${formatBalance(user.balance || 0)}`
                         : '$ ••••••••'
                       }
                     </h1>
@@ -623,7 +623,7 @@ export function HomeDashboard({
                   <div className="mt-3">
                     <p className="text-white/70 text-lg font-medium">
                       {isBalanceVisible 
-                        ? `₦ ${formatNairaEquivalent(user.balance)}`
+                        ? `₦ ${formatNairaEquivalent(user.balance || 0)}`
                         : '₦ ••••••••'
                       }
                     </p>

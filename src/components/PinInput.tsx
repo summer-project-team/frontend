@@ -11,6 +11,7 @@ interface PinInputProps {
   error?: string;
   maxAttempts?: number;
   currentAttempt?: number;
+  onClear?: () => void;
 }
 
 export function PinInput({ 
@@ -22,6 +23,7 @@ export function PinInput({
   error,
   maxAttempts = 3,
   currentAttempt = 0,
+  onClear,
 }: PinInputProps) {
   const [pin, setPin] = useState<string[]>(['', '', '', '']);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -73,7 +75,11 @@ export function PinInput({
 
     // Check if PIN is complete
     if (newPin.every(digit => digit !== '') && newPin.join('').length === 4) {
-      onPinComplete(newPin.join(''));
+      console.log('PinInput: PIN complete, calling onPinComplete');
+      // Add a small delay to ensure UI updates before verification
+      setTimeout(() => {
+        onPinComplete(newPin.join(''));
+      }, 100);
     }
   };
 
@@ -120,6 +126,7 @@ export function PinInput({
     setPin(['', '', '', '']);
     setCurrentIndex(0);
     inputRefs.current[0]?.focus();
+    onClear?.(); // Call external clear handler if provided
   };
 
   const handleClose = () => {

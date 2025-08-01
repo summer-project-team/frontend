@@ -1,4 +1,4 @@
-import api from './api';
+import { api } from './api';
 
 export interface PinStatus {
   pinEnabled: boolean;
@@ -48,9 +48,15 @@ export default class PinService {
   // Verify transaction PIN
   static async verifyPin(params: VerifyPinRequest): Promise<void> {
     try {
-      await api.post('/users/pin/verify', params);
+      console.log('PinService: Verifying PIN with params:', { pin: '****' });
+      const response = await api.post('/users/pin/verify', params);
+      console.log('PinService: PIN verification response:', response.data);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'PIN verification failed');
+      }
     } catch (error) {
-      console.error('Error verifying PIN:', error);
+      console.error('PinService: Error verifying PIN:', error);
       throw this.handleError(error);
     }
   }

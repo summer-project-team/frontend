@@ -284,15 +284,18 @@ function App() {
 
   const handleAmountConfirm = async (params: { amount: string; category?: string; note?: string; transactionId?: string; exchangeRate?: number; }) => {
     const { amount, category, note, transactionId } = params;
+    console.log('App: handleAmountConfirm called with:', params);
     setSendAmount(amount);
     
     // Since SendAmount component already handled the transaction API call,
     // we just need to handle the success navigation and UI updates here
     if (selectedRecipient && user && transactionId) {
       try {
+        console.log('App: Refreshing balance after transaction...');
         // Refresh user balance after successful transaction
         const balanceData = await dashboardService.getWalletBalance();
-        const updatedUser = { ...user, balance: balanceData.cbusd_balance };
+        console.log('App: New balance data:', balanceData);
+        const updatedUser = { ...user, balance: balanceData };
         setUser(updatedUser);
         localStorage.setItem(`user_${user.id}`, JSON.stringify(updatedUser));
         
@@ -512,9 +515,9 @@ function App() {
       const withdrawResult = await TransactionService.initiateWithdrawal({
         amount,
         currency: 'NGN', // Default to NGN for now
-        bank_code: '058', // GTBank code as example
-        account_number: bankDetails.accountNumber,
-        narration: `Withdrawal to ${bankDetails.bankName}`
+        bank_account_number: bankDetails.accountNumber,
+        bank_name: bankDetails.bankName,
+        account_holder_name: bankDetails.accountHolderName || 'Account Holder'
       });
       
       // Add withdrawal transaction to history
@@ -720,10 +723,10 @@ function App() {
                   <div className="bg-white/30 dark:bg-black/30 backdrop-blur-lg rounded-2xl p-6 mb-6 border border-gray-200/30 dark:border-white/10">
                     <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Total Balance</p>
                     <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-1">
-                      ${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      ${(user.balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">
-                      ₦{(user.balance * 1532.50).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      ₦{((user.balance || 0) * 1532.50).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
 

@@ -22,6 +22,62 @@ import { SendMoneyRequest, WithdrawRequest } from '../types/transaction';
 import { UserService } from '../services/UserService';
 import PinService from '../services/PinService';
 import { PinInput } from './PinInput';
+import { validateRecipient, getRecipientTypeFromTransaction, createIncompleteRecipientError, debugRecipientData } from '../utils/recipientValidation';
+import { toast } from 'sonner';
+
+// Helper function to extract country code from phone number
+const extractCountryCode = (phoneNumber: string): string => {
+  // Remove any spaces, dashes, or parentheses
+  const cleanPhone = phoneNumber.replace(/[\s\-\(\)]/g, '');
+  
+  // If phone starts with +, extract the country code
+  if (cleanPhone.startsWith('+')) {
+    // Common country codes to match against
+    const countryCodes = [
+      { code: '+234', length: 4 },  // Nigeria
+      { code: '+44', length: 3 },   // UK
+      { code: '+1', length: 2 },    // US/Canada
+      { code: '+233', length: 4 },  // Ghana
+      { code: '+254', length: 4 },  // Kenya
+      { code: '+27', length: 3 },   // South Africa
+    ];
+    
+    // Try to match known country codes
+    for (const country of countryCodes) {
+      if (cleanPhone.startsWith(country.code)) {
+        return country.code;
+      }
+    }
+    
+    // Fallback: extract first 1-4 digits after +
+    const match = cleanPhone.match(/^\+(\d{1,4})/);
+    if (match) {
+      return `+${match[1]}`;
+    }
+  }
+  
+  // Default to Nigeria if we can't determine
+  return '+234';
+};
+
+// Helper function to get recipient country code
+const getRecipientCountryCode = (recipient: Recipient): string => {
+  if (recipient.currency === 'CBUSD' && recipient.phone) {
+    // For app users, extract country code from phone number
+    return extractCountryCode(recipient.phone);
+  } else {
+    // For bank transfers, use the actual country
+    const countryCodeMap: { [key: string]: string } = {
+      'Nigeria': '+234',
+      'United Kingdom': '+44',
+      'United States': '+1',
+      'Ghana': '+233',
+      'Kenya': '+254',
+      'South Africa': '+27'
+    };
+    return countryCodeMap[recipient.country] || '+234';
+  }
+};
 
 interface SendAmountProps {
   recipient: Recipient & {
@@ -147,6 +203,21 @@ export function SendAmount({
     console.log('SendAmount: Starting transaction without PIN...');
     setIsConfirming(true);
     
+    // Validate recipient data before proceeding with transaction
+    console.log('=== VALIDATING RECIPIENT DATA (NO PIN) ===');
+    debugRecipientData(recipient);
+    const validation = validateRecipient(recipient);
+    
+    if (!validation.isValid) {
+      console.error('Recipient validation failed:', validation);
+      const error = createIncompleteRecipientError(recipient, validation);
+      setIsConfirming(false);
+      toast.error(error.message);
+      return;
+    }
+    
+    console.log('Recipient validation passed, proceeding with transaction...');
+    
     try {
       // Direct transaction calls without quote dependency
       if (type === 'app_transfer' && (recipient.phone || recipient.phoneNumber)) {
@@ -154,9 +225,11 @@ export function SendAmount({
         if (!phoneNumber) {
           throw new Error('Phone number is required for app transfer');
         }
+        console.log('Making app transfer with phone:', phoneNumber);
+        console.log('Extracted country code:', getRecipientCountryCode(recipient));
         const result = await sendMoney({
           recipient_phone: phoneNumber,
-          recipient_country_code: `+${recipient.country}`, // Format country code
+          recipient_country_code: getRecipientCountryCode(recipient),
           amount: numericAmount,
           narration: note
         });
@@ -208,7 +281,18 @@ export function SendAmount({
       await PinService.verifyPin({ pin });
       console.log('PIN verified successfully');
       
-      // PIN verified successfully, proceed with transaction
+      // PIN verified successfully, now validate recipient data before proceeding
+      console.log('=== VALIDATING RECIPIENT DATA ===');
+      debugRecipientData(recipient);
+      const validation = validateRecipient(recipient);
+      
+      if (!validation.isValid) {
+        console.error('Recipient validation failed:', validation);
+        const error = createIncompleteRecipientError(recipient, validation);
+        throw error;
+      }
+      
+      console.log('Recipient validation passed, proceeding with transaction...');
       setShowPinInput(false);
       setIsConfirming(true);
       setPinAttempts(0); // Reset attempts on success
@@ -225,9 +309,12 @@ export function SendAmount({
           throw new Error('Phone number is required for app transfer');
         }
         console.log('Making app transfer with phone:', phoneNumber);
+        const countryCode = getRecipientCountryCode(recipient);
+        console.log('Extracted country code:', countryCode);
+        console.log('Raw phone from recipient:', recipient.phone);
         const result = await sendMoney({
           recipient_phone: phoneNumber,
-          recipient_country_code: `+${recipient.country}`,
+          recipient_country_code: countryCode,
           amount: numericAmount,
           narration: note,
           transaction_pin: pin

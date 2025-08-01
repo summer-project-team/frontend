@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Edit3, Shield, CreditCard, Settings, LogOut, Camera, Check, X, Bell, Lock, Smartphone, Globe, Moon, ChevronRight, Trash2, AlertTriangle, KeyRound } from 'lucide-react';
+import { ArrowLeft, Edit3, Shield, CreditCard, Settings, LogOut, Camera, Check, X, Bell, Lock, Smartphone, Globe, Moon, ChevronRight, Trash2, AlertTriangle, KeyRound, Loader2, Plus, Landmark } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -9,6 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { toast } from 'sonner';
 import { User } from '../App';
 import { UserService } from '../services/UserService';
+import { authService } from '../services/AuthService';
+import { bankingService, type BankAccount, type LinkAccountRequest } from '../services/BankingService';
+import { userToAuthUserUpdate, splitName, combineName } from '../utils/userMapping';
 
 interface ProfileScreenProps {
   user: User;
@@ -19,9 +22,15 @@ interface ProfileScreenProps {
 
 export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileScreenProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [currentView, setCurrentView] = useState<'profile' | 'security' | 'payment' | 'settings'>('profile');
+  
+  // Split name into first and last name for better backend compatibility
+  const { firstName, lastName } = splitName(user.name);
+  
   const [editForm, setEditForm] = useState({
-    name: user.name,
+    firstName: firstName,
+    lastName: lastName,
     email: user.email,
     phoneNumber: user.phoneNumber
   });
@@ -66,6 +75,22 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
   const [pinLoading, setPinLoading] = useState(false);
   const [pinError, setPinError] = useState('');
 
+  // Bank account management state
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
+  const [showAddAccountDialog, setShowAddAccountDialog] = useState(false);
+  const [accountForm, setAccountForm] = useState<LinkAccountRequest>({
+    account_number: '',
+    bank_code: '',
+    bank_name: '',
+    account_name: '',
+    account_type: 'savings',
+    currency: 'NGN'
+  });
+  const [isLinkingAccount, setIsLinkingAccount] = useState(false);
+  const [accountToRemove, setAccountToRemove] = useState<string | null>(null);
+  const [isRemovingAccount, setIsRemovingAccount] = useState(false);
+
   // Check PIN status on mount
   useEffect(() => {
     const checkPinStatus = async () => {
@@ -80,17 +105,73 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
     checkPinStatus();
   }, []);
 
-  const handleSaveProfile = () => {
-    const updatedUser = { ...user, ...editForm };
-    onUpdateUser(updatedUser);
-    localStorage.setItem(`user_${user.id}`, JSON.stringify(updatedUser));
-    setIsEditing(false);
-    toast.success('Profile updated successfully');
+  // Load bank accounts when payment view is accessed
+  useEffect(() => {
+    if (currentView === 'payment') {
+      loadBankAccounts();
+    }
+  }, [currentView]);
+
+  const loadBankAccounts = async () => {
+    try {
+      setIsLoadingAccounts(true);
+      const accounts = await bankingService.getAccounts();
+      setBankAccounts(accounts);
+    } catch (error: any) {
+      console.error('Error loading bank accounts:', error);
+      toast.error('Failed to load bank accounts');
+    } finally {
+      setIsLoadingAccounts(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setIsSaving(true);
+      
+      // Prepare the update payload for backend
+      const updateData = {
+        email: editForm.email,
+        first_name: editForm.firstName,
+        last_name: editForm.lastName
+      };
+      
+      console.log('ProfileScreen: Updating profile with data:', updateData);
+      
+      // Call the backend API
+      const updatedAuthUser = await authService.updateProfile(updateData);
+      console.log('ProfileScreen: Profile updated successfully:', updatedAuthUser);
+      
+      // Convert the AuthUser response back to User format
+      const updatedUser: User = {
+        ...user,
+        name: combineName(updatedAuthUser.first_name, updatedAuthUser.last_name),
+        email: updatedAuthUser.email
+        // Keep existing phoneNumber, balance, etc. as they weren't updated
+      };
+      
+      // Update the parent component's state
+      onUpdateUser(updatedUser);
+      
+      // Update localStorage
+      localStorage.setItem(`user_${user.id}`, JSON.stringify(updatedUser));
+      
+      setIsEditing(false);
+      toast.success('Profile updated successfully');
+      
+    } catch (error: any) {
+      console.error('ProfileScreen: Error updating profile:', error);
+      toast.error(error.message || 'Failed to update profile');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancelEdit = () => {
+    const { firstName, lastName } = splitName(user.name);
     setEditForm({
-      name: user.name,
+      firstName: firstName,
+      lastName: lastName,
       email: user.email,
       phoneNumber: user.phoneNumber
     });
@@ -182,6 +263,59 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
     }
   };
 
+  // Bank account management functions
+  const handleLinkAccount = async () => {
+    if (!accountForm.account_number || !accountForm.bank_code || !accountForm.bank_name || !accountForm.account_name) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setIsLinkingAccount(true);
+      const linkedAccount = await bankingService.linkAccount(accountForm);
+      setBankAccounts(prev => [...prev, linkedAccount]);
+      setAccountForm({
+        account_number: '',
+        bank_code: '',
+        bank_name: '',
+        account_name: '',
+        account_type: 'savings',
+        currency: 'NGN'
+      });
+      setShowAddAccountDialog(false);
+      toast.success('Bank account linked successfully');
+    } catch (error: any) {
+      console.error('Error linking account:', error);
+      toast.error(error.message || 'Failed to link bank account');
+    } finally {
+      setIsLinkingAccount(false);
+    }
+  };
+
+  const handleRemoveAccount = async (accountId: string) => {
+    try {
+      setIsRemovingAccount(true);
+      await bankingService.removeAccount(accountId);
+      setBankAccounts(prev => prev.filter(account => account.id !== accountId));
+      setAccountToRemove(null);
+      toast.success('Bank account removed successfully');
+    } catch (error: any) {
+      console.error('Error removing account:', error);
+      toast.error(error.message || 'Failed to remove bank account');
+    } finally {
+      setIsRemovingAccount(false);
+    }
+  };
+
+  const handleBankSelection = (bankCode: string) => {
+    const bankName = bankingService.getBankName(bankCode);
+    setAccountForm(prev => ({
+      ...prev,
+      bank_code: bankCode,
+      bank_name: bankName
+    }));
+  };
+
   const handleConfirmDelete = async () => {
     setIsDeletingAccount(true);
     try {
@@ -230,33 +364,57 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
             {/* User Info */}
             {isEditing ? (
               <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <Input
+                    placeholder="First Name"
+                    value={editForm.firstName}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
+                    className="text-center backdrop-blur-md bg-white/30 border-white/40 rounded-2xl"
+                  />
+                  <Input
+                    placeholder="Last Name"
+                    value={editForm.lastName}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
+                    className="text-center backdrop-blur-md bg-white/30 border-white/40 rounded-2xl"
+                  />
+                </div>
                 <Input
-                  value={editForm.name}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
-                  className="text-center backdrop-blur-md bg-white/30 border-white/40 rounded-2xl"
-                />
-                <Input
+                  placeholder="Email"
                   value={editForm.email}
                   onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
                   className="text-center backdrop-blur-md bg-white/30 border-white/40 rounded-2xl"
                 />
                 <Input
+                  placeholder="Phone Number"
                   value={editForm.phoneNumber}
                   onChange={(e) => setEditForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
                   className="text-center backdrop-blur-md bg-white/30 border-white/40 rounded-2xl"
+                  disabled
+                  title="Phone number cannot be changed"
                 />
                 <div className="flex space-x-3">
                   <Button
                     onClick={handleSaveProfile}
-                    className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl"
+                    disabled={isSaving}
+                    className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl disabled:opacity-50"
                   >
-                    <Check size={16} className="mr-2" />
-                    Save
+                    {isSaving ? (
+                      <>
+                        <Loader2 size={16} className="mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Check size={16} className="mr-2" />
+                        Save
+                      </>
+                    )}
                   </Button>
                   <Button
                     onClick={handleCancelEdit}
+                    disabled={isSaving}
                     variant="outline"
-                    className="flex-1 backdrop-blur-md bg-white/30 border-white/40 rounded-xl hover:bg-white/40"
+                    className="flex-1 backdrop-blur-md bg-white/30 border-white/40 rounded-xl hover:bg-white/40 disabled:opacity-50"
                   >
                     <X size={16} className="mr-2" />
                     Cancel
@@ -311,7 +469,7 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
           </div>
         </button>
 
-        {/* Payment Methods */}
+        {/* Account Linking */}
         <button
           onClick={() => setCurrentView('payment')}
           className="w-full backdrop-blur-md bg-white/25 rounded-2xl p-4 border border-white/30 hover:bg-white/35 transition-all duration-300"
@@ -321,8 +479,8 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
               <CreditCard size={20} className="text-green-600" />
             </div>
             <div className="flex-1 text-left">
-              <h3 className="text-gray-800">Payment Methods</h3>
-              <p className="text-sm text-gray-600">Manage cards and bank accounts</p>
+              <h3 className="text-gray-800">Account Linking</h3>
+              <p className="text-sm text-gray-600">Manage linked bank accounts</p>
             </div>
             <ChevronRight size={16} className="text-gray-400" />
           </div>
@@ -475,60 +633,267 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
 
   const renderPaymentView = () => (
     <div className="px-6 space-y-6">
+      {/* Cards Section - Note about backend limitation */}
       <div className="backdrop-blur-md bg-white/25 rounded-2xl p-6 border border-white/30">
-        <h3 className="text-lg mb-4 text-gray-800">Payment Methods</h3>
+        <h3 className="text-lg mb-4 text-gray-800">Cards</h3>
+        
+        <div className="backdrop-blur-sm bg-white/30 rounded-xl p-4 border border-white/20">
+          <div className="text-center py-8">
+            <CreditCard size={40} className="text-gray-400 mx-auto mb-3" />
+            <p className="text-gray-600 mb-2">Card linking coming soon</p>
+            <p className="text-sm text-gray-500">We're working on adding card support to our platform</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Bank Accounts Section - Real implementation */}
+      <div className="backdrop-blur-md bg-white/25 rounded-2xl p-6 border border-white/30">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg text-gray-800">Bank Accounts</h3>
+          {isLoadingAccounts && (
+            <Loader2 size={16} className="text-gray-500 animate-spin" />
+          )}
+        </div>
         
         <div className="space-y-4">
-          <div className="backdrop-blur-sm bg-white/30 rounded-xl p-4 border border-white/20">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
-                  <CreditCard size={20} className="text-white" />
+          {bankAccounts.length === 0 && !isLoadingAccounts ? (
+            <div className="backdrop-blur-sm bg-white/30 rounded-xl p-6 border border-white/20 text-center">
+              <Landmark size={40} className="text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-600 mb-2">No bank accounts linked</p>
+              <p className="text-sm text-gray-500">Add your first bank account to get started</p>
+            </div>
+          ) : (
+            bankAccounts.map((account) => (
+              <div key={account.id} className="backdrop-blur-sm bg-white/30 rounded-xl p-4 border border-white/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-green-700 rounded-xl flex items-center justify-center">
+                      <Landmark size={20} className="text-white" />
+                    </div>
+                    <div>
+                      <p className="text-gray-800 font-medium">{account.bank_name}</p>
+                      <p className="text-sm text-gray-600">
+                        {bankingService.formatAccountNumber(account.account_number)} • {account.account_type}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {account.account_name} • {account.currency}
+                        {account.is_verified && (
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800">
+                            Verified
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setAccountToRemove(account.id)}
+                    className="text-red-600 hover:text-red-700 transition-colors p-2"
+                    disabled={isRemovingAccount}
+                  >
+                    {isRemovingAccount && accountToRemove === account.id ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <Trash2 size={16} />
+                    )}
+                  </button>
                 </div>
+              </div>
+            ))
+          )}
+
+          <Dialog open={showAddAccountDialog} onOpenChange={setShowAddAccountDialog}>
+            <DialogTrigger asChild>
+              <button className="w-full backdrop-blur-sm bg-white/30 rounded-xl p-4 border border-white/20 hover:bg-white/40 transition-all duration-300 border-dashed">
+                <div className="flex items-center justify-center space-x-2">
+                  <Plus size={20} className="text-gray-600" />
+                  <span className="text-gray-600">Add Bank Account</span>
+                </div>
+              </button>
+            </DialogTrigger>
+            
+            <DialogContent className="backdrop-blur-md bg-white/90">
+              <DialogHeader>
+                <DialogTitle>Link Bank Account</DialogTitle>
+                <DialogDescription>
+                  Add your bank account details to link it to your wallet
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4">
                 <div>
-                  <p className="text-gray-800">•••• •••• •••• 4532</p>
-                  <p className="text-sm text-gray-600">Visa - Expires 12/25</p>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Bank
+                  </label>
+                  <Select 
+                    value={accountForm.bank_code} 
+                    onValueChange={handleBankSelection}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your bank" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="044">Access Bank</SelectItem>
+                      <SelectItem value="014">Afribank Nigeria Plc</SelectItem>
+                      <SelectItem value="023">Citibank Nigeria Limited</SelectItem>
+                      <SelectItem value="011">First Bank of Nigeria</SelectItem>
+                      <SelectItem value="214">First City Monument Bank</SelectItem>
+                      <SelectItem value="070">Fidelity Bank</SelectItem>
+                      <SelectItem value="058">Guaranty Trust Bank</SelectItem>
+                      <SelectItem value="030">Heritage Bank</SelectItem>
+                      <SelectItem value="082">Keystone Bank</SelectItem>
+                      <SelectItem value="076">Skye Bank</SelectItem>
+                      <SelectItem value="221">Stanbic IBTC Bank</SelectItem>
+                      <SelectItem value="068">Standard Chartered Bank</SelectItem>
+                      <SelectItem value="232">Sterling Bank</SelectItem>
+                      <SelectItem value="032">Union Bank of Nigeria</SelectItem>
+                      <SelectItem value="033">United Bank for Africa</SelectItem>
+                      <SelectItem value="215">Unity Bank</SelectItem>
+                      <SelectItem value="035">Wema Bank</SelectItem>
+                      <SelectItem value="057">Zenith Bank</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Account Number
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="1234567890"
+                    value={accountForm.account_number}
+                    onChange={(e) => setAccountForm(prev => ({
+                      ...prev,
+                      account_number: e.target.value
+                    }))}
+                    maxLength={10}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Account Name
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="John Doe"
+                    value={accountForm.account_name}
+                    onChange={(e) => setAccountForm(prev => ({
+                      ...prev,
+                      account_name: e.target.value
+                    }))}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Account Type
+                  </label>
+                  <Select 
+                    value={accountForm.account_type} 
+                    onValueChange={(value: 'savings' | 'checking' | 'current') => 
+                      setAccountForm(prev => ({ ...prev, account_type: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="savings">Savings</SelectItem>
+                      <SelectItem value="checking">Checking</SelectItem>
+                      <SelectItem value="current">Current</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Currency
+                  </label>
+                  <Select 
+                    value={accountForm.currency} 
+                    onValueChange={(value: 'NGN' | 'GBP' | 'USD') => 
+                      setAccountForm(prev => ({ ...prev, currency: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="NGN">Nigerian Naira (NGN)</SelectItem>
+                      <SelectItem value="USD">US Dollar (USD)</SelectItem>
+                      <SelectItem value="GBP">British Pound (GBP)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex space-x-3 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAddAccountDialog(false)}
+                    className="flex-1"
+                    disabled={isLinkingAccount}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleLinkAccount}
+                    className="flex-1"
+                    disabled={isLinkingAccount}
+                  >
+                    {isLinkingAccount ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin mr-2" />
+                        Linking...
+                      </>
+                    ) : (
+                      'Link Account'
+                    )}
+                  </Button>
                 </div>
               </div>
-              <button className="text-red-600 hover:text-red-700 transition-colors">
-                Remove
-              </button>
-            </div>
-          </div>
-
-          <button className="w-full backdrop-blur-sm bg-white/30 rounded-xl p-4 border border-white/20 hover:bg-white/40 transition-all duration-300 border-dashed">
-            <div className="flex items-center justify-center space-x-2">
-              <CreditCard size={20} className="text-gray-600" />
-              <span className="text-gray-600">Add New Card</span>
-            </div>
-          </button>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
-      <div className="backdrop-blur-md bg-white/25 rounded-2xl p-6 border border-white/30">
-        <h3 className="text-lg mb-4 text-gray-800">Bank Accounts</h3>
-        
-        <div className="space-y-4">
-          <div className="backdrop-blur-sm bg-white/30 rounded-xl p-4 border border-white/20">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-800">Chase Bank</p>
-                <p className="text-sm text-gray-600">•••• •••• 4532</p>
-              </div>
-              <button className="text-red-600 hover:text-red-700 transition-colors">
-                Remove
-              </button>
-            </div>
+      {/* Remove Account Confirmation */}
+      <Dialog open={accountToRemove !== null} onOpenChange={() => setAccountToRemove(null)}>
+        <DialogContent className="backdrop-blur-md bg-white/90">
+          <DialogHeader>
+            <DialogTitle>Remove Bank Account</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove this bank account? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex space-x-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setAccountToRemove(null)}
+              className="flex-1"
+              disabled={isRemovingAccount}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => accountToRemove && handleRemoveAccount(accountToRemove)}
+              className="flex-1"
+              disabled={isRemovingAccount}
+            >
+              {isRemovingAccount ? (
+                <>
+                  <Loader2 size={16} className="animate-spin mr-2" />
+                  Removing...
+                </>
+              ) : (
+                'Remove Account'
+              )}
+            </Button>
           </div>
-
-          <button className="w-full backdrop-blur-sm bg-white/30 rounded-xl p-4 border border-white/20 hover:bg-white/40 transition-all duration-300 border-dashed">
-            <div className="flex items-center justify-center space-x-2">
-              <CreditCard size={20} className="text-gray-600" />
-              <span className="text-gray-600">Add Bank Account</span>
-            </div>
-          </button>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 
@@ -728,7 +1093,7 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
         <h2 className="text-gray-800">
           {currentView === 'profile' ? 'Profile' :
            currentView === 'security' ? 'Security' :
-           currentView === 'payment' ? 'Payment Methods' :
+           currentView === 'payment' ? 'Account Linking' :
            'App Settings'}
         </h2>
         {currentView === 'profile' && (

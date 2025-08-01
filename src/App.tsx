@@ -125,11 +125,41 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Load saved recipients
+  // Load saved recipients (user-specific)
   useEffect(() => {
-    const savedRecipients = JSON.parse(localStorage.getItem('saved_recipients') || '[]');
-    setRecipients(savedRecipients);
-  }, []);
+    if (user?.id) {
+      const userSpecificKey = `saved_recipients_${user.id}`;
+      const globalKey = 'saved_recipients';
+      
+      // Check if user already has user-specific recipients
+      const userRecipients = localStorage.getItem(userSpecificKey);
+      
+      if (userRecipients) {
+        // User already has user-specific recipients, use them
+        const savedRecipients = JSON.parse(userRecipients);
+        setRecipients(savedRecipients);
+      } else {
+        // Check for old global recipients and migrate them for this user
+        const globalRecipients = localStorage.getItem(globalKey);
+        if (globalRecipients) {
+          const savedRecipients = JSON.parse(globalRecipients);
+          setRecipients(savedRecipients);
+          // Save them under user-specific key
+          localStorage.setItem(userSpecificKey, globalRecipients);
+          console.log(`Migrated ${savedRecipients.length} recipients to user-specific storage for user ${user.id}`);
+          
+          // Optionally clean up the global key to prevent future conflicts
+          // Note: Only do this if we're confident all users have been migrated
+          // localStorage.removeItem(globalKey);
+        } else {
+          setRecipients([]);
+        }
+      }
+    } else {
+      // Clear recipients when no user is logged in
+      setRecipients([]);
+    }
+  }, [user?.id]);
 
   // Load saved theme preference
   useEffect(() => {
@@ -150,10 +180,13 @@ function App() {
 
     const refreshBalance = async () => {
       try {
+        console.log('Periodic balance refresh: Starting...');
+        const oldBalance = user.balance;
         const balance = await dashboardService.getWalletBalance();
+        console.log('Periodic balance refresh: Success', { oldBalance, newBalance: balance });
         setUser(prevUser => prevUser ? { ...prevUser, balance } : null);
       } catch (error) {
-        console.error('Failed to refresh balance:', error);
+        console.error('Periodic balance refresh: Failed', error);
       }
     };
 
@@ -279,7 +312,18 @@ function App() {
   const handleAddRecipient = (newRecipient: Recipient) => {
     const updatedRecipients = [...recipients, newRecipient];
     setRecipients(updatedRecipients);
-    localStorage.setItem('saved_recipients', JSON.stringify(updatedRecipients));
+    if (user?.id) {
+      localStorage.setItem(`saved_recipients_${user.id}`, JSON.stringify(updatedRecipients));
+    }
+  };
+
+  const handleRemoveRecipient = (recipientId: string) => {
+    const updatedRecipients = recipients.filter(r => r.id !== recipientId);
+    setRecipients(updatedRecipients);
+    if (user?.id) {
+      localStorage.setItem(`saved_recipients_${user.id}`, JSON.stringify(updatedRecipients));
+    }
+    console.log(`Removed recipient with ID: ${recipientId}`);
   };
 
   const handleAmountConfirm = async (params: { amount: string; category?: string; note?: string; transactionId?: string; exchangeRate?: number; }) => {
@@ -292,12 +336,42 @@ function App() {
     if (selectedRecipient && user && transactionId) {
       try {
         console.log('App: Refreshing balance after transaction...');
-        // Refresh user balance after successful transaction
-        const balanceData = await dashboardService.getWalletBalance();
-        console.log('App: New balance data:', balanceData);
+        console.log('App: Transaction type:', selectedRecipient.currency === 'CBUSD' ? 'app-to-app' : 'app-to-bank');
+        
+        // For app-to-bank transactions, add a small delay to allow backend to process
+        const isAppToBank = selectedRecipient.currency !== 'CBUSD';
+        if (isAppToBank) {
+          console.log('App: App-to-bank transaction detected, waiting 2 seconds before balance refresh...');
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+        
+        // Refresh user balance after successful transaction with retry logic
+        let balanceData;
+        let attempts = 0;
+        const maxAttempts = 3;
+        
+        while (attempts < maxAttempts) {
+          try {
+            console.log(`App: Balance refresh attempt ${attempts + 1}/${maxAttempts}`);
+            balanceData = await dashboardService.getWalletBalance();
+            console.log('App: New balance data:', balanceData);
+            break; // Success, exit retry loop
+          } catch (error) {
+            attempts++;
+            console.warn(`App: Balance refresh attempt ${attempts} failed:`, error);
+            if (attempts < maxAttempts) {
+              console.log('App: Retrying balance refresh in 1 second...');
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            } else {
+              throw error; // Re-throw if all attempts failed
+            }
+          }
+        }
+        
         const updatedUser = { ...user, balance: balanceData };
         setUser(updatedUser);
         localStorage.setItem(`user_${user.id}`, JSON.stringify(updatedUser));
+        console.log('App: User balance updated successfully:', { oldBalance: user.balance, newBalance: balanceData });
         
         // Find the transaction that was just created by the SendAmount component
         // In a real app, you might fetch this from the backend using transactionId
@@ -329,6 +403,36 @@ function App() {
         // Update state with completed transaction
         const updatedTransactions = [successTransaction, ...transactions];
         setTransactions(updatedTransactions);
+        
+        // IMPORTANT: Add the recipient to the recipients list if it's not already there
+        // This ensures recipients from transactions have complete data for future use
+        const recipientExists = recipients.find(r => r.id === selectedRecipient.id);
+        if (!recipientExists) {
+          console.log('App: Adding new recipient to recipients list:', selectedRecipient);
+          
+          // Validate that the recipient has complete data before saving
+          const hasCompleteData = selectedRecipient.currency === 'CBUSD' 
+            ? !!selectedRecipient.phone  // For app users, phone is required
+            : !!(selectedRecipient.accountNumber && selectedRecipient.bankCode); // For bank users, account details required
+          
+          if (!hasCompleteData) {
+            console.warn('App: Recipient lacks complete data, not saving to recipients list:', {
+              id: selectedRecipient.id,
+              name: selectedRecipient.name,
+              currency: selectedRecipient.currency,
+              hasPhone: !!selectedRecipient.phone,
+              hasAccount: !!selectedRecipient.accountNumber,
+              hasBankCode: !!selectedRecipient.bankCode
+            });
+          } else {
+            console.log('App: Recipient has complete data, saving to recipients list');
+            const updatedRecipients = [...recipients, selectedRecipient];
+            setRecipients(updatedRecipients);
+            if (user?.id) {
+              localStorage.setItem(`saved_recipients_${user.id}`, JSON.stringify(updatedRecipients));
+            }
+          }
+        }
         
         // Add transaction notification
         NotificationService.addTransactionNotification(
@@ -510,15 +614,22 @@ function App() {
     }
   };
 
-  const handleWithdraw = async (amount: number, bankDetails: any) => {
+  const handleWithdraw = async (amount: number, bankDetails: any, pin: string) => {
     try {
-      const withdrawResult = await TransactionService.initiateWithdrawal({
+      console.log('App.tsx: handleWithdraw called with:', { amount, bankDetails, pin });
+      
+      const withdrawalData = {
         amount,
-        currency: 'NGN', // Default to NGN for now
-        bank_account_number: bankDetails.accountNumber,
-        bank_name: bankDetails.bankName,
-        account_holder_name: bankDetails.accountHolderName || 'Account Holder'
-      });
+        currency: bankDetails.currency || 'NGN', // Use account currency or default to NGN
+        bank_account_number: bankDetails.account_number,
+        bank_name: bankDetails.bank_name,
+        account_holder_name: bankDetails.account_name, // Use account_name from linked account
+        transaction_pin: pin
+      };
+      
+      console.log('App.tsx: Calling TransactionService.initiateWithdrawal with:', withdrawalData);
+      const withdrawResult = await TransactionService.initiateWithdrawal(withdrawalData);
+      console.log('App.tsx: Withdrawal result:', withdrawResult);
       
       // Add withdrawal transaction to history
       const withdrawTransaction: Transaction = {
@@ -620,6 +731,7 @@ function App() {
                     onUpdateUser={setUser}
                     setTransactions={setTransactions}
                     onAddRecipient={handleAddRecipient}
+                    onRemoveRecipient={handleRemoveRecipient}
                     onWithdraw={handleWithdraw}
                     onDeposit={handleDeposit}
                     onShowDepositModal={handleShowDepositModal}
@@ -627,6 +739,7 @@ function App() {
                 )}
                 {currentScreen === 'recipients' && (
                   <RecipientSelection
+                    user={user}
                     onBack={() => navigateTo('home')}
                     onRecipientSelect={handleRecipientSelect}
                   />
@@ -810,6 +923,7 @@ function App() {
                   onUpdateUser={setUser}
                   setTransactions={setTransactions}
                   onAddRecipient={handleAddRecipient}
+                  onRemoveRecipient={handleRemoveRecipient}
                   onWithdraw={handleWithdraw}
                   onDeposit={handleDeposit}
                   onShowDepositModal={handleShowDepositModal}
@@ -820,6 +934,7 @@ function App() {
                 <div className="flex items-center justify-center h-full p-8">
                   <div className="w-full max-w-lg">
                     <RecipientSelection
+                      user={user}
                       onBack={() => navigateTo('home')}
                       onRecipientSelect={handleRecipientSelect}
                     />

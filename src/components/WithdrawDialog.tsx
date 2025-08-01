@@ -1,57 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { toast } from 'sonner';
-import { CreditCard, DollarSign, AlertCircle } from 'lucide-react';
+import { DollarSign, AlertCircle, Landmark, Loader2, ArrowLeft, Lock } from 'lucide-react';
+import { bankingService, type BankAccount } from '../services/BankingService';
+import { PinInput } from './PinInput';
 
 interface WithdrawDialogProps {
   isOpen: boolean;
   onClose: () => void;
   userBalance: number;
-  onWithdraw: (amount: number, bankDetails: BankDetails) => void;
+  onWithdraw: (amount: number, selectedAccount: any, pin: string) => void;
 }
-
-interface BankDetails {
-  accountName: string;
-  accountNumber: string;
-  bankName: string;
-  country: string;
-}
-
-const nigerianBanks = [
-  'Access Bank', 'Zenith Bank', 'GTBank', 'First Bank', 'UBA',
-  'Fidelity Bank', 'FCMB', 'Sterling Bank', 'Union Bank', 'Wema Bank'
-];
-
-const ukBanks = [
-  'Barclays', 'HSBC', 'Lloyds Bank', 'NatWest', 'Santander',
-  'TSB', 'Halifax', 'Nationwide', 'Metro Bank', 'Monzo'
-];
-
-const usBanks = [
-  'Chase', 'Bank of America', 'Wells Fargo', 'Citibank', 'US Bank',
-  'PNC Bank', 'Capital One', 'TD Bank', 'BBVA', 'SunTrust'
-];
 
 export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: WithdrawDialogProps) {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [amount, setAmount] = useState('');
-  const [bankDetails, setBankDetails] = useState<BankDetails>({
-    accountName: '',
-    accountNumber: '',
-    bankName: '',
-    country: 'Nigeria'
-  });
+  const [linkedAccounts, setLinkedAccounts] = useState<BankAccount[]>([]);
+  const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
+  const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
+  const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState('');
 
-  const getBankList = () => {
-    switch (bankDetails.country) {
-      case 'Nigeria': return nigerianBanks;
-      case 'United Kingdom': return ukBanks;
-      case 'United States': return usBanks;
-      default: return nigerianBanks;
+  // Load linked bank accounts when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      loadLinkedAccounts();
+    }
+  }, [isOpen]);
+
+  const loadLinkedAccounts = async () => {
+    try {
+      setIsLoadingAccounts(true);
+      const accounts = await bankingService.getAccounts();
+      setLinkedAccounts(accounts);
+      
+      if (accounts.length === 0) {
+        toast.error('No linked bank accounts found. Please link a bank account first.');
+      }
+    } catch (error: any) {
+      console.error('Error loading bank accounts:', error);
+      toast.error('Failed to load bank accounts');
+    } finally {
+      setIsLoadingAccounts(false);
     }
   };
 
@@ -73,12 +66,47 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
       toast.error('Minimum withdrawal amount is $10');
       return;
     }
+    
+    if (linkedAccounts.length === 0) {
+      toast.error('No linked bank accounts found. Please link a bank account first.');
+      return;
+    }
+    
     setStep(2);
   };
 
+  const handleAccountSelect = (account: BankAccount) => {
+    setSelectedAccount(account);
+  };
+
+  const handleAccountNext = () => {
+    if (!selectedAccount) {
+      toast.error('Please select a bank account');
+      return;
+    }
+    setStep(3);
+  };
+
+  const handlePinComplete = (enteredPin: string) => {
+    setPin(enteredPin);
+    setPinError('');
+  };
+
+  const handlePinClear = () => {
+    setPin('');
+    setPinError('');
+  };
+
   const handleWithdraw = () => {
-    if (!bankDetails.accountName || !bankDetails.accountNumber || !bankDetails.bankName) {
-      toast.error('Please fill in all bank details');
+    console.log('WithdrawDialog: handleWithdraw called');
+    
+    if (!selectedAccount) {
+      toast.error('Please select a bank account');
+      return;
+    }
+
+    if (!pin || pin.length !== 4) {
+      setPinError('Please enter a 4-digit PIN');
       return;
     }
     
@@ -91,7 +119,20 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
       return;
     }
 
-    onWithdraw(numAmount, bankDetails);
+    // Convert BankAccount to the format expected by onWithdraw
+    const bankDetails = {
+      id: selectedAccount.id,
+      account_number: selectedAccount.account_number,
+      bank_name: selectedAccount.bank_name,
+      bank_code: selectedAccount.bank_code,
+      account_name: selectedAccount.account_name,
+      account_type: selectedAccount.account_type,
+      currency: selectedAccount.currency
+    };
+
+    console.log('WithdrawDialog: Calling onWithdraw with:', { numAmount, bankDetails, pin });
+    onWithdraw(numAmount, bankDetails, pin);
+    console.log('WithdrawDialog: onWithdraw called, closing dialog');
     onClose();
     resetForm();
   };
@@ -99,12 +140,9 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
   const resetForm = () => {
     setStep(1);
     setAmount('');
-    setBankDetails({
-      accountName: '',
-      accountNumber: '',
-      bankName: '',
-      country: 'Nigeria'
-    });
+    setSelectedAccount(null);
+    setPin('');
+    setPinError('');
   };
 
   const handleClose = () => {
@@ -112,158 +150,271 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
     resetForm();
   };
 
+  const renderStep1 = () => (
+    <div className="space-y-6">
+      {/* Available Balance */}
+      <div className="text-center p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/30 dark:border-blue-500/30">
+        <p className="text-sm text-blue-700 dark:text-blue-300 mb-1">Available Balance</p>
+        <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">
+          ${userBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+        </p>
+      </div>
+
+      {/* Amount Input */}
+      <div>
+        <Label htmlFor="amount" className="text-gray-800 dark:text-white">
+          Withdrawal Amount
+        </Label>
+        <div className="relative mt-1">
+          <DollarSign size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+          <Input
+            id="amount"
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0.00"
+            className="pl-10 text-lg bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white"
+          />
+        </div>
+      </div>
+
+      {/* Fee Information */}
+      {amount && parseFloat(amount) > 0 && (
+        <div className="space-y-2 p-4 rounded-xl bg-yellow-50/50 dark:bg-yellow-900/20 border border-yellow-200/30 dark:border-yellow-500/30">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={16} className="text-yellow-600" />
+            <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium">Fee Breakdown</p>
+          </div>
+          <div className="space-y-1 text-sm">
+            <div className="flex justify-between">
+              <span className="text-yellow-700 dark:text-yellow-300">Withdrawal Amount:</span>
+              <span className="text-yellow-800 dark:text-yellow-200">${parseFloat(amount).toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-yellow-700 dark:text-yellow-300">Processing Fee (2%):</span>
+              <span className="text-yellow-800 dark:text-yellow-200">${getWithdrawalFee(parseFloat(amount)).toFixed(2)}</span>
+            </div>
+            <hr className="border-yellow-300/50" />
+            <div className="flex justify-between font-medium">
+              <span className="text-yellow-800 dark:text-yellow-200">Total Deduction:</span>
+              <span className="text-yellow-800 dark:text-yellow-200">${(parseFloat(amount) + getWithdrawalFee(parseFloat(amount))).toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Button
+        onClick={handleAmountSubmit}
+        className="w-full card-gradient hover:opacity-90 text-white"
+        disabled={isLoadingAccounts}
+      >
+        {isLoadingAccounts ? (
+          <>
+            <Loader2 size={16} className="animate-spin mr-2" />
+            Loading Accounts...
+          </>
+        ) : (
+          'Continue'
+        )}
+      </Button>
+    </div>
+  );
+
+  const renderStep2 = () => (
+    <div className="space-y-4">
+      {/* Back Button */}
+      <div className="flex items-center gap-3 mb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setStep(1)}
+          className="p-2"
+        >
+          <ArrowLeft size={16} />
+        </Button>
+        <div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Withdrawing</p>
+          <p className="font-semibold text-gray-800 dark:text-white">${parseFloat(amount).toFixed(2)}</p>
+        </div>
+      </div>
+
+      {/* Account Selection */}
+      <div>
+        <Label className="text-gray-800 dark:text-white mb-3 block">
+          Select Bank Account
+        </Label>
+        
+        {isLoadingAccounts ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 size={24} className="animate-spin text-gray-500" />
+            <span className="ml-2 text-gray-500">Loading accounts...</span>
+          </div>
+        ) : linkedAccounts.length === 0 ? (
+          <div className="text-center py-8">
+            <Landmark size={32} className="text-gray-400 mx-auto mb-2" />
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              No linked bank accounts found
+            </p>
+            <p className="text-gray-500 dark:text-gray-500 text-xs mt-1">
+              Please link a bank account first
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3 max-h-64 overflow-y-auto">
+            {linkedAccounts.map((account) => (
+              <button
+                key={account.id}
+                onClick={() => handleAccountSelect(account)}
+                className={`w-full text-left p-4 rounded-xl border transition-all duration-200 ${
+                  selectedAccount?.id === account.id
+                    ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20'
+                    : 'border-gray-200/30 dark:border-white/10 bg-gray-100/30 dark:bg-gray-900/30 hover:bg-gray-200/30 dark:hover:bg-gray-900/50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    selectedAccount?.id === account.id
+                      ? 'bg-blue-500'
+                      : 'bg-gray-500'
+                  }`}>
+                    <Landmark size={16} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-800 dark:text-white">
+                      {account.bank_name}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {bankingService.formatAccountNumber(account.account_number)} • {account.account_type}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                      {account.account_name} • {account.currency}
+                    </p>
+                  </div>
+                  {selectedAccount?.id === account.id && (
+                    <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {linkedAccounts.length > 0 && (
+        <div className="flex gap-3 pt-4">
+          <Button
+            onClick={() => setStep(1)}
+            variant="outline"
+            className="flex-1 bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white hover:bg-gray-200/30 dark:hover:bg-gray-900/50"
+          >
+            Back
+          </Button>
+          <Button
+            onClick={handleAccountNext}
+            disabled={!selectedAccount}
+            className="flex-1 card-gradient hover:opacity-90 text-white disabled:opacity-50"
+          >
+            Continue
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderStep3 = () => (
+    <div className="space-y-6">
+      {/* Back Button */}
+      <div className="flex items-center gap-3 mb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setStep(2)}
+          className="p-2"
+        >
+          <ArrowLeft size={16} />
+        </Button>
+        <div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Withdrawing ${parseFloat(amount).toFixed(2)} to
+          </p>
+          <p className="font-semibold text-gray-800 dark:text-white">
+            {selectedAccount?.bank_name}
+          </p>
+        </div>
+      </div>
+
+      {/* PIN Entry */}
+      <div className="text-center space-y-4">
+        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto">
+          <Lock size={24} className="text-blue-600 dark:text-blue-400" />
+        </div>
+        
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+            Enter Transaction PIN
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Please enter your 4-digit transaction PIN to confirm the withdrawal
+          </p>
+        </div>
+
+        <div className="px-8">
+          <PinInput
+            onPinComplete={handlePinComplete}
+            onClear={handlePinClear}
+            error={pinError}
+            title="Enter Transaction PIN"
+            subtitle="Please enter your 4-digit transaction PIN to confirm the withdrawal"
+          />
+        </div>
+
+        {pinError && (
+          <p className="text-red-500 text-sm mt-2">{pinError}</p>
+        )}
+      </div>
+
+      <div className="flex gap-3 pt-4">
+        <Button
+          onClick={() => setStep(2)}
+          variant="outline"
+          className="flex-1 bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white hover:bg-gray-200/30 dark:hover:bg-gray-900/50"
+        >
+          Back
+        </Button>
+        <Button
+          onClick={handleWithdraw}
+          disabled={!pin || pin.length !== 4}
+          className="flex-1 card-gradient hover:opacity-90 text-white disabled:opacity-50"
+        >
+          Confirm Withdrawal
+        </Button>
+      </div>
+    </div>
+  );
+
+  const getStepTitle = () => {
+    switch (step) {
+      case 1: return 'Withdraw Funds';
+      case 2: return 'Select Account';
+      case 3: return 'Enter PIN';
+      default: return 'Withdraw Funds';
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-gray-200/30 dark:border-white/10 max-w-sm mx-auto">
         <DialogHeader>
           <DialogTitle className="text-center text-gray-800 dark:text-white">
-            {step === 1 ? 'Withdraw Funds' : 'Bank Details'}
+            {getStepTitle()}
           </DialogTitle>
         </DialogHeader>
         
-        {step === 1 ? (
-          <div className="space-y-6">
-            {/* Available Balance */}
-            <div className="text-center p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/30 dark:border-blue-500/30">
-              <p className="text-sm text-blue-700 dark:text-blue-300 mb-1">Available Balance</p>
-              <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">
-                ${userBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </p>
-            </div>
-
-            {/* Amount Input */}
-            <div>
-              <Label htmlFor="amount" className="text-gray-800 dark:text-white">
-                Withdrawal Amount
-              </Label>
-              <div className="relative mt-1">
-                <DollarSign size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                <Input
-                  id="amount"
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0.00"
-                  className="pl-10 text-lg bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white"
-                />
-              </div>
-            </div>
-
-            {/* Fee Information */}
-            {amount && parseFloat(amount) > 0 && (
-              <div className="space-y-2 p-4 rounded-xl bg-yellow-50/50 dark:bg-yellow-900/20 border border-yellow-200/30 dark:border-yellow-500/30">
-                <div className="flex items-center gap-2">
-                  <AlertCircle size={16} className="text-yellow-600" />
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium">Fee Breakdown</p>
-                </div>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-yellow-700 dark:text-yellow-300">Withdrawal Amount:</span>
-                    <span className="text-yellow-800 dark:text-yellow-200">${parseFloat(amount).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-yellow-700 dark:text-yellow-300">Processing Fee (2%):</span>
-                    <span className="text-yellow-800 dark:text-yellow-200">${getWithdrawalFee(parseFloat(amount)).toFixed(2)}</span>
-                  </div>
-                  <hr className="border-yellow-300/50" />
-                  <div className="flex justify-between font-medium">
-                    <span className="text-yellow-800 dark:text-yellow-200">Total Deduction:</span>
-                    <span className="text-yellow-800 dark:text-yellow-200">${(parseFloat(amount) + getWithdrawalFee(parseFloat(amount))).toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <Button
-              onClick={handleAmountSubmit}
-              className="w-full card-gradient hover:opacity-90 text-white"
-            >
-              Continue
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {/* Country Selection */}
-            <div>
-              <Label className="text-gray-800 dark:text-white">Country</Label>
-              <Select
-                value={bankDetails.country}
-                onValueChange={(value) => setBankDetails(prev => ({ ...prev, country: value, bankName: '' }))}
-              >
-                <SelectTrigger className="mt-1 bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Nigeria">🇳🇬 Nigeria</SelectItem>
-                  <SelectItem value="United Kingdom">🇬🇧 United Kingdom</SelectItem>
-                  <SelectItem value="United States">🇺🇸 United States</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Bank Name */}
-            <div>
-              <Label className="text-gray-800 dark:text-white">Bank Name</Label>
-              <Select
-                value={bankDetails.bankName}
-                onValueChange={(value) => setBankDetails(prev => ({ ...prev, bankName: value }))}
-              >
-                <SelectTrigger className="mt-1 bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10">
-                  <SelectValue placeholder="Select your bank" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getBankList().map((bank) => (
-                    <SelectItem key={bank} value={bank}>{bank}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Account Name */}
-            <div>
-              <Label htmlFor="accountName" className="text-gray-800 dark:text-white">
-                Account Name
-              </Label>
-              <Input
-                id="accountName"
-                value={bankDetails.accountName}
-                onChange={(e) => setBankDetails(prev => ({ ...prev, accountName: e.target.value }))}
-                placeholder="Enter account holder name"
-                className="mt-1 bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white"
-              />
-            </div>
-
-            {/* Account Number */}
-            <div>
-              <Label htmlFor="accountNumber" className="text-gray-800 dark:text-white">
-                Account Number
-              </Label>
-              <Input
-                id="accountNumber"
-                value={bankDetails.accountNumber}
-                onChange={(e) => setBankDetails(prev => ({ ...prev, accountNumber: e.target.value }))}
-                placeholder="Enter account number"
-                className="mt-1 bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white"
-              />
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button
-                onClick={() => setStep(1)}
-                variant="outline"
-                className="flex-1 bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white hover:bg-gray-200/30 dark:hover:bg-gray-900/50"
-              >
-                Back
-              </Button>
-              <Button
-                onClick={handleWithdraw}
-                className="flex-1 card-gradient hover:opacity-90 text-white"
-              >
-                Confirm Withdrawal
-              </Button>
-            </div>
-          </div>
-        )}
+        {step === 1 && renderStep1()}
+        {step === 2 && renderStep2()}
+        {step === 3 && renderStep3()}
       </DialogContent>
     </Dialog>
   );

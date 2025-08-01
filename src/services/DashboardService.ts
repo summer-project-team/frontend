@@ -165,15 +165,19 @@ class DashboardService {
    */
   async getWalletBalance(): Promise<number> {
     try {
+      console.log('DashboardService: Fetching wallet balance...');
       const response = await api.get<WalletApiResponse>('/users/wallet');
+      console.log('DashboardService: Wallet API response:', response.data);
       
       if (response.data.success) {
-        return parseFloat(response.data.wallet.balances.cbusd) || 0;
+        const balance = parseFloat(response.data.wallet.balances.cbusd) || 0;
+        console.log('DashboardService: Parsed balance:', balance);
+        return balance;
       }
       
       throw new Error('Failed to fetch wallet balance');
     } catch (error: any) {
-      console.error('Wallet balance service error:', error);
+      console.error('DashboardService: Wallet balance error:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch wallet balance');
     }
   }

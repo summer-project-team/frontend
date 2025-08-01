@@ -6,9 +6,11 @@ import { Label } from './ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from './ui/dialog';
 import { Recipient } from '../App';
+import { User } from '../types/user';
 import { toast } from 'sonner';
 
 interface RecipientSelectionProps {
+  user: User | null;
   onBack: () => void;
   onRecipientSelect: (recipient: Recipient) => void;
 }
@@ -40,7 +42,7 @@ const nigerianBanks = [
   { code: '057', name: 'Zenith Bank' },
 ];
 
-export function RecipientSelection({ onBack, onRecipientSelect }: RecipientSelectionProps) {
+export function RecipientSelection({ user, onBack, onRecipientSelect }: RecipientSelectionProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [savedRecipients, setSavedRecipients] = useState<Recipient[]>([]);
@@ -55,37 +57,71 @@ export function RecipientSelection({ onBack, onRecipientSelect }: RecipientSelec
     country: 'Nigeria'
   });
 
-  // Load saved recipients from localStorage
+  // Load saved recipients from localStorage (user-specific)
   useEffect(() => {
-    const saved = localStorage.getItem('saved_recipients');
-    if (saved) {
-      try {
-        const recipients = JSON.parse(saved);
-        // Migrate old recipients that might be missing required fields
-        const migratedRecipients = recipients.map((recipient: any) => {
-          // If it's a bank recipient (non-CBUSD currency) but missing account details
-          if (recipient.currency !== 'CBUSD' && (!recipient.accountNumber || !recipient.bankCode)) {
-            console.warn(`Recipient "${recipient.name}" is missing bank details. Please update this recipient.`);
-            // We can't auto-fix this as we don't have the user's actual account details
-            // But we can at least ensure the structure is consistent
-            return {
-              ...recipient,
-              accountNumber: recipient.accountNumber || null,
-              bankCode: recipient.bankCode || null,
-              bankName: recipient.bankName || 'Unknown Bank'
-            };
+    if (user?.id) {
+      const userSpecificKey = `saved_recipients_${user.id}`;
+      const globalKey = 'saved_recipients';
+      
+      // Check if user already has user-specific recipients
+      const userRecipients = localStorage.getItem(userSpecificKey);
+      
+      if (userRecipients) {
+        // User already has user-specific recipients, use them
+        try {
+          const recipients = JSON.parse(userRecipients);
+          const migratedRecipients = recipients.map((recipient: any) => {
+            if (recipient.currency !== 'CBUSD' && (!recipient.accountNumber || !recipient.bankCode)) {
+              console.warn(`Recipient "${recipient.name}" is missing bank details. Please update this recipient.`);
+              return {
+                ...recipient,
+                accountNumber: recipient.accountNumber || null,
+                bankCode: recipient.bankCode || null,
+                bankName: recipient.bankName || 'Unknown Bank'
+              };
+            }
+            return recipient;
+          });
+          setSavedRecipients(migratedRecipients);
+        } catch (error) {
+          console.error('Error loading saved recipients:', error);
+          setSavedRecipients([]);
+        }
+      } else {
+        // Check for old global recipients and migrate them for this user
+        const globalRecipients = localStorage.getItem(globalKey);
+        if (globalRecipients) {
+          try {
+            const recipients = JSON.parse(globalRecipients);
+            const migratedRecipients = recipients.map((recipient: any) => {
+              if (recipient.currency !== 'CBUSD' && (!recipient.accountNumber || !recipient.bankCode)) {
+                console.warn(`Recipient "${recipient.name}" is missing bank details. Please update this recipient.`);
+                return {
+                  ...recipient,
+                  accountNumber: recipient.accountNumber || null,
+                  bankCode: recipient.bankCode || null,
+                  bankName: recipient.bankName || 'Unknown Bank'
+                };
+              }
+              return recipient;
+            });
+            setSavedRecipients(migratedRecipients);
+            // Save them under user-specific key
+            localStorage.setItem(userSpecificKey, JSON.stringify(migratedRecipients));
+            console.log(`RecipientSelection: Migrated ${migratedRecipients.length} recipients to user-specific storage`);
+          } catch (error) {
+            console.error('Error migrating recipients:', error);
+            setSavedRecipients([]);
           }
-          return recipient;
-        });
-        setSavedRecipients(migratedRecipients);
-      } catch (error) {
-        console.error('Error loading saved recipients:', error);
-        setSavedRecipients([]);
+        } else {
+          setSavedRecipients([]);
+        }
       }
     } else {
+      // Clear recipients when no user is logged in
       setSavedRecipients([]);
     }
-  }, []);
+  }, [user?.id]);
 
   // Use only saved recipients (no mock ones)
   const allRecipients = savedRecipients;
@@ -139,7 +175,9 @@ export function RecipientSelection({ onBack, onRecipientSelect }: RecipientSelec
       
       const updatedRecipients = [...savedRecipients, recipient];
       setSavedRecipients(updatedRecipients);
-      localStorage.setItem('saved_recipients', JSON.stringify(updatedRecipients));
+      if (user?.id) {
+        localStorage.setItem(`saved_recipients_${user.id}`, JSON.stringify(updatedRecipients));
+      }
       
       toast.success('Recipient added successfully');
       setIsAddRecipientOpen(false);
@@ -168,7 +206,9 @@ export function RecipientSelection({ onBack, onRecipientSelect }: RecipientSelec
       
       const updatedRecipients = [...savedRecipients, recipient];
       setSavedRecipients(updatedRecipients);
-      localStorage.setItem('saved_recipients', JSON.stringify(updatedRecipients));
+      if (user?.id) {
+        localStorage.setItem(`saved_recipients_${user.id}`, JSON.stringify(updatedRecipients));
+      }
       
       toast.success('App recipient added successfully');
       setIsAddRecipientOpen(false);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Home, Send, Activity, User as UserIcon, Plus, Eye, EyeOff, Copy, Share2, CreditCard, Smartphone, QrCode, ArrowRight, Upload, Download, Camera, BarChart3, Moon, Sun, Building2 } from 'lucide-react';
+import { Bell, Home, Send, Activity, User as UserIcon, Plus, Eye, EyeOff, Copy, Share2, CreditCard, Smartphone, QrCode, ArrowRight, Upload, Download, Camera, BarChart3, Moon, Sun, Building2, X, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from './ui/sheet';
@@ -22,7 +22,8 @@ interface HomeDashboardProps {
   onUpdateUser: (user: User) => void;
   setTransactions: (transactions: Transaction[]) => void;
   onAddRecipient: (recipient: Recipient) => void;
-  onWithdraw?: (amount: number, bankDetails: any) => void;
+  onRemoveRecipient?: (recipientId: string) => void;
+  onWithdraw?: (amount: number, bankDetails: any, pin: string) => void;
   onDeposit?: (amount: number, currency: string) => void;
   onShowDepositModal?: (method?: string) => void;
   isDesktop?: boolean;
@@ -65,6 +66,7 @@ export function HomeDashboard({
   onUpdateUser, 
   setTransactions,
   onAddRecipient,
+  onRemoveRecipient,
   onWithdraw,
   onDeposit,
   onShowDepositModal,
@@ -77,6 +79,8 @@ export function HomeDashboard({
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
   const [selectedDepositMethod, setSelectedDepositMethod] = useState<string | null>(null);
   const [recipientType, setRecipientType] = useState<'bank' | 'phone' | null>(null);
+  const [recipientToRemove, setRecipientToRemove] = useState<Recipient | null>(null);
+  const [hoveredRecipient, setHoveredRecipient] = useState<string | null>(null);
   const [newRecipient, setNewRecipient] = useState({
     name: '',
     accountNumber: '',
@@ -147,6 +151,23 @@ export function HomeDashboard({
     if (onRecipientSelect) {
       onRecipientSelect(recipient);
     }
+  };
+
+  const handleRemoveRecipient = (recipient: Recipient, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the quick send
+    setRecipientToRemove(recipient);
+  };
+
+  const confirmRemoveRecipient = () => {
+    if (recipientToRemove && onRemoveRecipient) {
+      onRemoveRecipient(recipientToRemove.id);
+      toast.success(`${recipientToRemove.name} has been removed from your recipients`);
+      setRecipientToRemove(null);
+    }
+  };
+
+  const cancelRemoveRecipient = () => {
+    setRecipientToRemove(null);
   };
 
   const handleBankChange = (bankCode: string) => {
@@ -233,15 +254,15 @@ export function HomeDashboard({
     setIsQRScannerOpen(true);
   };
 
-  const handleWithdraw = (amount: number, bankDetails: any) => {
+  const handleWithdraw = (amount: number, selectedAccount: any, pin: string) => {
     if (onWithdraw) {
       // Call the parent's real backend withdrawal handler
-      onWithdraw(amount, bankDetails);
+      onWithdraw(amount, selectedAccount, pin);
     } else {
       // Fallback to mock implementation if no handler provided
       const withdrawalTransaction = {
         id: `WD${Date.now()}`,
-        recipient: bankDetails.bankName,
+        recipient: selectedAccount.bank_name || selectedAccount.bankName,
         recipientId: 'withdrawal',
         amount: amount.toString(),
         currency: 'CBUSD',
@@ -466,21 +487,38 @@ export function HomeDashboard({
           <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Quick Recipients</h3>
           <div className="grid grid-cols-6 gap-4">
             {allRecipients.slice(0, 6).map((recipient, index) => (
-              <button
+              <div
                 key={`desktop-${recipient.id}-${index}`}
-                onClick={() => handleQuickSend(recipient)}
-                className="flex flex-col items-center p-4 rounded-2xl hover:bg-white/30 dark:hover:bg-black/30 transition-all duration-300 group"
+                className="relative group"
+                onMouseEnter={() => setHoveredRecipient(recipient.id)}
+                onMouseLeave={() => setHoveredRecipient(null)}
               >
-                <Avatar className="w-16 h-16 mb-2">
-                  <AvatarImage src={recipient.avatar} />
-                  <AvatarFallback className="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white">
-                    {recipient.name[0]}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white transition-colors">
-                  {recipient.name}
-                </span>
-              </button>
+                <button
+                  onClick={() => handleQuickSend(recipient)}
+                  className="flex flex-col items-center p-4 rounded-2xl hover:bg-white/30 dark:hover:bg-black/30 transition-all duration-300 w-full"
+                >
+                  <Avatar className="w-16 h-16 mb-2">
+                    <AvatarImage src={recipient.avatar} />
+                    <AvatarFallback className="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white">
+                      {recipient.name[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white transition-colors">
+                    {recipient.name}
+                  </span>
+                </button>
+                
+                {/* Remove Button */}
+                {hoveredRecipient === recipient.id && (
+                  <button
+                    onClick={(e) => handleRemoveRecipient(recipient, e)}
+                    className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all duration-200 shadow-lg"
+                    title="Remove recipient"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -817,21 +855,40 @@ export function HomeDashboard({
         
         <div className="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
           {allRecipients.length > 0 ? allRecipients.slice(0, 5).map((recipient, index) => (
-            <button
+            <div
               key={`mobile-${recipient.id}-${index}`}
-              onClick={() => handleQuickSend(recipient)}
-              className="flex flex-col items-center min-w-[80px] p-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-black/20 border-2 border-gray-300/80 dark:border-gray-600/60 shadow-lg shadow-gray-200/20 dark:shadow-black/40 hover:bg-white/20 dark:hover:bg-black/30 hover:border-gray-400/90 dark:hover:border-gray-500/70 hover:shadow-xl hover:shadow-gray-300/30 dark:hover:shadow-black/50 transition-all duration-300"
+              className="relative group"
+              onTouchStart={() => setHoveredRecipient(recipient.id)}
+              onTouchEnd={() => setTimeout(() => setHoveredRecipient(null), 2000)}
+              onMouseEnter={() => setHoveredRecipient(recipient.id)}
+              onMouseLeave={() => setHoveredRecipient(null)}
             >
-              <Avatar className="w-12 h-12 mb-2">
-                <AvatarImage src={recipient.avatar} />
-                <AvatarFallback className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-                  {recipient.name[0]}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-xs text-gray-700 dark:text-gray-300 text-center">
-                {recipient.name.split(' ')[0]}
-              </span>
-            </button>
+              <button
+                onClick={() => handleQuickSend(recipient)}
+                className="flex flex-col items-center min-w-[80px] p-3 rounded-2xl backdrop-blur-md bg-white/10 dark:bg-black/20 border-2 border-gray-300/80 dark:border-gray-600/60 shadow-lg shadow-gray-200/20 dark:shadow-black/40 hover:bg-white/20 dark:hover:bg-black/30 hover:border-gray-400/90 dark:hover:border-gray-500/70 hover:shadow-xl hover:shadow-gray-300/30 dark:hover:shadow-black/50 transition-all duration-300"
+              >
+                <Avatar className="w-12 h-12 mb-2">
+                  <AvatarImage src={recipient.avatar} />
+                  <AvatarFallback className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                    {recipient.name[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-xs text-gray-700 dark:text-gray-300 text-center">
+                  {recipient.name.split(' ')[0]}
+                </span>
+              </button>
+              
+              {/* Remove Button for Mobile */}
+              {hoveredRecipient === recipient.id && (
+                <button
+                  onClick={(e) => handleRemoveRecipient(recipient, e)}
+                  className="absolute top-1 right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all duration-200 shadow-lg"
+                  title="Remove recipient"
+                >
+                  <X size={10} />
+                </button>
+              )}
+            </div>
           )) : (
             <div className="flex-1 text-center py-8">
               <p className="text-gray-500 dark:text-gray-400 text-sm">
@@ -904,6 +961,37 @@ export function HomeDashboard({
         onClose={() => setIsQRScannerOpen(false)}
         onScan={handleQRScan}
       />
+
+      {/* Remove Recipient Confirmation Dialog */}
+      <Dialog open={!!recipientToRemove} onOpenChange={(open) => !open && cancelRemoveRecipient()}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2 size={20} />
+              Remove Recipient
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove <strong>{recipientToRemove?.name}</strong> from your recipients list? 
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 mt-6">
+            <Button 
+              variant="outline" 
+              onClick={cancelRemoveRecipient}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={confirmRemoveRecipient}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+            >
+              Remove
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

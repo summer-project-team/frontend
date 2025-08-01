@@ -14,6 +14,24 @@ interface TransactionHistoryProps {
   onViewReceipt: (transaction: Transaction) => void;
 }
 
+// Currency symbol helper
+const getCurrencySymbol = (currency: string): string => {
+  const symbols: { [key: string]: string } = {
+    'USD': '$',
+    'NGN': '₦',
+    'GBP': '£',
+    'EUR': '€',
+    'CBUSD': '$',
+  };
+  return symbols[currency] || currency;
+};
+
+interface TransactionHistoryProps {
+  transactions: Transaction[];
+  onBack: () => void;
+  onViewReceipt: (transaction: Transaction) => void;
+}
+
 // Transaction categories for filtering
 const transactionCategories = [
   { value: 'all', label: 'All Categories', icon: '📌' },
@@ -218,7 +236,7 @@ export function TransactionHistory({ transactions, onBack, onViewReceipt }: Tran
                     </div>
                   </div>
                   <div className="text-right space-y-1">
-                    <p className="text-gray-800">-${transaction.amount}</p>
+                    <p className="text-gray-800">-{getCurrencySymbol(transaction.currency)}{transaction.amount}</p>
                     <p className="text-xs text-gray-600">
                       {transaction.convertedAmount} {transaction.recipientCurrency}
                     </p>

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">crossbridge</string>
+    <string name="title_activity_main">crossbridge</string>
+    <string name="package_name">com.summerproject.crossbridge</string>
+    <string name="custom_url_scheme">com.summerproject.crossbridge</string>
+</resources>

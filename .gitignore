@@ -9,6 +9,7 @@
 # Production build
 /build
 /dist
+/android
 
 # Environment variables
 .env

@@ -634,7 +634,7 @@ function App() {
       // Add withdrawal transaction to history
       const withdrawTransaction: Transaction = {
         id: withdrawResult.id,
-        recipient: `Withdraw to ${bankDetails.bankName}`,
+        recipient: `Withdraw to ${bankDetails.bank_name}`,
         recipientId: 'withdrawal',
         amount: amount.toString(),
         currency: 'CBUSD',
@@ -649,7 +649,7 @@ function App() {
         fee: withdrawResult.fee?.toString() || '0.00',
         totalPaid: withdrawResult.total?.toString() || amount.toString(),
         category: 'other',
-        note: `Withdrawal to ${bankDetails.accountName}`
+        note: `Withdrawal to ${bankDetails.account_name || bankDetails.bank_name}`
       };
       
       setTransactions(prev => [withdrawTransaction, ...prev]);

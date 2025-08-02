@@ -4,7 +4,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { toast } from 'sonner';
-import { DollarSign, AlertCircle, Landmark, Loader2, ArrowLeft, Lock } from 'lucide-react';
+import { AlertCircle, Landmark, Loader2, ArrowLeft, Lock, Shield } from 'lucide-react';
 import { bankingService, type BankAccount } from '../services/BankingService';
 import { PinInput } from './PinInput';
 
@@ -12,17 +12,20 @@ interface WithdrawDialogProps {
   isOpen: boolean;
   onClose: () => void;
   userBalance: number;
-  onWithdraw: (amount: number, selectedAccount: any, pin: string) => void;
+  onWithdraw: (amount: number, selectedAccount: any, pin: string, twoFactorCode?: string) => void;
 }
 
 export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: WithdrawDialogProps) {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [amount, setAmount] = useState('');
   const [linkedAccounts, setLinkedAccounts] = useState<BankAccount[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [twoFactorError, setTwoFactorError] = useState('');
 
   // Load linked bank accounts when dialog opens
   useEffect(() => {
@@ -49,7 +52,16 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
   };
 
   const getWithdrawalFee = (withdrawAmount: number) => {
-    return withdrawAmount * 0.02; // 2% withdrawal fee
+    return withdrawAmount * 0.004; // 0.4% withdrawal fee (matches backend)
+  };
+
+  const isHighValueWithdrawal = (amount: number) => {
+    return amount > 1000000; // Same threshold as backend
+  };
+
+  // Convert NGN to CBUSD (1500 NGN = 1 CBUSD)
+  const convertNgnToCbusd = (ngnAmount: number) => {
+    return ngnAmount / 1500;
   };
 
   const handleAmountSubmit = () => {
@@ -63,7 +75,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
       return;
     }
     if (numAmount < 10) {
-      toast.error('Minimum withdrawal amount is $10');
+      toast.error('Minimum withdrawal amount is ₦10');
       return;
     }
     
@@ -84,29 +96,25 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
       toast.error('Please select a bank account');
       return;
     }
-    setStep(3);
+    
+    const numAmount = parseFloat(amount);
+    // Check if high value withdrawal requires 2FA
+    if (isHighValueWithdrawal(numAmount)) {
+      setStep(4); // Go to 2FA step
+    } else {
+      setStep(3); // Go directly to PIN step
+    }
   };
 
-  const handlePinComplete = (enteredPin: string) => {
+  const handlePinComplete = async (enteredPin: string) => {
     setPin(enteredPin);
     setPinError('');
-  };
-
-  const handlePinClear = () => {
-    setPin('');
-    setPinError('');
-  };
-
-  const handleWithdraw = () => {
-    console.log('WithdrawDialog: handleWithdraw called');
+    
+    // Automatically trigger withdrawal when PIN is completed
+    console.log('WithdrawDialog: PIN completed, automatically triggering withdrawal');
     
     if (!selectedAccount) {
       toast.error('Please select a bank account');
-      return;
-    }
-
-    if (!pin || pin.length !== 4) {
-      setPinError('Please enter a 4-digit PIN');
       return;
     }
     
@@ -118,8 +126,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
       toast.error('Insufficient balance including fees');
       return;
     }
-
-    // Convert BankAccount to the format expected by onWithdraw
+    
     const bankDetails = {
       id: selectedAccount.id,
       account_number: selectedAccount.account_number,
@@ -129,12 +136,86 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
       account_type: selectedAccount.account_type,
       currency: selectedAccount.currency
     };
+    
+    console.log('WithdrawDialog: Setting isLoading to true');
+    setIsLoading(true);
+    
+    try {
+      console.log('WithdrawDialog: Calling onWithdraw with:', { numAmount, bankDetails, pin: enteredPin, twoFactorCode });
+      await onWithdraw(numAmount, bankDetails, enteredPin, twoFactorCode || undefined);
+      console.log('WithdrawDialog: onWithdraw completed successfully');
+      onClose();
+      resetForm();
+    } catch (error) {
+      console.error('WithdrawDialog: onWithdraw failed:', error);
+      toast.error('Withdrawal failed. Please try again.');
+      // Clear the PIN so user can try again
+      setPin('');
+    } finally {
+      console.log('WithdrawDialog: Setting isLoading to false');
+      setIsLoading(false);
+    }
+  };
 
-    console.log('WithdrawDialog: Calling onWithdraw with:', { numAmount, bankDetails, pin });
-    onWithdraw(numAmount, bankDetails, pin);
-    console.log('WithdrawDialog: onWithdraw called, closing dialog');
-    onClose();
-    resetForm();
+  const handleTwoFactorNext = () => {
+    if (!twoFactorCode || twoFactorCode.length !== 6) {
+      setTwoFactorError('Please enter a valid 6-digit 2FA code');
+      return;
+    }
+    setTwoFactorError('');
+    setStep(3); // Go to PIN step
+  };
+
+  const handlePinClear = () => {
+    setPin('');
+    setPinError('');
+  };
+
+  const handleWithdraw = async () => {
+    console.log('WithdrawDialog: handleWithdraw called');
+    console.log('WithdrawDialog: Current state - pin:', pin, 'pin.length:', pin?.length, 'isLoading:', isLoading);
+    
+    if (!selectedAccount) {
+      toast.error('Please select a bank account');
+      return;
+    }
+    if (!pin || pin.length !== 4) {
+      setPinError('Please enter a 4-digit PIN');
+      return;
+    }
+    const numAmount = parseFloat(amount);
+    const fee = getWithdrawalFee(numAmount);
+    const totalDeduction = numAmount + fee;
+    if (totalDeduction > userBalance) {
+      toast.error('Insufficient balance including fees');
+      return;
+    }
+    const bankDetails = {
+      id: selectedAccount.id,
+      account_number: selectedAccount.account_number,
+      bank_name: selectedAccount.bank_name,
+      bank_code: selectedAccount.bank_code,
+      account_name: selectedAccount.account_name,
+      account_type: selectedAccount.account_type,
+      currency: selectedAccount.currency
+    };
+    
+    console.log('WithdrawDialog: Setting isLoading to true');
+    setIsLoading(true);
+    
+    try {
+      console.log('WithdrawDialog: Calling onWithdraw with:', { numAmount, bankDetails, pin });
+      await onWithdraw(numAmount, bankDetails, pin);
+      console.log('WithdrawDialog: onWithdraw completed successfully');
+      onClose();
+      resetForm();
+    } catch (error) {
+      console.error('WithdrawDialog: onWithdraw failed:', error);
+      toast.error('Withdrawal failed. Please try again.');
+    } finally {
+      console.log('WithdrawDialog: Setting isLoading to false');
+      setIsLoading(false);
+    }
   };
 
   const resetForm = () => {
@@ -143,6 +224,9 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
     setSelectedAccount(null);
     setPin('');
     setPinError('');
+    setTwoFactorCode('');
+    setTwoFactorError('');
+    setIsLoading(false);
   };
 
   const handleClose = () => {
@@ -156,7 +240,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
       <div className="text-center p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/30 dark:border-blue-500/30">
         <p className="text-sm text-blue-700 dark:text-blue-300 mb-1">Available Balance</p>
         <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">
-          ${userBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          ₦{userBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
         </p>
       </div>
 
@@ -166,7 +250,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
           Withdrawal Amount
         </Label>
         <div className="relative mt-1">
-          <DollarSign size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-lg font-semibold">₦</span>
           <Input
             id="amount"
             type="number"
@@ -188,17 +272,26 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
           <div className="space-y-1 text-sm">
             <div className="flex justify-between">
               <span className="text-yellow-700 dark:text-yellow-300">Withdrawal Amount:</span>
-              <span className="text-yellow-800 dark:text-yellow-200">${parseFloat(amount).toFixed(2)}</span>
+              <span className="text-yellow-800 dark:text-yellow-200">₦{parseFloat(amount).toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-yellow-700 dark:text-yellow-300">Processing Fee (2%):</span>
-              <span className="text-yellow-800 dark:text-yellow-200">${getWithdrawalFee(parseFloat(amount)).toFixed(2)}</span>
+              <span className="text-yellow-700 dark:text-yellow-300">Processing Fee (0.4%):</span>
+              <span className="text-yellow-800 dark:text-yellow-200">₦{getWithdrawalFee(parseFloat(amount)).toFixed(2)}</span>
             </div>
             <hr className="border-yellow-300/50" />
             <div className="flex justify-between font-medium">
-              <span className="text-yellow-800 dark:text-yellow-200">Total Deduction:</span>
-              <span className="text-yellow-800 dark:text-yellow-200">${(parseFloat(amount) + getWithdrawalFee(parseFloat(amount))).toFixed(2)}</span>
+              <span className="text-yellow-800 dark:text-yellow-200">Total Deduction (CBUSD):</span>
+              <span className="text-yellow-800 dark:text-yellow-200">{convertNgnToCbusd(parseFloat(amount) + getWithdrawalFee(parseFloat(amount))).toFixed(4)} CBUSD</span>
             </div>
+            {isHighValueWithdrawal(parseFloat(amount)) && (
+              <>
+                <hr className="border-yellow-300/50" />
+                <div className="flex items-center gap-2 pt-1">
+                  <Shield size={12} className="text-yellow-600" />
+                  <span className="text-xs text-yellow-700 dark:text-yellow-300">2FA required for high-value withdrawal</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -234,7 +327,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
         </Button>
         <div>
           <p className="text-sm text-gray-600 dark:text-gray-400">Withdrawing</p>
-          <p className="font-semibold text-gray-800 dark:text-white">${parseFloat(amount).toFixed(2)}</p>
+          <p className="font-semibold text-gray-800 dark:text-white">₦{parseFloat(amount).toFixed(2)}</p>
         </div>
       </div>
 
@@ -337,7 +430,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
         </Button>
         <div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Withdrawing ${parseFloat(amount).toFixed(2)} to
+            Withdrawing ₦{parseFloat(amount).toFixed(2)} to
           </p>
           <p className="font-semibold text-gray-800 dark:text-white">
             {selectedAccount?.bank_name}
@@ -356,22 +449,111 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
             Enter Transaction PIN
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Please enter your 4-digit transaction PIN to confirm the withdrawal
+            {isLoading 
+              ? 'Processing your withdrawal...' 
+              : 'Please enter your 4-digit transaction PIN to confirm the withdrawal'
+            }
+          </p>
+        </div>
+
+        {isLoading ? (
+          <div className="flex flex-col items-center space-y-4 py-8">
+            <Loader2 size={32} className="animate-spin text-blue-600" />
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Processing withdrawal...
+            </p>
+          </div>
+        ) : (
+          <div className="px-8">
+            <PinInput
+              onPinComplete={handlePinComplete}
+              onClear={handlePinClear}
+              error={pinError}
+              title="Enter Transaction PIN"
+              subtitle="Withdrawal will be processed automatically once PIN is entered"
+            />
+          </div>
+        )}
+
+        {pinError && (
+          <p className="text-red-500 text-sm mt-2">{pinError}</p>
+        )}
+      </div>
+
+      <div className="flex gap-3 pt-4">
+        <Button
+          onClick={() => setStep(isHighValueWithdrawal(parseFloat(amount)) ? 4 : 2)}
+          variant="outline"
+          disabled={isLoading}
+          className="flex-1 bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white hover:bg-gray-200/30 dark:hover:bg-gray-900/50 disabled:opacity-50"
+        >
+          Back
+        </Button>
+        <div className="flex-1 flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+          {isLoading ? 'Processing...' : 'Enter PIN above to confirm'}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep4 = () => (
+    <div className="space-y-6">
+      {/* Back Button */}
+      <div className="flex items-center gap-3 mb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setStep(2)}
+          className="p-2"
+        >
+          <ArrowLeft size={16} />
+        </Button>
+        <div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            High-value withdrawal: ₦{parseFloat(amount).toFixed(2)}
+          </p>
+          <p className="font-semibold text-gray-800 dark:text-white">
+            Two-factor authentication required
+          </p>
+        </div>
+      </div>
+
+      {/* 2FA Entry */}
+      <div className="text-center space-y-4">
+        <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto">
+          <Shield size={24} className="text-orange-600 dark:text-orange-400" />
+        </div>
+        
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+            Two-Factor Authentication
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            For security, withdrawals over ₦1,000,000 require 2FA verification
           </p>
         </div>
 
         <div className="px-8">
-          <PinInput
-            onPinComplete={handlePinComplete}
-            onClear={handlePinClear}
-            error={pinError}
-            title="Enter Transaction PIN"
-            subtitle="Please enter your 4-digit transaction PIN to confirm the withdrawal"
+          <Label htmlFor="twoFactorCode" className="text-gray-800 dark:text-white">
+            6-Digit Verification Code
+          </Label>
+          <Input
+            id="twoFactorCode"
+            type="text"
+            value={twoFactorCode}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+              setTwoFactorCode(value);
+              setTwoFactorError('');
+            }}
+            placeholder="000000"
+            className="text-center text-lg font-mono tracking-widest bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white mt-2"
+            maxLength={6}
           />
         </div>
 
-        {pinError && (
-          <p className="text-red-500 text-sm mt-2">{pinError}</p>
+        {twoFactorError && (
+          <p className="text-red-500 text-sm mt-2">{twoFactorError}</p>
         )}
       </div>
 
@@ -384,11 +566,11 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
           Back
         </Button>
         <Button
-          onClick={handleWithdraw}
-          disabled={!pin || pin.length !== 4}
+          onClick={handleTwoFactorNext}
+          disabled={!twoFactorCode || twoFactorCode.length !== 6}
           className="flex-1 card-gradient hover:opacity-90 text-white disabled:opacity-50"
         >
-          Confirm Withdrawal
+          Continue
         </Button>
       </div>
     </div>
@@ -399,6 +581,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
       case 1: return 'Withdraw Funds';
       case 2: return 'Select Account';
       case 3: return 'Enter PIN';
+      case 4: return 'Two-Factor Auth';
       default: return 'Withdraw Funds';
     }
   };
@@ -415,6 +598,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
         {step === 1 && renderStep1()}
         {step === 2 && renderStep2()}
         {step === 3 && renderStep3()}
+        {step === 4 && renderStep4()}
       </DialogContent>
     </Dialog>
   );

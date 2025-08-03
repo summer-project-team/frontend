@@ -631,8 +631,9 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
     </div>
   );
 
-  const renderPaymentView = () => (
-    <div className="px-6 space-y-6">
+  const renderPaymentView = () => {
+    return (
+      <div className="px-6 space-y-6">
       {/* Cards Section - Note about backend limitation */}
       <div className="backdrop-blur-md bg-white/25 rounded-2xl p-6 border border-white/30">
         <h3 className="text-lg mb-4 text-gray-800">Cards</h3>
@@ -646,7 +647,7 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
         </div>
       </div>
 
-      {/* Bank Accounts Section - Real implementation */}
+      {/* Bank Accounts Section - Consistent styling */}
       <div className="backdrop-blur-md bg-white/25 rounded-2xl p-6 border border-white/30">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg text-gray-800">Bank Accounts</h3>
@@ -657,59 +658,55 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
         
         <div className="space-y-4">
           {bankAccounts.length === 0 && !isLoadingAccounts ? (
-            <div className="backdrop-blur-sm bg-white/30 rounded-xl p-6 border border-white/20 text-center">
+            <div className="text-center py-8">
               <Landmark size={40} className="text-gray-400 mx-auto mb-3" />
               <p className="text-gray-600 mb-2">No bank accounts linked</p>
               <p className="text-sm text-gray-500">Add your first bank account to get started</p>
             </div>
           ) : (
             bankAccounts.map((account) => (
-              <div key={account.id} className="backdrop-blur-sm bg-white/30 rounded-xl p-4 border border-white/20">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-green-700 rounded-xl flex items-center justify-center">
-                      <Landmark size={20} className="text-white" />
-                    </div>
-                    <div>
-                      <p className="text-gray-800 font-medium">{account.bank_name}</p>
-                      <p className="text-sm text-gray-600">
-                        {bankingService.formatAccountNumber(account.account_number)} • {account.account_type}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {account.account_name} • {account.currency}
-                        {account.is_verified && (
-                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800">
-                            Verified
-                          </span>
-                        )}
-                      </p>
-                    </div>
+              <div key={account.id} className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
+                    <Landmark size={18} className="text-green-600" />
                   </div>
-                  <button 
-                    onClick={() => setAccountToRemove(account.id)}
-                    className="text-red-600 hover:text-red-700 transition-colors p-2"
-                    disabled={isRemovingAccount}
-                  >
-                    {isRemovingAccount && accountToRemove === account.id ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <Trash2 size={16} />
-                    )}
-                  </button>
+                  <div>
+                    <p className="text-gray-800 font-medium">{account.bank_name}</p>
+                    <p className="text-sm text-gray-600">
+                      {bankingService.formatAccountNumber(account.account_number)} • {account.account_type}
+                      {account.is_verified && (
+                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-green-100 text-green-800">
+                          ✓
+                        </span>
+                      )}
+                    </p>
+                  </div>
                 </div>
+                <button 
+                  onClick={() => setAccountToRemove(account.id)}
+                  className="text-red-600 hover:text-red-700 transition-colors p-2"
+                  disabled={isRemovingAccount}
+                >
+                  {isRemovingAccount && accountToRemove === account.id ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Trash2 size={16} />
+                  )}
+                </button>
               </div>
             ))
           )}
+        </div>
 
-          <Dialog open={showAddAccountDialog} onOpenChange={setShowAddAccountDialog}>
-            <DialogTrigger asChild>
-              <button className="w-full backdrop-blur-sm bg-white/30 rounded-xl p-4 border border-white/20 hover:bg-white/40 transition-all duration-300 border-dashed">
-                <div className="flex items-center justify-center space-x-2">
-                  <Plus size={20} className="text-gray-600" />
-                  <span className="text-gray-600">Add Bank Account</span>
-                </div>
+        <Dialog open={showAddAccountDialog} onOpenChange={setShowAddAccountDialog}>
+          <DialogTrigger asChild>
+            <div className="pt-4 border-t border-white/20">
+              <button className="w-full flex items-center justify-center space-x-2 py-3 text-blue-600 hover:text-blue-500 transition-colors">
+                <Plus size={18} />
+                <span className="font-medium">Add Bank Account</span>
               </button>
-            </DialogTrigger>
+            </div>
+          </DialogTrigger>
             
             <DialogContent className="backdrop-blur-md bg-white/90">
               <DialogHeader>
@@ -855,47 +852,47 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
             </DialogContent>
           </Dialog>
         </div>
-      </div>
 
-      {/* Remove Account Confirmation */}
-      <Dialog open={accountToRemove !== null} onOpenChange={() => setAccountToRemove(null)}>
-        <DialogContent className="backdrop-blur-md bg-white/90">
-          <DialogHeader>
-            <DialogTitle>Remove Bank Account</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to remove this bank account? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="flex space-x-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setAccountToRemove(null)}
-              className="flex-1"
-              disabled={isRemovingAccount}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => accountToRemove && handleRemoveAccount(accountToRemove)}
-              className="flex-1"
-              disabled={isRemovingAccount}
-            >
-              {isRemovingAccount ? (
-                <>
-                  <Loader2 size={16} className="animate-spin mr-2" />
-                  Removing...
-                </>
-              ) : (
-                'Remove Account'
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+        {/* Remove Account Confirmation */}
+        <Dialog open={accountToRemove !== null} onOpenChange={() => setAccountToRemove(null)}>
+          <DialogContent className="backdrop-blur-md bg-white/90">
+            <DialogHeader>
+              <DialogTitle>Remove Bank Account</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to remove this bank account? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="flex space-x-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setAccountToRemove(null)}
+                className="flex-1"
+                disabled={isRemovingAccount}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => accountToRemove && handleRemoveAccount(accountToRemove)}
+                className="flex-1"
+                disabled={isRemovingAccount}
+              >
+                {isRemovingAccount ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin mr-2" />
+                    Removing...
+                  </>
+                ) : (
+                  'Remove Account'
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  };
 
   const renderSettingsView = () => (
     <div className="px-6 space-y-6">

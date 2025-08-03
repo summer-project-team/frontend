@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Transaction } from '../App';
 import { renderCustomAvatar } from './AvatarCustomization';
+import { formatTransactionAmount } from '../utils/currency';
 
 interface TransactionHistoryProps {
   transactions: Transaction[];
@@ -236,7 +237,7 @@ export function TransactionHistory({ transactions, onBack, onViewReceipt }: Tran
                     </div>
                   </div>
                   <div className="text-right space-y-1">
-                    <p className="text-gray-800">-{getCurrencySymbol(transaction.currency)}{transaction.amount}</p>
+                    <p className="text-gray-800">{formatTransactionAmount(transaction)}</p>
                     <p className="text-xs text-gray-600">
                       {transaction.convertedAmount} {transaction.recipientCurrency}
                     </p>

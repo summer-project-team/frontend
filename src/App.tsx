@@ -1,18 +1,32 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { HomeDashboard } from './components/HomeDashboard';
+import { ModernHomeDashboard } from './components/ModernHomeDashboard';
 import { RecipientSelection } from './components/RecipientSelection';
+import { ModernRecipientSelection } from './components/ModernRecipientSelection';
 import { SendAmount } from './components/SendAmount';
+import { ModernSendAmount } from './components/ModernSendAmount';
+import { ProfileScreen } from './components/ProfileScreen';
+import { ModernProfileScreen } from './components/ModernProfileScreen';
 import { TransactionResult } from './components/TransactionResult';
 import { LoginScreen } from './components/LoginScreen';
+import { ModernLoginScreen } from './components/ModernLoginScreen';
 import { SignupScreen } from './components/SignupScreen';
-import { ProfileScreen } from './components/ProfileScreen';
+import { ModernSignupScreen } from './components/ModernSignupScreen';
 import { TransactionHistory } from './components/TransactionHistory';
+import { ModernTransactionHistory } from './components/ModernTransactionHistory';
 import { ReceiptScreen } from './components/ReceiptScreen';
 import { NotificationScreen } from './components/NotificationScreen';
+import { ModernNotificationScreen } from './components/ModernNotificationScreen';
 import { AnalyticsScreen } from './components/AnalyticsScreen';
+import { ModernAnalyticsScreen } from './components/ModernAnalyticsScreen';
+import { ModernBankAccounts } from './components/ModernBankAccounts';
+import { ModernWithdrawScreen } from './components/ModernWithdrawScreen';
+import { ModernAddMoneyScreen } from './components/ModernAddMoneyScreen';
+import { ModernPinScreen } from './components/ModernPinScreen';
 import { DepositAmountModal } from './components/DepositAmountModal';
 import { DepositInstructions } from './components/DepositInstructions';
 import { QRScanner } from './components/QRScanner';
+import { SplashScreen } from './components/SplashScreen';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ExchangeRateService } from './services/ExchangeRateService';
 import { NotificationService } from './services/NotificationService';
@@ -55,6 +69,7 @@ export type Transaction = {
 export type User = {
   id: string;
   name: string;
+  first_name?: string;
   email: string;
   avatar: string;
   balance: number;
@@ -76,7 +91,11 @@ export type Screen =
   | 'receipt'
   | 'notifications'
   | 'analytics'
-  | 'deposit-instructions';
+  | 'deposit-instructions'
+  | 'withdraw'
+  | 'bank-accounts'
+  | 'add-money'
+  | 'pin';
 
 // Theme Context
 type Theme = 'light' | 'dark';
@@ -96,6 +115,8 @@ export const useTheme = () => {
 };
 
 function App() {
+  // Show splash screen every time app opens (good for mobile apps)
+  const [showSplash, setShowSplash] = useState(true);
   const [currentScreen, setCurrentScreen] = useState<Screen>('login');
   const [user, setUser] = useState<User | null>(null);
   const [selectedRecipient, setSelectedRecipient] = useState<Recipient | null>(null);
@@ -105,12 +126,24 @@ function App() {
   const [exchangeRates, setExchangeRates] = useState<{ [key: string]: number }>({});
   const [theme, setTheme] = useState<Theme>('light');
   const [recipients, setRecipients] = useState<Recipient[]>([]);
+  const [useModernDesign, setUseModernDesign] = useState(true); // Default to modern design
   
   // Deposit flow state
   const [isDepositAmountModalOpen, setIsDepositAmountModalOpen] = useState(false);
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
   const [selectedDepositMethod, setSelectedDepositMethod] = useState<string | null>(null);
   const [depositData, setDepositData] = useState<any>(null);
+
+  // PIN screen state
+  const [pinScreenConfig, setPinScreenConfig] = useState<{
+    purpose: 'verify' | 'setup' | 'change';
+    title?: string;
+    subtitle?: string;
+    requireCurrentPin?: boolean;
+    onSuccess?: (pin: string) => void;
+    onCurrentPinVerified?: () => void;
+    returnScreen?: Screen;
+  } | null>(null);
 
   // Initialize exchange rates and start real-time updates
   useEffect(() => {
@@ -204,6 +237,19 @@ function App() {
 
   const navigateTo = (screen: Screen) => {
     setCurrentScreen(screen);
+  };
+
+  const navigateToPin = (config: {
+    purpose: 'verify' | 'setup' | 'change';
+    title?: string;
+    subtitle?: string;
+    requireCurrentPin?: boolean;
+    onSuccess?: (pin: string) => void;
+    onCurrentPinVerified?: () => void;
+    returnScreen?: Screen;
+  }) => {
+    setPinScreenConfig(config);
+    setCurrentScreen('pin');
   };
 
   const handleLogin = async (userData: User) => {
@@ -581,7 +627,7 @@ function App() {
           recipient: `Deposit from ${depositData.currency}`,
           recipientId: 'deposit',
           amount: depositData.amount.toString(),
-          currency: 'CBUSD',
+          currency: depositData.currency, // Use the actual deposit currency
           convertedAmount: depositData.amount.toString(),
           recipientCurrency: 'CBUSD',
           status: 'received',
@@ -697,6 +743,11 @@ function App() {
 
   return (
     <ThemeContext.Provider value={themeContextValue}>
+      {/* Splash Screen */}
+      {showSplash && (
+        <SplashScreen onComplete={() => setShowSplash(false)} />
+      )}
+      
       <div className="min-h-screen bg-background relative">
         {/* Responsive background with mobile-optimized sizes */}
         <div className="fixed top-0 left-0 w-40 h-40 sm:w-52 sm:h-52 md:w-64 md:h-64 lg:w-72 lg:h-72 xl:w-80 xl:h-80 bg-blue-100/30 dark:bg-purple-900/20 rounded-full blur-3xl"></div>
@@ -709,50 +760,85 @@ function App() {
             <div className="w-full mx-auto xl:max-w-xl xl:mx-auto">
                           <div className="px-1 sm:px-2 md:px-4 lg:px-6 h-full overflow-x-auto">
                 {currentScreen === 'login' && (
-                  <LoginScreen 
+                  <ModernLoginScreen 
                     onLogin={handleLogin} 
                     onSwitchToSignup={() => navigateTo('signup')} 
                   />
                 )}
                 {currentScreen === 'signup' && (
-                  <SignupScreen 
+                  <ModernSignupScreen 
                     onSignup={handleSignup} 
                     onSwitchToLogin={() => navigateTo('login')} 
                   />
                 )}
                 {currentScreen === 'home' && user && (
-                  <HomeDashboard 
-                    user={user}
-                    transactions={transactions}
-                    recipients={recipients}
-                    onSendMoney={() => navigateTo('recipients')}
-                    onNavigate={navigateTo}
-                    onRecipientSelect={handleQuickSend}
-                    onUpdateUser={setUser}
-                    setTransactions={setTransactions}
-                    onAddRecipient={handleAddRecipient}
-                    onRemoveRecipient={handleRemoveRecipient}
-                    onWithdraw={handleWithdraw}
-                    onDeposit={handleDeposit}
-                    onShowDepositModal={handleShowDepositModal}
-                  />
+                  useModernDesign ? (
+                    <ModernHomeDashboard 
+                      user={user}
+                      transactions={transactions}
+                      recipients={recipients}
+                      onSendMoney={() => navigateTo('recipients')}
+                      onNavigate={navigateTo}
+                      onRecipientSelect={handleQuickSend}
+                      onUpdateUser={setUser}
+                      setTransactions={setTransactions}
+                      onAddRecipient={handleAddRecipient}
+                      onRemoveRecipient={handleRemoveRecipient}
+                    />
+                  ) : (
+                    <HomeDashboard 
+                      user={user}
+                      transactions={transactions}
+                      recipients={recipients}
+                      onSendMoney={() => navigateTo('recipients')}
+                      onNavigate={navigateTo}
+                      onRecipientSelect={handleQuickSend}
+                      onUpdateUser={setUser}
+                      setTransactions={setTransactions}
+                      onAddRecipient={handleAddRecipient}
+                      onRemoveRecipient={handleRemoveRecipient}
+                      onWithdraw={handleWithdraw}
+                      onDeposit={handleDeposit}
+                      onShowDepositModal={handleShowDepositModal}
+                    />
+                  )
                 )}
                 {currentScreen === 'recipients' && (
-                  <RecipientSelection
-                    user={user}
-                    onBack={() => navigateTo('home')}
-                    onRecipientSelect={handleRecipientSelect}
-                  />
+                  useModernDesign ? (
+                    <ModernRecipientSelection
+                      user={user}
+                      onBack={() => navigateTo('home')}
+                      onRecipientSelect={handleRecipientSelect}
+                    />
+                  ) : (
+                    <RecipientSelection
+                      user={user}
+                      onBack={() => navigateTo('home')}
+                      onRecipientSelect={handleRecipientSelect}
+                    />
+                  )
                 )}
                 {currentScreen === 'amount' && selectedRecipient && (
-                  <SendAmount
-                    recipient={selectedRecipient}
-                    type={selectedRecipient.currency === 'CBUSD' ? 'app_transfer' : 'bank_withdrawal'}
-                    exchangeRates={exchangeRates}
-                    onBack={() => navigateTo('recipients')}
-                    onConfirm={handleAmountConfirm}
-                    onError={handleTransactionError}
-                  />
+                  useModernDesign ? (
+                    <ModernSendAmount
+                      recipient={selectedRecipient}
+                      type={selectedRecipient.currency === 'CBUSD' ? 'app_transfer' : 'bank_withdrawal'}
+                      exchangeRates={exchangeRates}
+                      onBack={() => navigateTo('recipients')}
+                      onConfirm={handleAmountConfirm}
+                      onError={handleTransactionError}
+                      onNavigateToPin={navigateToPin}
+                    />
+                  ) : (
+                    <SendAmount
+                      recipient={selectedRecipient}
+                      type={selectedRecipient.currency === 'CBUSD' ? 'app_transfer' : 'bank_withdrawal'}
+                      exchangeRates={exchangeRates}
+                      onBack={() => navigateTo('recipients')}
+                      onConfirm={handleAmountConfirm}
+                      onError={handleTransactionError}
+                    />
+                  )
                 )}
                 {(currentScreen === 'success' || currentScreen === 'failure') && currentTransaction && (
                   <TransactionResult
@@ -764,19 +850,38 @@ function App() {
                   />
                 )}
                 {currentScreen === 'profile' && user && (
-                  <ProfileScreen
-                    user={user}
-                    onBack={() => navigateTo('home')}
-                    onLogout={handleLogout}
-                    onUpdateUser={setUser}
-                  />
+                  useModernDesign ? (
+                    <ModernProfileScreen
+                      user={user}
+                      onBack={() => navigateTo('home')}
+                      onLogout={handleLogout}
+                      onUpdateUser={setUser}
+                      onNavigate={navigateTo}
+                      onNavigateToPin={navigateToPin}
+                    />
+                  ) : (
+                    <ProfileScreen
+                      user={user}
+                      onBack={() => navigateTo('home')}
+                      onLogout={handleLogout}
+                      onUpdateUser={setUser}
+                    />
+                  )
                 )}
                 {currentScreen === 'history' && (
-                  <TransactionHistory
-                    transactions={transactions}
-                    onBack={() => navigateTo('home')}
-                    onViewReceipt={viewReceipt}
-                  />
+                  useModernDesign ? (
+                    <ModernTransactionHistory
+                      transactions={transactions}
+                      onBack={() => navigateTo('home')}
+                      onViewReceipt={viewReceipt}
+                    />
+                  ) : (
+                    <TransactionHistory
+                      transactions={transactions}
+                      onBack={() => navigateTo('home')}
+                      onViewReceipt={viewReceipt}
+                    />
+                  )
                 )}
                 {currentScreen === 'receipt' && currentTransaction && (
                   <ReceiptScreen
@@ -786,12 +891,12 @@ function App() {
                   />
                 )}
                 {currentScreen === 'notifications' && (
-                  <NotificationScreen
+                  <ModernNotificationScreen
                     onBack={() => navigateTo('home')}
                   />
                 )}
                 {currentScreen === 'analytics' && (
-                  <AnalyticsScreen
+                  <ModernAnalyticsScreen
                     onBack={() => navigateTo('home')}
                   />
                 )}
@@ -801,6 +906,114 @@ function App() {
                     depositData={depositData}
                     onPaymentConfirm={handleDepositPaymentConfirm}
                     user={user}
+                  />
+                )}
+                {currentScreen === 'withdraw' && user && (
+                  <ModernWithdrawScreen
+                    userBalance={user.balance}
+                    onBack={() => navigateTo('home')}
+                    onWithdraw={async (amount, selectedAccount, pin, twoFactorCode) => {
+                      try {
+                        // Handle withdrawal logic here
+                        const newTransaction = {
+                          id: `wit_${Date.now()}`,
+                          recipient: `${selectedAccount.bankName} - ${selectedAccount.accountNumber}`,
+                          recipientId: 'withdrawal',
+                          amount: amount.toString(),
+                          currency: 'NGN',
+                          convertedAmount: (amount / 1500).toString(), // Convert to CBUSD
+                          recipientCurrency: 'CBUSD',
+                          status: 'completed' as const,
+                          date: new Date().toLocaleDateString(),
+                          timestamp: Date.now(),
+                          avatar: '🏦',
+                          referenceNumber: `WIT${Date.now()}`,
+                          exchangeRate: 1500,
+                          fee: (amount * 0.004).toString(),
+                          totalPaid: (amount + (amount * 0.004)).toString(),
+                          type: 'withdrawal' as const
+                        };
+                        setCurrentTransaction(newTransaction);
+                        navigateTo('success');
+                      } catch (error) {
+                        console.error('Withdrawal failed:', error);
+                        const failedTransaction = {
+                          id: `wit_${Date.now()}`,
+                          recipient: `${selectedAccount.bankName} - ${selectedAccount.accountNumber}`,
+                          recipientId: 'withdrawal',
+                          amount: amount.toString(),
+                          currency: 'NGN',
+                          convertedAmount: (amount / 1500).toString(),
+                          recipientCurrency: 'CBUSD',
+                          status: 'failed' as const,
+                          date: new Date().toLocaleDateString(),
+                          timestamp: Date.now(),
+                          avatar: '🏦',
+                          referenceNumber: `WIT${Date.now()}`,
+                          exchangeRate: 1500,
+                          fee: (amount * 0.004).toString(),
+                          totalPaid: (amount + (amount * 0.004)).toString(),
+                          type: 'withdrawal' as const
+                        };
+                        setCurrentTransaction(failedTransaction);
+                        navigateTo('failure');
+                      }
+                    }}
+                    onNavigateToPin={navigateToPin}
+                  />
+                )}
+                {currentScreen === 'bank-accounts' && user && (
+                  <ModernBankAccounts
+                    userId={user.id}
+                    onBack={() => navigateTo('home')}
+                  />
+                )}
+                {currentScreen === 'add-money' && user && (
+                  <ModernAddMoneyScreen
+                    user={user}
+                    onBack={() => navigateTo('home')}
+                    onComplete={(amount, currency, method) => {
+                      // Handle successful deposit initiation
+                      const newTransaction = {
+                        id: `dep_${Date.now()}`,
+                        recipient: 'Wallet Deposit',
+                        recipientId: 'deposit',
+                        amount: amount.toString(),
+                        currency: currency,
+                        convertedAmount: amount.toString(),
+                        recipientCurrency: currency,
+                        status: 'pending' as const,
+                        date: new Date().toLocaleDateString(),
+                        timestamp: Date.now(),
+                        avatar: '💰',
+                        referenceNumber: `DEP${Date.now()}`,
+                        exchangeRate: 1,
+                        fee: '0',
+                        totalPaid: amount.toString(),
+                        type: 'deposit' as const
+                      };
+                      setCurrentTransaction(newTransaction);
+                      navigateTo('success');
+                    }}
+                  />
+                )}
+                {currentScreen === 'pin' && pinScreenConfig && (
+                  <ModernPinScreen
+                    onBack={() => {
+                      setPinScreenConfig(null);
+                      navigateTo(pinScreenConfig.returnScreen || 'home');
+                    }}
+                    onSuccess={(pin) => {
+                      const config = pinScreenConfig;
+                      setPinScreenConfig(null);
+                      config.onSuccess?.(pin);
+                      navigateTo(config.returnScreen || 'home');
+                    }}
+                    title={pinScreenConfig.title}
+                    subtitle={pinScreenConfig.subtitle}
+                    purpose={pinScreenConfig.purpose}
+                    requireCurrentPin={pinScreenConfig.requireCurrentPin}
+                    onCurrentPinVerified={pinScreenConfig.onCurrentPinVerified}
                   />
                 )}
               </div>
@@ -895,7 +1108,7 @@ function App() {
               {currentScreen === 'login' && (
                 <div className="flex items-center justify-center h-full p-8">
                   <div className="w-full max-w-lg">
-                    <LoginScreen 
+                    <ModernLoginScreen 
                       onLogin={handleLogin} 
                       onSwitchToSignup={() => navigateTo('signup')} 
                     />
@@ -905,7 +1118,7 @@ function App() {
               {currentScreen === 'signup' && (
                 <div className="flex items-center justify-center h-full p-8">
                   <div className="w-full max-w-lg">
-                    <SignupScreen 
+                    <ModernSignupScreen 
                       onSignup={handleSignup} 
                       onSwitchToLogin={() => navigateTo('login')} 
                     />
@@ -991,12 +1204,12 @@ function App() {
                 />
               )}
               {currentScreen === 'notifications' && (
-                <NotificationScreen
+                <ModernNotificationScreen
                   onBack={() => navigateTo('home')}
                 />
               )}
               {currentScreen === 'analytics' && (
-                <AnalyticsScreen
+                <ModernAnalyticsScreen
                   onBack={() => navigateTo('home')}
                 />
               )}

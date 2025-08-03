@@ -11,6 +11,7 @@ import { useTheme } from '../App';
 import { WithdrawDialog } from './WithdrawDialog';
 import { QRScanner } from './QRScanner';
 import { Transaction, User, Screen, Recipient } from '../App';
+import { formatTransactionAmount } from '../utils/currency';
 
 interface HomeDashboardProps {
   user: User;
@@ -556,7 +557,7 @@ export function HomeDashboard({
                         ? 'text-green-600 dark:text-green-400' 
                         : 'text-red-600 dark:text-red-400'
                     }`}>
-                      {transaction.type === 'deposit' || transaction.status === 'received' || transaction.recipient.includes('Deposit') ? '+' : '-'}${transaction.amount}
+                      {formatTransactionAmount(transaction)}
                     </p>
                     <div className={`inline-flex px-2 py-1 rounded-full text-xs ${
                       transaction.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
@@ -592,10 +593,10 @@ export function HomeDashboard({
   return (
     <div className="h-full flex flex-col bg-background text-foreground overflow-hidden relative px-2">
       {/* Mobile Header - Uses parent container's padding */}
-      <div className="flex items-center justify-between py-4 pt-12">
+      <div className="flex items-center justify-between py-4 status-bar-safe">
         <button
           onClick={() => onNavigate('profile')}
-          className="backdrop-blur-md bg-white/20 dark:bg-white/10 rounded-full p-1 border border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/20 transition-all duration-300"
+          className="backdrop-blur-md bg-white/20 dark:bg-white/10 rounded-full p-1 border border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/20 transition-all duration-300 no-tap-highlight haptic-light"
         >
           <Avatar className="w-10 h-10">
             <AvatarImage src={user.avatar} />
@@ -608,7 +609,7 @@ export function HomeDashboard({
         <div className="flex items-center gap-2">
           <button
             onClick={toggleTheme}
-            className="backdrop-blur-md bg-white/20 dark:bg-white/10 rounded-full p-3 border border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/20 transition-all duration-300"
+            className="backdrop-blur-md bg-white/20 dark:bg-white/10 rounded-full p-3 border border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/20 transition-all duration-300 no-tap-highlight haptic-light"
           >
             {theme === 'light' ? (
               <Moon size={20} className="text-gray-700 dark:text-gray-300" />
@@ -618,7 +619,7 @@ export function HomeDashboard({
           </button>
           <button
             onClick={handleNotificationClick}
-            className="backdrop-blur-md bg-white/20 dark:bg-white/10 rounded-full p-3 border border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/20 transition-all duration-300"
+            className="backdrop-blur-md bg-white/20 dark:bg-white/10 rounded-full p-3 border border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/20 transition-all duration-300 no-tap-highlight haptic-light"
           >
             <Bell size={20} className="text-gray-700 dark:text-gray-300" />
           </button>
@@ -901,7 +902,7 @@ export function HomeDashboard({
 
       {/* Recent Activity - Uses parent container's padding */}
       {transactions.length > 0 && (
-        <div className="flex-1 pb-6">
+        <div className="flex-1 pb-6 flex flex-col min-h-0">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-gray-700 dark:text-gray-300 font-medium">Recent Activity</h3>
             <button
@@ -911,8 +912,9 @@ export function HomeDashboard({
               See All
             </button>
           </div>
-          <div className="space-y-3">
-            {transactions.slice(0, 3).map((transaction) => (
+          {/* Scrollable container for transactions */}
+          <div className="flex-1 overflow-y-auto scrollbar-hide space-y-3">
+            {transactions.slice(0, 10).map((transaction) => (
               <div key={transaction.id} className="flex items-center justify-between p-4 rounded-2xl backdrop-blur-md bg-white/25 dark:bg-black/25 border border-white/30 dark:border-white/20">
                 <div className="flex items-center space-x-3">
                   <Avatar className="w-12 h-12">
@@ -932,7 +934,7 @@ export function HomeDashboard({
                       ? 'text-green-600 dark:text-green-400' 
                       : 'text-red-600 dark:text-red-400'
                   }`}>
-                    {transaction.type === 'deposit' || transaction.status === 'received' || transaction.recipient.includes('Deposit') ? '+' : '-'}${transaction.amount}
+                    {formatTransactionAmount(transaction)}
                   </p>
                   <div className={`inline-flex px-2 py-1 rounded-full text-xs ${
                     transaction.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :

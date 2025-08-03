@@ -154,7 +154,7 @@ export function SendAmount({
         console.log('SendAmount: Checking PIN status...');
         const { pinEnabled } = await UserService.getPinStatus();
         console.log('SendAmount: PIN status retrieved:', { pinEnabled });
-        setPinRequired(pinEnabled || true); // Default to true if PIN check fails
+        setPinRequired(pinEnabled); // Set based on actual PIN status
       } catch (error) {
         console.error('SendAmount: Error checking PIN status:', error);
         setPinRequired(true); // Default to requiring PIN if check fails
@@ -403,18 +403,18 @@ export function SendAmount({
   };
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col safe-top">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 pt-12 backdrop-blur-lg bg-white/20 border-b border-white/20">
+      <div className="flex items-center justify-between p-6 pt-4 backdrop-blur-lg bg-white/20 border-b border-white/20">
         <Button
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="backdrop-blur-md bg-white/20 rounded-full p-2 border border-white/30 hover:bg-white/30"
+          className="backdrop-blur-md bg-white/20 rounded-full p-2 border border-white/30 hover:bg-white/30 no-tap-highlight haptic-light touch-target"
         >
           <ArrowLeft size={20} />
         </Button>
-        <h2 className="text-gray-800">Enter Amount</h2>
+        <h2 className="text-gray-800 no-select">Enter Amount</h2>
         <div className="w-10"></div>
       </div>
 
@@ -564,11 +564,11 @@ export function SendAmount({
       </div>
 
       {/* Biometric Confirmation Button */}
-      <div className="flex-1 flex items-end p-6">
+      <div className="flex-1 flex items-end p-6 safe-bottom">
         <Button
           onClick={handleConfirm}
           disabled={numericAmount <= 0 || isConfirming}
-          className="w-full h-16 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
+          className="w-full h-16 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 mobile-button no-tap-highlight"
         >
           {isConfirming ? (
             <div className="flex items-center space-x-3">

@@ -3,6 +3,7 @@ import { CheckCircle2, XCircle, RefreshCw, Home, Receipt } from 'lucide-react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Transaction } from '../App';
+import { formatCurrency } from '../utils/currency';
 
 interface TransactionResultProps {
   isSuccess: boolean;
@@ -67,7 +68,7 @@ export function TransactionResult({
                     <p className="text-sm text-gray-600">{transaction.recipientCurrency}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xl text-gray-800">${transaction.amount}</p>
+                    <p className="text-xl text-gray-800">{formatCurrency(transaction.amount, transaction.currency)}</p>
                     <p className="text-sm text-gray-600">{transaction.convertedAmount} {transaction.recipientCurrency}</p>
                   </div>
                 </div>
@@ -160,7 +161,7 @@ export function TransactionResult({
                   <p className="text-sm text-gray-600">{transaction.recipientCurrency}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xl text-gray-800">${transaction.amount}</p>
+                  <p className="text-xl text-gray-800">{formatCurrency(transaction.amount, transaction.currency)}</p>
                 </div>
               </div>
               

@@ -87,6 +87,32 @@
     @apply bg-background text-foreground;
     margin: 0;
     padding: 0;
+    /* Prevent zoom on input focus on iOS */
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Mobile-first responsive font scaling */
+  html {
+    font-size: 14px; /* Base mobile size */
+  }
+
+  /* Scale up for larger screens */
+  @media (min-width: 640px) {
+    html { font-size: 15px; }
+  }
+
+  @media (min-width: 768px) {
+    html { font-size: 16px; }
+  }
+
+  @media (min-width: 1024px) {
+    html { font-size: 17px; }
+  }
+
+  @media (min-width: 1280px) {
+    html { font-size: 18px; }
   }
 }
 
@@ -252,4 +278,212 @@ body, html {
 
 .shake {
   animation: shake 0.5s ease-in-out;
+}
+
+/* Mobile App Enhancements for Capacitor */
+
+/* Hide scrollbars for a cleaner mobile feel */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
+/* iOS-style bounce scrolling */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Prevent text selection for a more app-like feel */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Prevent tap highlights on mobile */
+.no-tap-highlight {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Safe area support for notched devices */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* App-like haptic feedback classes */
+.haptic-light {
+  transition: transform 0.1s ease;
+}
+
+.haptic-light:active {
+  transform: scale(0.98);
+}
+
+.haptic-medium {
+  transition: transform 0.15s ease;
+}
+
+.haptic-medium:active {
+  transform: scale(0.95);
+}
+
+/* Enhanced touch targets for mobile */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Mobile-optimized button sizes */
+.mobile-button {
+  min-height: 48px;
+  padding: 12px 24px;
+  font-size: 1rem;
+}
+
+/* Responsive text sizing utilities */
+.text-responsive-xs {
+  font-size: clamp(0.75rem, 2vw, 0.875rem);
+}
+
+.text-responsive-sm {
+  font-size: clamp(0.875rem, 2.5vw, 1rem);
+}
+
+.text-responsive-base {
+  font-size: clamp(1rem, 3vw, 1.125rem);
+}
+
+.text-responsive-lg {
+  font-size: clamp(1.125rem, 4vw, 1.25rem);
+}
+
+.text-responsive-xl {
+  font-size: clamp(1.25rem, 5vw, 1.5rem);
+}
+
+.text-responsive-2xl {
+  font-size: clamp(1.5rem, 6vw, 2rem);
+}
+
+.text-responsive-3xl {
+  font-size: clamp(1.875rem, 7vw, 2.5rem);
+}
+
+.text-responsive-4xl {
+  font-size: clamp(2.25rem, 8vw, 3rem);
+}
+
+/* Responsive spacing utilities */
+.space-responsive-xs {
+  gap: clamp(0.25rem, 1vw, 0.5rem);
+}
+
+.space-responsive-sm {
+  gap: clamp(0.5rem, 2vw, 1rem);
+}
+
+.space-responsive-md {
+  gap: clamp(1rem, 3vw, 1.5rem);
+}
+
+.space-responsive-lg {
+  gap: clamp(1.5rem, 4vw, 2rem);
+}
+
+/* Responsive container padding */
+.container-responsive {
+  padding-left: clamp(1rem, 4vw, 2rem);
+  padding-right: clamp(1rem, 4vw, 2rem);
+}
+
+/* Responsive component sizing */
+.card-responsive {
+  padding: clamp(1rem, 4vw, 2rem);
+  border-radius: clamp(1rem, 3vw, 1.5rem);
+}
+
+.avatar-responsive {
+  width: clamp(2.5rem, 8vw, 4rem);
+  height: clamp(2.5rem, 8vw, 4rem);
+}
+
+/* Logo responsive sizing */
+.logo-responsive {
+  width: clamp(4rem, 15vw, 8rem);
+  height: clamp(4rem, 15vw, 8rem);
+}
+
+/* Responsive margins and paddings for different screen orientations */
+@media (orientation: landscape) and (max-height: 600px) {
+  .landscape-compact {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+  
+  .landscape-compact .logo-responsive {
+    width: clamp(3rem, 12vw, 5rem);
+    height: clamp(3rem, 12vw, 5rem);
+  }
+}
+
+/* Ultra-wide screen adjustments */
+@media (min-aspect-ratio: 2/1) {
+  .ultra-wide-center {
+    max-width: 50vw;
+    margin: 0 auto;
+  }
+}
+
+/* Small screen height optimizations */
+@media (max-height: 667px) {
+  .compact-height {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  
+  .compact-height .text-responsive-4xl {
+    font-size: clamp(1.875rem, 6vw, 2.25rem);
+  }
+}
+
+/* Improved button states for mobile */
+.mobile-button {
+  transition: all 0.2s ease;
+  transform: translateZ(0);
+}
+
+.mobile-button:active {
+  transform: scale(0.97) translateZ(0);
+}
+
+/* Status bar styling */
+.status-bar-safe {
+  padding-top: max(env(safe-area-inset-top), 24px);
+}
+
+/* Smooth momentum scrolling */
+.momentum-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
 }

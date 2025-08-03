@@ -2,11 +2,11 @@ apply plugin: 'com.android.application'
 
 android {
    namespace "com.summerproject.crossbridge" 
-   compileSdk 35
+   compileSdk 34
     defaultConfig {
         applicationId "com.summerproject.crossbridge"
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion 35
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

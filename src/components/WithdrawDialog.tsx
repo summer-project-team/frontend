@@ -55,8 +55,13 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
     return withdrawAmount * 0.004; // 0.4% withdrawal fee (matches backend)
   };
 
-  const isHighValueWithdrawal = (amount: number) => {
-    return amount > 1000000; // Same threshold as backend
+  const isHighValueWithdrawal = (amount: number, currency: string = 'NGN') => {
+    const thresholds: { [key: string]: number } = {
+      'NGN': 1_000_000,
+      'USD': 1000,
+      'GBP': 1000
+    };
+    return amount > (thresholds[currency.toUpperCase()] || 1000);
   };
 
   // Convert NGN to CBUSD (1500 NGN = 1 CBUSD)
@@ -99,7 +104,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
     
     const numAmount = parseFloat(amount);
     // Check if high value withdrawal requires 2FA
-    if (isHighValueWithdrawal(numAmount)) {
+    if (isHighValueWithdrawal(numAmount, selectedAccount?.currency)) {
       setStep(4); // Go to 2FA step
     } else {
       setStep(3); // Go directly to PIN step
@@ -283,7 +288,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
               <span className="text-yellow-800 dark:text-yellow-200">Total Deduction (CBUSD):</span>
               <span className="text-yellow-800 dark:text-yellow-200">{convertNgnToCbusd(parseFloat(amount) + getWithdrawalFee(parseFloat(amount))).toFixed(4)} CBUSD</span>
             </div>
-            {isHighValueWithdrawal(parseFloat(amount)) && (
+            {isHighValueWithdrawal(parseFloat(amount), selectedAccount?.currency) && (
               <>
                 <hr className="border-yellow-300/50" />
                 <div className="flex items-center gap-2 pt-1">
@@ -482,7 +487,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
 
       <div className="flex gap-3 pt-4">
         <Button
-          onClick={() => setStep(isHighValueWithdrawal(parseFloat(amount)) ? 4 : 2)}
+          onClick={() => setStep(isHighValueWithdrawal(parseFloat(amount), selectedAccount?.currency) ? 4 : 2)}
           variant="outline"
           disabled={isLoading}
           className="flex-1 bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white hover:bg-gray-200/30 dark:hover:bg-gray-900/50 disabled:opacity-50"
@@ -529,7 +534,14 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
             Two-Factor Authentication
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            For security, withdrawals over ₦1,000,000 require 2FA verification
+            {selectedAccount?.currency === 'NGN' 
+              ? 'For security, withdrawals over ₦1,000,000 require 2FA verification'
+              : selectedAccount?.currency === 'USD'
+              ? 'For security, withdrawals over $1,000 require 2FA verification' 
+              : selectedAccount?.currency === 'GBP'
+              ? 'For security, withdrawals over £1,000 require 2FA verification'
+              : 'For security, high-value withdrawals require 2FA verification'
+            }
           </p>
         </div>
 

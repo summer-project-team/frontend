@@ -1,0 +1,82 @@
+name: Build Mobile For iOS and Android
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Build React app
+        run: npm run build
+      
+      - name: Add Android platform
+        run: npx cap add android || true
+      
+      - name: Sync Capacitor
+        run: npx cap sync android
+      
+      - name: Build Android APK
+        run: cd android && ./gradlew assembleDebug
+      
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+  build-ios:
+    runs-on: macos-latest  # This is GitHub's macOS server!
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Build React app
+        run: npm run build
+      
+      - name: Add iOS platform
+        run: |
+          npm install @capacitor/ios
+          npx cap add ios || true
+      
+      - name: Sync Capacitor
+        run: npx cap sync ios
+      
+      - name: Build iOS app
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Debug -destination 'generic/platform=iOS Simulator' -archivePath App.xcarchive archive
+      
+      - name: Upload iOS build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: ios/App/App.xcarchive

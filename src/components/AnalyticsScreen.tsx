@@ -61,7 +61,7 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="backdrop-blur-md bg-white/20 dark:bg-white/10 rounded-full p-2 border border-gray-200/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/20"
+          className="backdrop-blur-md bg-white/20 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/20"
         >
           <ArrowLeft size={20} />
         </Button>
@@ -71,7 +71,7 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
           size="sm"
           onClick={refreshRates}
           disabled={isRefreshing}
-          className="backdrop-blur-md bg-white/20 dark:bg-white/10 rounded-full p-2 border border-gray-200/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/20"
+          className="backdrop-blur-md bg-white/20 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/20"
         >
           <RefreshCw size={20} className={isRefreshing ? 'animate-spin' : ''} />
         </Button>
@@ -90,7 +90,7 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
         <Card className="backdrop-blur-md bg-white/30 dark:bg-black/30 border-gray-200/30 dark:border-white/10">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              🇺🇸 <span>USD (Base Currency)</span>
+              🇺🇸 <span>USD (Pegged Currency)</span>
             </CardTitle>
           </CardHeader>
           <CardContent>

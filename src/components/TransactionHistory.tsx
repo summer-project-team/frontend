@@ -130,8 +130,8 @@ export function TransactionHistory({ transactions, onBack, onViewReceipt }: Tran
 
   return (
     <div className="h-screen flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 pt-12 backdrop-blur-lg bg-white/20 border-b border-white/20">
+      {/* Fixed Header */}
+      <div className="fixed top-0 left-0 right-0 z-10 flex items-center justify-between p-6 pt-12 backdrop-blur-lg bg-white/20 border-b border-white/20">
         <Button
           variant="ghost"
           size="sm"
@@ -150,105 +150,108 @@ export function TransactionHistory({ transactions, onBack, onViewReceipt }: Tran
         </Button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="p-6 space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="backdrop-blur-md bg-white/25 rounded-2xl p-4 border border-white/30">
-            <div className="flex items-center space-x-2 mb-2">
-              <TrendingUp size={16} className="text-green-600" />
-              <span className="text-sm text-gray-600">Total Sent</span>
-            </div>
-            <p className="text-xl text-gray-800">${totalSent.toFixed(2)}</p>
-          </div>
-          <div className="backdrop-blur-md bg-white/25 rounded-2xl p-4 border border-white/30">
-            <div className="flex items-center space-x-2 mb-2">
-              <Receipt size={16} className="text-blue-600" />
-              <span className="text-sm text-gray-600">Transactions</span>
-            </div>
-            <p className="text-xl text-gray-800">{totalTransactions}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Search and Filter */}
-      <div className="px-6 space-y-4">
-        {/* Search */}
-        <div className="relative">
-          <Search size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <Input
-            placeholder="Search transactions..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-12 focus:bg-white/40 transition-all duration-300"
-          />
-        </div>
-
-        {/* Filter Buttons */}
-        <div className="flex space-x-2 overflow-x-auto pb-2">
-          {[
-            { key: 'all', label: 'All' },
-            { key: 'completed', label: 'Completed' },
-            { key: 'pending', label: 'Pending' },
-            { key: 'failed', label: 'Failed' }
-          ].map((filter) => (
-            <Button
-              key={filter.key}
-              onClick={() => setFilterStatus(filter.key as any)}
-              variant={filterStatus === filter.key ? "default" : "outline"}
-              className={`px-4 py-2 rounded-xl whitespace-nowrap ${
-                filterStatus === filter.key
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-                  : 'backdrop-blur-md bg-white/30 border-white/40 hover:bg-white/40'
-              }`}
-            >
-              {filter.label}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Transactions List */}
-      <div className="flex-1 px-6 pb-6 overflow-y-auto">
-        <div className="space-y-3 mt-4">
-          {filteredTransactions.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full flex items-center justify-center">
-                <Receipt size={24} className="text-gray-500" />
+      {/* Scrollable Content - with top padding to account for fixed header */}
+      <div className="flex-1 overflow-y-auto pt-20">
+        {/* Summary Cards */}
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="backdrop-blur-md bg-white/25 rounded-2xl p-4 border border-white/30">
+              <div className="flex items-center space-x-2 mb-2">
+                <TrendingUp size={16} className="text-green-600" />
+                <span className="text-sm text-gray-600">Total Sent</span>
               </div>
-              <p className="text-gray-600">No transactions found</p>
+              <p className="text-xl text-gray-800">${totalSent.toFixed(2)}</p>
             </div>
-          ) : (
-            filteredTransactions.map((transaction) => (
-              <div
-                key={transaction.id}
-                className="backdrop-blur-md bg-white/25 rounded-2xl p-4 border border-white/30 cursor-pointer hover:bg-white/35 transition-all duration-300"
-                onClick={() => onViewReceipt(transaction)}
+            <div className="backdrop-blur-md bg-white/25 rounded-2xl p-4 border border-white/30">
+              <div className="flex items-center space-x-2 mb-2">
+                <Receipt size={16} className="text-blue-600" />
+                <span className="text-sm text-gray-600">Transactions</span>
+              </div>
+              <p className="text-xl text-gray-800">{totalTransactions}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Search and Filter */}
+        <div className="px-6 space-y-4">
+          {/* Search */}
+          <div className="relative">
+            <Search size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Input
+              placeholder="Search transactions..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-12 focus:bg-white/40 transition-all duration-300"
+            />
+          </div>
+
+          {/* Filter Buttons */}
+          <div className="flex space-x-2 overflow-x-auto pb-2">
+            {[
+              { key: 'all', label: 'All' },
+              { key: 'completed', label: 'Completed' },
+              { key: 'pending', label: 'Pending' },
+              { key: 'failed', label: 'Failed' }
+            ].map((filter) => (
+              <Button
+                key={filter.key}
+                onClick={() => setFilterStatus(filter.key as any)}
+                variant={filterStatus === filter.key ? "default" : "outline"}
+                className={`px-4 py-2 rounded-xl whitespace-nowrap ${
+                  filterStatus === filter.key
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+                    : 'backdrop-blur-md bg-white/30 border-white/40 hover:bg-white/40'
+                }`}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={transaction.avatar} />
-                      <AvatarFallback>{transaction.recipient[0]}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-gray-800">{transaction.recipient}</p>
-                      <p className="text-sm text-gray-500">{formatDate(transaction.date)}</p>
-                      <p className="text-xs text-gray-400 font-mono">{transaction.referenceNumber}</p>
+                {filter.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Transactions List */}
+        <div className="px-6 pb-6">
+          <div className="space-y-3 mt-4">
+            {filteredTransactions.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full flex items-center justify-center">
+                  <Receipt size={24} className="text-gray-500" />
+                </div>
+                <p className="text-gray-600">No transactions found</p>
+              </div>
+            ) : (
+              filteredTransactions.map((transaction) => (
+                <div
+                  key={transaction.id}
+                  className="backdrop-blur-md bg-white/25 rounded-2xl p-4 border border-white/30 cursor-pointer hover:bg-white/35 transition-all duration-300"
+                  onClick={() => onViewReceipt(transaction)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src={transaction.avatar} />
+                        <AvatarFallback>{transaction.recipient[0]}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-gray-800">{transaction.recipient}</p>
+                        <p className="text-sm text-gray-500">{formatDate(transaction.date)}</p>
+                        <p className="text-xs text-gray-400 font-mono">{transaction.referenceNumber}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right space-y-1">
-                    <p className="text-gray-800">{formatTransactionAmount(transaction)}</p>
-                    <p className="text-xs text-gray-600">
-                      {transaction.convertedAmount} {transaction.recipientCurrency}
-                    </p>
-                    <div className={`inline-flex px-2 py-1 rounded-full text-xs ${getStatusColor(transaction.status)}`}>
-                      {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                    <div className="text-right space-y-1">
+                      <p className="text-gray-800">{formatTransactionAmount(transaction)}</p>
+                      <p className="text-xs text-gray-600">
+                        {transaction.convertedAmount} {transaction.recipientCurrency}
+                      </p>
+                      <div className={`inline-flex px-2 py-1 rounded-full text-xs ${getStatusColor(transaction.status)}`}>
+                        {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>

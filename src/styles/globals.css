@@ -487,3 +487,28 @@ body, html {
   overscroll-behavior-y: contain;
   scroll-behavior: smooth;
 }
+
+/* Theme customization variables */
+:root {
+  --theme-primary: blue;
+  --theme-secondary: indigo;
+  --theme-saturation: 80%;
+  --theme-brightness: 90%;
+}
+
+/* Dynamic theme classes */
+.theme-dynamic {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--theme-primary) var(--theme-saturation) var(--theme-brightness)) 0%,
+    hsl(var(--theme-secondary) var(--theme-saturation) calc(var(--theme-brightness) - 10%)) 100%
+  );
+}
+
+.theme-dynamic-subtle {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--theme-primary) calc(var(--theme-saturation) / 4) calc(var(--theme-brightness) + 5%)) 0%,
+    hsl(var(--theme-secondary) calc(var(--theme-saturation) / 4) calc(var(--theme-brightness) + 5%)) 100%
+  );
+}

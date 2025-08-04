@@ -20,11 +20,12 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
   const [showAccountNumber, setShowAccountNumber] = useState<{[key: string]: boolean}>({});
   
   const [linkForm, setLinkForm] = useState<LinkAccountRequest>({
-    bankName: '',
-    accountNumber: '',
-    accountHolderName: '',
-    routingNumber: '',
-    accountType: 'checking'
+    bank_name: '',
+    account_number: '',
+    account_name: '',
+    bank_code: '',
+    account_type: 'checking',
+    currency: 'NGN'
   });
 
   const banks = [
@@ -49,7 +50,7 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
   const loadBankAccounts = async () => {
     try {
       setIsLoading(true);
-      const result = await bankingService.getBankAccounts();
+      const result = await bankingService.getAccounts();
       setAccounts(result || []);
     } catch (error) {
       console.error('Failed to load bank accounts:', error);
@@ -60,22 +61,24 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
   };
 
   const handleLinkAccount = async () => {
-    if (!linkForm.bankName || !linkForm.accountNumber || !linkForm.accountHolderName) {
+    if (!linkForm.bank_name || !linkForm.account_number || !linkForm.account_name) {
       toast.error('Please fill in all required fields');
       return;
     }
 
     try {
       setIsLinking(true);
-      await bankingService.linkBankAccount(linkForm);
+      // user_id is automatically extracted from JWT token on backend
+      await bankingService.linkAccount(linkForm);
       toast.success('Bank account linked successfully!');
       setIsAddModalOpen(false);
       setLinkForm({
-        bankName: '',
-        accountNumber: '',
-        accountHolderName: '',
-        routingNumber: '',
-        accountType: 'checking'
+        bank_name: '',
+        account_number: '',
+        account_name: '',
+        bank_code: '',
+        account_type: 'checking',
+        currency: 'NGN'
       });
       loadBankAccounts();
     } catch (error) {
@@ -88,7 +91,7 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
 
   const handleUnlinkAccount = async (accountId: string) => {
     try {
-      await bankingService.unlinkBankAccount(accountId);
+      await bankingService.removeAccount(accountId);
       toast.success('Bank account unlinked successfully');
       loadBankAccounts();
     } catch (error) {
@@ -134,23 +137,27 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 pt-16">
-          <button
+        <div className="flex items-center justify-between p-6 pt-8">
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onBack}
-            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full p-3 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
           >
             <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
-          </button>
+          </Button>
           
           <h1 className="text-xl font-semibold text-gray-800 dark:text-white">Bank Accounts</h1>
           
           <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
             <DialogTrigger asChild>
-              <button
-                className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full p-3 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+              <Button
+                variant="ghost"
+                size="sm"
+                className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
               >
                 <Plus size={20} className="text-gray-700 dark:text-gray-300" />
-              </button>
+              </Button>
             </DialogTrigger>
             <DialogContent className="backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border border-white/30 dark:border-white/20 rounded-3xl max-w-md">
               <DialogHeader>
@@ -165,7 +172,7 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
               <div className="space-y-4 mt-4">
                 <div className="space-y-2">
                   <label className="block text-gray-700 dark:text-gray-300 font-medium text-sm">Bank Name</label>
-                  <Select value={linkForm.bankName} onValueChange={(value) => setLinkForm(prev => ({ ...prev, bankName: value }))}>
+                  <Select value={linkForm.bank_name} onValueChange={(value) => setLinkForm(prev => ({ ...prev, bank_name: value }))}>
                     <SelectTrigger className="backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-12">
                       <SelectValue placeholder="Select your bank" />
                     </SelectTrigger>
@@ -189,8 +196,8 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                     <Input
                       type="text"
                       placeholder="Your full name as on account"
-                      value={linkForm.accountHolderName}
-                      onChange={(e) => setLinkForm(prev => ({ ...prev, accountHolderName: e.target.value }))}
+                      value={linkForm.account_name}
+                      onChange={(e) => setLinkForm(prev => ({ ...prev, account_name: e.target.value }))}
                       className="pl-12 backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-12"
                     />
                   </div>
@@ -203,22 +210,22 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                     <Input
                       type="text"
                       placeholder="1234567890"
-                      value={linkForm.accountNumber}
-                      onChange={(e) => setLinkForm(prev => ({ ...prev, accountNumber: e.target.value }))}
+                      value={linkForm.account_number}
+                      onChange={(e) => setLinkForm(prev => ({ ...prev, account_number: e.target.value }))}
                       className="pl-12 backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-12"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-gray-700 dark:text-gray-300 font-medium text-sm">Routing Number (Optional)</label>
+                  <label className="block text-gray-700 dark:text-gray-300 font-medium text-sm">Bank Code (Optional)</label>
                   <div className="relative">
                     <Shield size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <Input
                       type="text"
-                      placeholder="Routing/Sort Code"
-                      value={linkForm.routingNumber}
-                      onChange={(e) => setLinkForm(prev => ({ ...prev, routingNumber: e.target.value }))}
+                      placeholder="Bank Code"
+                      value={linkForm.bank_code}
+                      onChange={(e) => setLinkForm(prev => ({ ...prev, bank_code: e.target.value }))}
                       className="pl-12 backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-12"
                     />
                   </div>
@@ -226,13 +233,28 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
 
                 <div className="space-y-2">
                   <label className="block text-gray-700 dark:text-gray-300 font-medium text-sm">Account Type</label>
-                  <Select value={linkForm.accountType} onValueChange={(value: 'checking' | 'savings') => setLinkForm(prev => ({ ...prev, accountType: value }))}>
+                  <Select value={linkForm.account_type} onValueChange={(value: 'checking' | 'savings' | 'current') => setLinkForm(prev => ({ ...prev, account_type: value }))}>
                     <SelectTrigger className="backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-12">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border border-white/30 dark:border-white/20 rounded-2xl">
                       <SelectItem value="checking">Checking Account</SelectItem>
                       <SelectItem value="savings">Savings Account</SelectItem>
+                      <SelectItem value="current">Current Account</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-gray-700 dark:text-gray-300 font-medium text-sm">Currency</label>
+                  <Select value={linkForm.currency} onValueChange={(value: 'NGN' | 'USD' | 'GBP') => setLinkForm(prev => ({ ...prev, currency: value }))}>
+                    <SelectTrigger className="backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-12">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border border-white/30 dark:border-white/20 rounded-2xl">
+                      <SelectItem value="NGN">Nigerian Naira (NGN)</SelectItem>
+                      <SelectItem value="USD">US Dollar (USD)</SelectItem>
+                      <SelectItem value="GBP">British Pound (GBP)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -306,9 +328,9 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                         <Building2 size={24} className="text-white" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold text-gray-800 dark:text-white">{account.bankName}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{account.accountHolderName}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-500 capitalize">{account.accountType} Account</p>
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-white">{account.bank_name}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{account.account_name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500 capitalize">{account.account_type} Account</p>
                       </div>
                     </div>
                     
@@ -336,13 +358,13 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600 dark:text-gray-400">Account Number</span>
                       <span className="text-sm font-mono text-gray-800 dark:text-white">
-                        {formatAccountNumber(account.accountNumber, showAccountNumber[account.id])}
+                        {formatAccountNumber(account.account_number, showAccountNumber[account.id])}
                       </span>
                     </div>
-                    {account.routingNumber && (
+                    {account.bank_code && (
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Routing Number</span>
-                        <span className="text-sm font-mono text-gray-800 dark:text-white">{account.routingNumber}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Bank Code</span>
+                        <span className="text-sm font-mono text-gray-800 dark:text-white">{account.bank_code}</span>
                       </div>
                     )}
                     <div className="flex items-center justify-between">
@@ -358,6 +380,13 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
             </div>
           )}
         </div>
+      </div>
+
+      {/* Subtle Liquid Glass Footer */}
+      <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-white/10 to-transparent dark:from-slate-900/30 dark:via-slate-900/15 dark:to-transparent backdrop-blur-md"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/20"></div>
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white/40 dark:bg-white/20 rounded-full"></div>
       </div>
     </div>
   );

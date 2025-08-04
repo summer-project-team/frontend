@@ -1,11 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Landmark, ArrowRight, Shield, AlertCircle, CheckCircle, CreditCard, Building2, Eye, EyeOff, DollarSign, Sparkles, Check } from 'lucide-react';
+import { ArrowLeft, Landmark, ArrowRight, Shield, AlertCircle, CheckCircle, CreditCard, Building2, Eye, EyeOff, DollarSign, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { toast } from 'sonner';
 import { bankingService, type BankAccount } from '../services/BankingService';
-import type { Screen } from '../App';
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBack}
+            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+          >
+            <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
+          </Button>
+          
+          <h1 className="text-xl font-semibold text-gray-800 dark:text-white">Withdraw</h1>
+          
+          <div className="w-12"> {/* Spacer */}</div>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto pt-20 pb-24">`m '../services/BankingService';
 
 interface ModernWithdrawScreenProps {
   onBack: () => void;
@@ -18,12 +33,11 @@ interface ModernWithdrawScreenProps {
     onSuccess: (pin: string) => void;
     returnScreen?: 'withdraw';
   }) => void;
-  onNavigate?: (screen: Screen) => void; // Add navigation prop
 }
 
 type WithdrawStep = 'amount' | 'account' | 'twoFactor' | 'pin' | 'confirmation';
 
-export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNavigateToPin, onNavigate }: ModernWithdrawScreenProps) {
+export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNavigateToPin }: ModernWithdrawScreenProps) {
   const [currentStep, setCurrentStep] = useState<WithdrawStep>('amount');
   const [amount, setAmount] = useState('');
   const [linkedAccounts, setLinkedAccounts] = useState<BankAccount[]>([]);
@@ -46,7 +60,7 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
       setLinkedAccounts(accounts || []);
       
       if (accounts?.length === 0) {
-        setShowNoAccountsModal(true);
+        toast.error('No linked bank accounts found. Please link a bank account first.');
       }
     } catch (error: any) {
       console.error('Error loading bank accounts:', error);
@@ -101,7 +115,7 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
     }
     
     if (linkedAccounts.length === 0) {
-      setShowNoAccountsModal(true);
+      toast.error('No linked bank accounts found. Please link a bank account first.');
       return;
     }
     
@@ -413,144 +427,81 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
   };
 
   return (
-    <>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 relative overflow-hidden">
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 -left-4 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-0 -right-4 w-96 h-96 bg-gradient-to-tl from-purple-400/20 to-pink-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-indigo-400/10 to-blue-600/10 rounded-full blur-2xl animate-pulse delay-500"></div>
-        </div>
-
-        {/* Content */}
-        <div className="relative z-10 min-h-screen flex flex-col">
-          {/* Fixed Header */}
-          <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 pt-8 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/20">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBack}
-              className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
-            >
-              <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
-            </Button>
-            
-            <h1 className="text-xl font-semibold text-gray-800 dark:text-white">Withdraw</h1>
-            
-            <div className="w-12"> {/* Spacer */}</div>
-          </div>
-
-          {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto pt-20 pb-24">
-            {/* Progress Bar */}
-            <div className="mx-6 mb-8">
-              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-2">
-                <span>Step {['amount', 'account', 'twoFactor'].indexOf(currentStep) + 1} of {isHighValueWithdrawal(parseFloat(amount), selectedAccount?.currency) ? 3 : 2}</span>
-                <span>{Math.round(getStepProgress())}%</span>
-              </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                <div 
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 h-2 rounded-full transition-all duration-500 ease-out"
-                  style={{ width: `${getStepProgress()}%` }}
-                ></div>
-              </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="px-6">
-              <div className="backdrop-blur-xl bg-white/40 dark:bg-white/5 rounded-3xl p-8 border border-white/30 dark:border-white/10 shadow-2xl hover:shadow-3xl transition-all duration-500 max-w-2xl mx-auto">
-                {renderStepContent()}
-
-                {/* Navigation Buttons */}
-                <div className="flex justify-between mt-8 space-x-4">
-                  <Button
-                    onClick={handleBack}
-                    variant="outline"
-                    className="flex-1 h-12 backdrop-blur-xl bg-white/20 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl hover:bg-white/30 dark:hover:bg-white/10 transition-all duration-300"
-                  >
-                    <ArrowLeft size={20} className="mr-2" />
-                    Back
-                  </Button>
-
-                  <Button
-                    onClick={currentStep === 'amount' ? handleAmountNext : 
-                             currentStep === 'account' ? handleAccountNext : 
-                             currentStep === 'twoFactor' ? handleTwoFactorNext : 
-                             undefined}
-                    disabled={
-                      (currentStep === 'amount' && (!amount || parseFloat(amount) < 10 || isNaN(parseFloat(amount)))) ||
-                      (currentStep === 'account' && !selectedAccount) ||
-                      (currentStep === 'twoFactor' && twoFactorCode.length !== 6)
-                    }
-                    className="flex-1 h-12 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-700 hover:from-indigo-700 hover:via-purple-700 hover:to-blue-800 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
-                  >
-                    Continue
-                    <ArrowRight size={20} className="ml-2" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 -left-4 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 -right-4 w-96 h-96 bg-gradient-to-tl from-purple-400/20 to-pink-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-indigo-400/10 to-blue-600/10 rounded-full blur-2xl animate-pulse delay-500"></div>
       </div>
 
-      {/* No Accounts Linked Modal */}
-      <Dialog open={showNoAccountsModal} onOpenChange={setShowNoAccountsModal}>
-        <DialogContent className="bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-gray-200/30 dark:border-white/10 max-w-sm mx-auto">
-          <DialogHeader>
-            <DialogTitle className="text-center text-gray-800 dark:text-white flex items-center justify-center gap-2">
-              <Landmark size={24} className="text-orange-500" />
-              No Accounts Linked
-            </DialogTitle>
-          </DialogHeader>
+      {/* Content */}
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 pt-8">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBack}
+            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+          >
+            <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
+          </Button>
           
-          <div className="space-y-4 pt-4">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Landmark size={32} className="text-orange-500" />
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                You need to link a bank account before you can withdraw funds.
-              </p>
-            </div>
-            
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowNoAccountsModal(false);
-                  onBack();
-                }}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowNoAccountsModal(false);
-                  // Navigate to bank accounts screen
-                  if (onNavigate) {
-                    onNavigate('bank-accounts');
-                  } else {
-                    onBack();
-                    toast.info('Please navigate to Bank Accounts to link your account');
-                  }
-                }}
-                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
-              >
-                Link Account
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          <h1 className="text-xl font-semibold text-gray-800 dark:text-white">Withdraw</h1>
+          
+          <div className="w-12"> {/* Spacer */}</div>
+        </div>
 
-      {/* Subtle Liquid Glass Footer */}
-      <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-white/10 to-transparent dark:from-slate-900/30 dark:via-slate-900/15 dark:to-transparent backdrop-blur-md"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/20"></div>
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white/40 dark:bg-white/20 rounded-full"></div>
+        {/* Progress Bar */}
+        <div className="mx-6 mb-8">
+          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-2">
+            <span>Step {['amount', 'account', 'twoFactor'].indexOf(currentStep) + 1} of {isHighValueWithdrawal(parseFloat(amount), selectedAccount?.currency) ? 3 : 2}</span>
+            <span>{Math.round(getStepProgress())}%</span>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+            <div 
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 h-2 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${getStepProgress()}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 px-6 pb-6">
+          <div className="backdrop-blur-xl bg-white/40 dark:bg-white/5 rounded-3xl p-8 border border-white/30 dark:border-white/10 shadow-2xl hover:shadow-3xl transition-all duration-500 max-w-2xl mx-auto">
+            {renderStepContent()}
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-between mt-8 space-x-4">
+                <Button
+                  onClick={handleBack}
+                  variant="outline"
+                  className="flex-1 h-12 backdrop-blur-xl bg-white/20 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl hover:bg-white/30 dark:hover:bg-white/10 transition-all duration-300"
+                >
+                  <ArrowLeft size={20} className="mr-2" />
+                  Back
+                </Button>
+
+                <Button
+                  onClick={currentStep === 'amount' ? handleAmountNext : 
+                           currentStep === 'account' ? handleAccountNext : 
+                           currentStep === 'twoFactor' ? handleTwoFactorNext : 
+                           undefined}
+                  disabled={
+                    (currentStep === 'amount' && (!amount || parseFloat(amount) < 10 || isNaN(parseFloat(amount)))) ||
+                    (currentStep === 'account' && !selectedAccount) ||
+                    (currentStep === 'twoFactor' && twoFactorCode.length !== 6)
+                  }
+                  className="flex-1 h-12 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-700 hover:from-indigo-700 hover:via-purple-700 hover:to-blue-800 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+                >
+                  Continue
+                  <ArrowRight size={20} className="ml-2" />
+                </Button>
+              </div>
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   );
 }

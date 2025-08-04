@@ -31,9 +31,10 @@ export function ModernNotificationScreen({ onBack }: ModernNotificationScreenPro
       setIsLoading(true);
       const userNotifications = NotificationService.getNotifications();
       
-      // Transform notifications to include proper icons
+      // Transform notifications to include proper icons and fix timestamp
       const transformedNotifications = userNotifications.map(notif => ({
         ...notif,
+        timestamp: typeof notif.timestamp === 'number' ? new Date(notif.timestamp).toISOString() : notif.timestamp,
         icon: getNotificationIcon(notif.type)
       }));
       
@@ -60,18 +61,18 @@ export function ModernNotificationScreen({ onBack }: ModernNotificationScreenPro
     }
   };
 
-  const getNotificationGradient = (type: string) => {
+  const getNotificationBackground = (type: string) => {
     switch (type) {
       case 'transaction':
-        return 'from-green-500 to-emerald-600';
+        return 'bg-green-500/20';
       case 'system':
-        return 'from-blue-500 to-indigo-600';
+        return 'bg-blue-500/20';
       case 'security':
-        return 'from-orange-500 to-red-600';
+        return 'bg-orange-500/20';
       case 'promotion':
-        return 'from-purple-500 to-pink-600';
+        return 'bg-purple-500/20';
       default:
-        return 'from-gray-500 to-slate-600';
+        return 'bg-gray-500/20';
     }
   };
 
@@ -156,14 +157,16 @@ export function ModernNotificationScreen({ onBack }: ModernNotificationScreenPro
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 pt-16">
-          <button
+        {/* Fixed Header */}
+        <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 pt-8 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/20">
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onBack}
-            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full p-3 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
           >
             <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
-          </button>
+          </Button>
           
           <div className="flex items-center space-x-2">
             <h1 className="text-xl font-semibold text-gray-800 dark:text-white">Notifications</h1>
@@ -175,19 +178,21 @@ export function ModernNotificationScreen({ onBack }: ModernNotificationScreenPro
           </div>
           
           {unreadCount > 0 ? (
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={markAllAsRead}
-              className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full p-3 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+              className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
             >
               <CheckCircle size={20} className="text-gray-700 dark:text-gray-300" />
-            </button>
+            </Button>
           ) : (
-            <div className="w-12"> {/* Spacer */}</div>
+            <div className="w-10"> {/* Spacer */}</div>
           )}
         </div>
 
-        {/* Notifications List */}
-        <div className="flex-1 px-6 pb-6">
+        {/* Scrollable Notifications List */}
+        <div className="flex-1 overflow-y-auto px-6 pb-24 pt-28">
           {notifications.length === 0 ? (
             <div className="flex-1 flex items-center justify-center min-h-[400px]">
               <div className="text-center max-w-md mx-auto">
@@ -213,7 +218,7 @@ export function ModernNotificationScreen({ onBack }: ModernNotificationScreenPro
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="flex items-start space-x-4">
-                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${getNotificationGradient(notification.type)} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                    <div className={`w-12 h-12 rounded-2xl ${getNotificationBackground(notification.type)} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
                       {notification.icon}
                     </div>
                     
@@ -265,6 +270,13 @@ export function ModernNotificationScreen({ onBack }: ModernNotificationScreenPro
             </div>
           )}
         </div>
+      </div>
+
+      {/* Subtle Liquid Glass Footer */}
+      <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-white/10 to-transparent dark:from-slate-900/30 dark:via-slate-900/15 dark:to-transparent backdrop-blur-md"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/20"></div>
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white/40 dark:bg-white/20 rounded-full"></div>
       </div>
     </div>
   );

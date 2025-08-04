@@ -10,7 +10,8 @@ import {
   Fingerprint,
   Send,
   Calculator,
-  Wallet
+  Wallet,
+  Shield
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -132,6 +133,7 @@ export function ModernSendAmount({
   const [note, setNote] = useState('');
   const [isConfirming, setIsConfirming] = useState(false);
   const [showPinInput, setShowPinInput] = useState(false);
+  const [showPinSetupModal, setShowPinSetupModal] = useState(false);
   const [checkingPin, setCheckingPin] = useState(false);
   const [pinError, setPinError] = useState('');
   const [pinAttempts, setPinAttempts] = useState(0);
@@ -270,8 +272,8 @@ export function ModernSendAmount({
           setShowPinInput(true);
         }
       } else {
-        setIsConfirming(true);
-        await executeTransaction();
+        // PIN is not setup, show modal
+        setShowPinSetupModal(true);
       }
     } catch (err) {
       console.error('Error checking PIN status:', err);
@@ -289,12 +291,12 @@ export function ModernSendAmount({
   if (showPinInput) {
     return (
       <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
-        <div className="flex items-center justify-between p-4 pt-12 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/20">
+        <div className="flex items-center justify-between p-4 pt-8 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/20">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowPinInput(false)}
-            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full p-2 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
           >
             <ArrowLeft size={20} />
           </Button>
@@ -319,16 +321,16 @@ export function ModernSendAmount({
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 pt-12 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/20">
+      <div className="flex items-center justify-between p-4 pt-8 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/20">
         <Button
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full p-2 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
         >
           <ArrowLeft size={20} />
         </Button>
-        <h2 className="text-gray-800 dark:text-white font-semibold">Send Money</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Send Money</h2>
         <div className="w-10"></div>
       </div>
 
@@ -454,7 +456,7 @@ export function ModernSendAmount({
       </div>
 
       {/* Confirm Button */}
-      <div className="p-4 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-t border-white/20">
+      <div className="p-4 pb-28 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-t border-white/20">
         <Button
           onClick={handleConfirm}
           disabled={!isFormValid() || isConfirming || transactionLoading}
@@ -473,6 +475,48 @@ export function ModernSendAmount({
           )}
         </Button>
       </div>
+
+      {/* PIN Setup Modal */}
+      {showPinSetupModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-3xl p-6 w-full max-w-md border border-gray-200/30 dark:border-white/10">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-8 h-8 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">PIN Not Setup</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                You need to setup a transaction PIN before you can send money securely.
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <Button
+                onClick={() => {
+                  setShowPinSetupModal(false);
+                  onNavigateToPin?.({
+                    purpose: 'setup',
+                    title: 'Setup Transaction PIN',
+                    subtitle: 'Create a 4-digit PIN to secure your transactions',
+                    returnScreen: 'amount'
+                  });
+                }}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-2xl h-12"
+              >
+                Setup PIN Now
+              </Button>
+              
+              <Button
+                onClick={() => setShowPinSetupModal(false)}
+                variant="outline"
+                className="w-full rounded-2xl h-12 border-gray-200 dark:border-gray-700"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -41,56 +41,34 @@ export interface Notification {
       }
     }
   
-    private startPeriodicCheck() {
-      // Check for new notifications every 30 seconds
-      setInterval(() => {
-        this.checkForNewNotifications();
-      }, 30000);
-    }
-  
-    private checkForNewNotifications() {
-      // Simulate checking for new notifications from server
-      const now = Date.now();
-      const randomChecks = [
-        {
-          chance: 0.05, // 5% chance every check
-          notification: {
-            title: 'Exchange Rate Alert',
-            message: 'USD to NGN rate has improved! Great time to send money.',
-            type: 'system' as const,
-            priority: 'medium' as const,
-          }
-        },
-        {
-          chance: 0.02, // 2% chance
-          notification: {
-            title: 'Security Notice',
-            message: 'New login detected from a different device.',
-            type: 'security' as const,
-            priority: 'high' as const,
-          }
-        },
-        {
-          chance: 0.03, // 3% chance
-          notification: {
-            title: 'Limited Time Offer',
-            message: 'Send money with 0% fees this weekend!',
-            type: 'promotion' as const,
-            priority: 'medium' as const,
-          }
+  private startPeriodicCheck() {
+    // Check for new notifications every 2 minutes (less frequent)
+    setInterval(() => {
+      this.checkForNewNotifications();
+    }, 120000);
+  }  private checkForNewNotifications() {
+    // Simulate checking for new notifications from server
+    const now = Date.now();
+    const randomChecks = [
+      {
+        chance: 0.01, // 1% chance (reduced from 2%)
+        notification: {
+          title: 'Security Notice',
+          message: 'New login detected from a different device.',
+          type: 'security' as const,
+          priority: 'high' as const,
         }
-      ];
-  
-      randomChecks.forEach(check => {
-        if (Math.random() < check.chance) {
-          this.addNotification({
-            ...check.notification,
-          });
-        }
-      });
-    }
-  
-    addNotification(notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) {
+      }
+    ];
+
+    randomChecks.forEach(check => {
+      if (Math.random() < check.chance) {
+        this.addNotification({
+          ...check.notification,
+        });
+      }
+    });
+  }    addNotification(notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) {
       const newNotification: Notification = {
         id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         timestamp: Date.now(),

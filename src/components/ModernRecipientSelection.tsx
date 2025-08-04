@@ -211,12 +211,12 @@ export function ModernRecipientSelection({ user, onBack, onRecipientSelect }: Mo
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 pt-12 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/20">
+      <div className="flex items-center justify-between p-4 pt-8 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/20">
         <Button
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full p-2 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
         >
           <ArrowLeft size={20} />
         </Button>
@@ -228,7 +228,7 @@ export function ModernRecipientSelection({ user, onBack, onRecipientSelect }: Mo
             setRecipientType(activeTab === 'app-users' ? 'phone' : 'bank');
             setIsAddRecipientOpen(true);
           }}
-          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full p-2 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
         >
           <Plus size={20} />
         </Button>

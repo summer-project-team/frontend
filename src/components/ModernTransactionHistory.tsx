@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Transaction } from '../App';
+import { formatTransactionAmount } from '../utils/currency';
 
 interface ModernTransactionHistoryProps {
   transactions: Transaction[];
@@ -105,7 +106,22 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
   };
 
   const getTransactionIcon = (transaction: Transaction) => {
-    if (transaction.type === 'deposit' || transaction.status === 'received') {
+    // Use flow_type if available, otherwise determine from transaction properties
+    let isIncoming: boolean;
+    
+    if (transaction.flow_type) {
+      isIncoming = transaction.flow_type === 'inflow';
+    } else {
+      isIncoming = transaction.type === 'deposit' || 
+                  transaction.type === 'add_money' ||
+                  transaction.type === 'bank_deposit' ||
+                  transaction.status === 'received' ||
+                  transaction.recipient?.toLowerCase().includes('deposit') ||
+                  transaction.recipient?.toLowerCase().includes('add money') ||
+                  transaction.recipientId === 'deposit';
+    }
+    
+    if (isIncoming) {
       return <ArrowDownLeft className="w-4 h-4 text-emerald-600" />;
     }
     return <ArrowUpRight className="w-4 h-4 text-blue-600" />;
@@ -178,12 +194,12 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900">
       {/* Header with glass morphism */}
       <div className="sticky top-0 z-10 backdrop-blur-xl bg-white/30 dark:bg-black/30 border-b border-white/20 dark:border-white/10">
-        <div className="flex items-center justify-between p-6 pt-12">
+        <div className="flex items-center justify-between p-6 pt-8">
           <Button
             variant="ghost"
             size="sm"
             onClick={onBack}
-            className="backdrop-blur-md bg-white/40 dark:bg-white/10 rounded-full p-3 border border-white/30 hover:bg-white/50 dark:hover:bg-white/20 transition-all duration-300"
+            className="backdrop-blur-md bg-white/40 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 hover:bg-white/50 dark:hover:bg-white/20 transition-all duration-300"
           >
             <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
           </Button>
@@ -194,7 +210,7 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
           <Button
             variant="ghost"
             size="sm"
-            className="backdrop-blur-md bg-white/40 dark:bg-white/10 rounded-full p-3 border border-white/30 hover:bg-white/50 dark:hover:bg-white/20 transition-all duration-300"
+            className="backdrop-blur-md bg-white/40 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 hover:bg-white/50 dark:hover:bg-white/20 transition-all duration-300"
           >
             <Download size={20} className="text-gray-700 dark:text-gray-300" />
           </Button>
@@ -375,8 +391,7 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
                       <div className="text-right space-y-2">
                         <div className="space-y-1">
                           <p className="text-lg font-bold text-gray-800 dark:text-white">
-                            {transaction.type === 'deposit' || transaction.status === 'received' ? '+' : '-'}
-                            {getCurrencySymbol(transaction.currency)}{transaction.amount}
+                            {formatTransactionAmount(transaction, true)}
                           </p>
                           {transaction.recipientCurrency !== transaction.currency && (
                             <p className="text-sm text-gray-600 dark:text-gray-400">

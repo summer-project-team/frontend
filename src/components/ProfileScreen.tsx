@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Edit3, Shield, CreditCard, Settings, LogOut, Camera, Check, X, Bell, Lock, Smartphone, Globe, Moon, ChevronRight, Trash2, AlertTriangle, KeyRound, Loader2, Plus, Landmark } from 'lucide-react';
+import { ArrowLeft, Edit3, Shield, Settings, LogOut, Camera, Check, X, Bell, Lock, Smartphone, Globe, Moon, ChevronRight, Trash2, AlertTriangle, KeyRound, Loader2, CreditCard, Plus, Landmark } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -23,7 +23,7 @@ interface ProfileScreenProps {
 export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileScreenProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [currentView, setCurrentView] = useState<'profile' | 'security' | 'payment' | 'settings'>('profile');
+  const [currentView, setCurrentView] = useState<'profile' | 'security' | 'settings' | 'payment'>('profile');
   
   // Split name into first and last name for better backend compatibility
   const { firstName, lastName } = splitName(user.name);
@@ -452,6 +452,23 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
 
       {/* Settings Options */}
       <div className="px-6 space-y-4">
+        {/* Bank Accounts */}
+        <button
+          onClick={() => setCurrentView('payment')}
+          className="w-full backdrop-blur-md bg-white/25 rounded-2xl p-4 border border-white/30 hover:bg-white/35 transition-all duration-300"
+        >
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl flex items-center justify-center">
+              <CreditCard size={20} className="text-green-600" />
+            </div>
+            <div className="flex-1 text-left">
+              <h3 className="text-gray-800">Payment Methods</h3>
+              <p className="text-sm text-gray-600">Manage cards and bank accounts</p>
+            </div>
+            <ChevronRight size={16} className="text-gray-400" />
+          </div>
+        </button>
+
         {/* Security */}
         <button
           onClick={() => setCurrentView('security')}
@@ -464,23 +481,6 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
             <div className="flex-1 text-left">
               <h3 className="text-gray-800">Security Settings</h3>
               <p className="text-sm text-gray-600">Manage your security preferences</p>
-            </div>
-            <ChevronRight size={16} className="text-gray-400" />
-          </div>
-        </button>
-
-        {/* Account Linking */}
-        <button
-          onClick={() => setCurrentView('payment')}
-          className="w-full backdrop-blur-md bg-white/25 rounded-2xl p-4 border border-white/30 hover:bg-white/35 transition-all duration-300"
-        >
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl flex items-center justify-center">
-              <CreditCard size={20} className="text-green-600" />
-            </div>
-            <div className="flex-1 text-left">
-              <h3 className="text-gray-800">Account Linking</h3>
-              <p className="text-sm text-gray-600">Manage linked bank accounts</p>
             </div>
             <ChevronRight size={16} className="text-gray-400" />
           </div>
@@ -1076,9 +1076,9 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
   );
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 pt-12 backdrop-blur-lg bg-white/20 border-b border-white/20">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
+      {/* Fixed Header */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 pt-12 backdrop-blur-lg bg-white/20 border-b border-white/20">
         <Button
           variant="ghost"
           size="sm"
@@ -1090,7 +1090,7 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
         <h2 className="text-gray-800">
           {currentView === 'profile' ? 'Profile' :
            currentView === 'security' ? 'Security' :
-           currentView === 'payment' ? 'Account Linking' :
+           currentView === 'payment' ? 'Payment Methods' :
            'App Settings'}
         </h2>
         {currentView === 'profile' && (
@@ -1106,11 +1106,14 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
         {currentView !== 'profile' && <div className="w-10" />}
       </div>
 
-      <div className="flex-1 overflow-y-auto pb-6">
-        {currentView === 'profile' && renderProfileView()}
-        {currentView === 'security' && renderSecurityView()}
-        {currentView === 'payment' && renderPaymentView()}
-        {currentView === 'settings' && renderSettingsView()}
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto pt-24 pb-24">
+        <div className="px-6">
+          {currentView === 'profile' && renderProfileView()}
+          {currentView === 'security' && renderSecurityView()}
+          {currentView === 'payment' && renderPaymentView()}
+          {currentView === 'settings' && renderSettingsView()}
+        </div>
       </div>
 
       {/* PIN Management Dialogs */}
@@ -1220,6 +1223,13 @@ export function ProfileScreen({ user, onBack, onLogout, onUpdateUser }: ProfileS
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Subtle Liquid Glass Footer */}
+      <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-white/10 to-transparent dark:from-slate-900/30 dark:via-slate-900/15 dark:to-transparent backdrop-blur-md"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/20"></div>
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white/40 dark:bg-white/20 rounded-full"></div>
+      </div>
     </div>
   );
 }

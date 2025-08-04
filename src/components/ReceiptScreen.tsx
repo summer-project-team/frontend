@@ -81,7 +81,7 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 relative">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 -left-4 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
@@ -89,40 +89,47 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-indigo-400/10 to-blue-600/10 rounded-full blur-2xl animate-pulse delay-500"></div>
       </div>
 
-      {/* Header */}
-      <div className="relative z-10 flex items-center justify-between p-6 pt-16">
-        <button
+      {/* Fixed Header */}
+      <div className="relative z-10 flex items-center justify-between p-4 pt-12 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/30 dark:border-white/20">
+        <Button
           onClick={onBack}
-          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full p-3 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+          variant="ghost"
+          size="sm"
+          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
         >
-          <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
-        </button>
+          <ArrowLeft size={18} className="text-gray-700 dark:text-gray-300" />
+        </Button>
         
-        <h1 className="text-xl font-semibold text-gray-800 dark:text-white">Receipt</h1>
+        <h1 className="text-lg font-semibold text-gray-800 dark:text-white">Receipt</h1>
         
         <div className="flex space-x-2">
-          <button
+          <Button
             onClick={handleShare}
-            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full p-3 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+            variant="ghost"
+            size="sm"
+            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
           >
-            <Share2 size={20} className="text-gray-700 dark:text-gray-300" />
-          </button>
-          <button
+            <Share2 size={16} className="text-gray-700 dark:text-gray-300" />
+          </Button>
+          <Button
             onClick={handleDownload}
-            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full p-3 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+            variant="ghost"
+            size="sm"
+            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
           >
-            <Download size={20} className="text-gray-700 dark:text-gray-300" />
-          </button>
+            <Download size={16} className="text-gray-700 dark:text-gray-300" />
+          </Button>
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto pb-6">
+      {/* Scrollable Content */}
+      <div className="relative z-10 flex-1 overflow-y-auto pb-24 pt-6">
         {/* Status Header */}
-        <div className="p-6 text-center">
-          <div className={`w-20 h-20 mx-auto mb-4 bg-gradient-to-r ${getStatusColor()} rounded-full flex items-center justify-center shadow-2xl border-4 border-white/50 dark:border-white/20`}>
+        <div className="p-4 text-center">
+          <div className={`w-16 h-16 mx-auto mb-3 bg-gradient-to-r ${getStatusColor()} rounded-full flex items-center justify-center shadow-2xl border-4 border-white/50 dark:border-white/20`}>
             {getStatusIcon()}
           </div>
-          <h1 className="text-2xl font-bold mb-2 text-gray-800 dark:text-white">
+          <h1 className="text-xl font-bold mb-2 text-gray-800 dark:text-white">
             {transaction.status === 'completed' ? 'Transfer Completed' :
              transaction.status === 'failed' ? 'Transfer Failed' : 'Transfer Pending'}
           </h1>
@@ -146,8 +153,8 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
             <div className="p-6 space-y-6">
               {/* Sender & Recipient */}
               <div className="space-y-4">
-                <div className="bg-white/50 dark:bg-white/5 rounded-2xl p-4 border border-white/30 dark:border-white/10">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 font-medium">From</p>
+                <div className="bg-white/50 dark:bg-white/5 rounded-2xl p-5 border border-white/30 dark:border-white/10">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 font-medium">From</p>
                   <div className="flex items-center space-x-3">
                     <Avatar className="w-12 h-12 border-2 border-white/50">
                       <AvatarImage src={user?.avatar} />

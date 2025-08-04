@@ -23,6 +23,9 @@ import { ModernBankAccounts } from './components/ModernBankAccounts';
 import { ModernWithdrawScreen } from './components/ModernWithdrawScreen';
 import { ModernAddMoneyScreen } from './components/ModernAddMoneyScreen';
 import { ModernPinScreen } from './components/ModernPinScreen';
+import { ModernScanScreen } from './components/ModernScanScreen';
+import { ModernRewardsScreen } from './components/ModernRewardsScreen';
+import { ModernFooter } from './components/ModernFooter';
 import { DepositAmountModal } from './components/DepositAmountModal';
 import { DepositInstructions } from './components/DepositInstructions';
 import { QRScanner } from './components/QRScanner';
@@ -32,6 +35,13 @@ import { ExchangeRateService } from './services/ExchangeRateService';
 import { NotificationService } from './services/NotificationService';
 import { dashboardService } from './services/DashboardService';
 import TransactionService from './services/TransactionService';
+import { enrichTransactionWithFlowType } from './utils/currency';
+import { BankToSimulation } from './components/BankToSimulation';
+import { DeveloperExamples } from './components/DeveloperExamples';
+import { EnhancedAnalyticsScreen } from './components/EnhancedAnalyticsScreen';
+import { AdminDashboard } from './components/AdminDashboard';
+import { WebSocketService } from './services/WebSocketService';
+
 
 export type Recipient = {
   id: string;
@@ -63,7 +73,8 @@ export type Transaction = {
   totalPaid: string;
   category?: 'family_friends' | 'business' | 'bills_utilities' | 'education' | 'medical' | 'shopping' | 'travel' | 'investment' | 'other';
   note?: string;
-  type?: 'deposit' | 'withdrawal' | 'transfer' | 'payment';
+  type?: 'deposit' | 'withdrawal' | 'transfer' | 'payment' | 'add_money' | 'bank_deposit';
+  flow_type?: 'inflow' | 'outflow'; // Add flow_type field for consistent transaction direction
 };
 
 export type User = {
@@ -95,7 +106,14 @@ export type Screen =
   | 'withdraw'
   | 'bank-accounts'
   | 'add-money'
-  | 'pin';
+  | 'pin'
+  | 'scan'
+  | 'rewards'
+  | 'linked-accounts'
+  | 'simulation'
+  | 'developer-examples'
+  | 'enhanced-analytics'
+  | 'admin';
 
 // Theme Context
 type Theme = 'light' | 'dark';
@@ -265,10 +283,31 @@ function App() {
       };
       
       setUser(updatedUser);
-      setTransactions(dashboardTransactions);
+      setTransactions(dashboardTransactions.map(enrichTransactionWithFlowType));
       
       // Initialize notification service
       NotificationService.initialize(updatedUser.id);
+      
+      // Initialize WebSocket for real-time updates
+      WebSocketService.initialize(updatedUser.id, {
+        onTransactionUpdate: (transaction) => {
+          setTransactions(prev => 
+            prev.map(t => t.id === transaction.id ? enrichTransactionWithFlowType(transaction) : t)
+          );
+        },
+        onDepositConfirmed: (deposit) => {
+          // Refresh balance when deposit is confirmed
+          dashboardService.getWalletBalance().then(balance => {
+            setUser(prev => prev ? { ...prev, balance } : null);
+          });
+        },
+        onBalanceUpdate: (balance) => {
+          setUser(prev => prev ? { ...prev, balance } : null);
+        },
+        onNotification: (notification) => {
+          NotificationService.addNotification(notification);
+        }
+      });
       
       // Add login notification
       NotificationService.addLoginNotification();
@@ -279,7 +318,7 @@ function App() {
       // Fallback to original behavior if backend fails
       setUser(userData);
       const userTransactions = JSON.parse(localStorage.getItem(`transactions_${userData.id}`) || '[]');
-      setTransactions(userTransactions);
+      setTransactions(userTransactions.map(enrichTransactionWithFlowType));
       NotificationService.initialize(userData.id);
       NotificationService.addLoginNotification();
       navigateTo('home');
@@ -299,7 +338,7 @@ function App() {
       };
       
       setUser(updatedUser);
-      setTransactions(dashboardTransactions);
+      setTransactions(dashboardTransactions.map(enrichTransactionWithFlowType));
       
       // Initialize notification service
       NotificationService.initialize(updatedUser.id);
@@ -335,8 +374,10 @@ function App() {
       NotificationService.addLogoutNotification();
     }
     
-    // Cleanup notification service
+    // Cleanup services
     NotificationService.cleanup();
+    WebSocketService.disconnect();
+    
     setUser(null);
     setTransactions([]);
     setSelectedRecipient(null);
@@ -443,8 +484,16 @@ function App() {
           totalPaid: (parseFloat(amount) * 1.015).toFixed(2), // Amount + fee
           category: category as Transaction['category'],
           note: note,
-          type: transactionType
+          type: transactionType,
+          flow_type: 'outflow' as const // All sends are outflow
         };
+        
+        // Update user balance after successful transaction
+        if (user) {
+          const totalDeducted = parseFloat(amount) + (parseFloat(amount) * 0.015); // Amount + fee
+          const newBalance = user.balance - totalDeducted;
+          setUser(prevUser => prevUser ? { ...prevUser, balance: newBalance } : null);
+        }
         
         // Update state with completed transaction
         const updatedTransactions = [successTransaction, ...transactions];
@@ -758,7 +807,7 @@ function App() {
           {/* Mobile/Tablet Layout - Full width on mobile, responsive on larger screens */}
           <div className="2xl:hidden">
             <div className="w-full mx-auto xl:max-w-xl xl:mx-auto">
-                          <div className="px-1 sm:px-2 md:px-4 lg:px-6 h-full overflow-x-auto">
+                          <div className="h-full">
                 {currentScreen === 'login' && (
                   <ModernLoginScreen 
                     onLogin={handleLogin} 
@@ -931,7 +980,8 @@ function App() {
                           exchangeRate: 1500,
                           fee: (amount * 0.004).toString(),
                           totalPaid: (amount + (amount * 0.004)).toString(),
-                          type: 'withdrawal' as const
+                          type: 'withdrawal' as const,
+                          flow_type: 'outflow' as const
                         };
                         setCurrentTransaction(newTransaction);
                         navigateTo('success');
@@ -953,13 +1003,15 @@ function App() {
                           exchangeRate: 1500,
                           fee: (amount * 0.004).toString(),
                           totalPaid: (amount + (amount * 0.004)).toString(),
-                          type: 'withdrawal' as const
+                          type: 'withdrawal' as const,
+                          flow_type: 'outflow' as const
                         };
                         setCurrentTransaction(failedTransaction);
                         navigateTo('failure');
                       }
                     }}
                     onNavigateToPin={navigateToPin}
+                    onNavigate={navigateTo}
                   />
                 )}
                 {currentScreen === 'bank-accounts' && user && (
@@ -972,28 +1024,91 @@ function App() {
                   <ModernAddMoneyScreen
                     user={user}
                     onBack={() => navigateTo('home')}
-                    onComplete={(amount, currency, method) => {
-                      // Handle successful deposit initiation
-                      const newTransaction = {
-                        id: `dep_${Date.now()}`,
-                        recipient: 'Wallet Deposit',
-                        recipientId: 'deposit',
-                        amount: amount.toString(),
-                        currency: currency,
-                        convertedAmount: amount.toString(),
-                        recipientCurrency: currency,
-                        status: 'pending' as const,
-                        date: new Date().toLocaleDateString(),
-                        timestamp: Date.now(),
-                        avatar: '💰',
-                        referenceNumber: `DEP${Date.now()}`,
-                        exchangeRate: 1,
-                        fee: '0',
-                        totalPaid: amount.toString(),
-                        type: 'deposit' as const
-                      };
-                      setCurrentTransaction(newTransaction);
-                      navigateTo('success');
+                    onComplete={async (amount, currency, method) => {
+                      try {
+                        // Call the actual deposit API to get instructions
+                        const depositResult = await TransactionService.initiateDeposit({
+                          amount,
+                          currency
+                        });
+                        
+                        if (depositResult.success) {
+                          // For now, simulate successful deposit since this API only gives instructions
+                          // In a real app, there would be a webhook or confirmation API
+                          
+                          // Refresh balance after successful deposit
+                          try {
+                            const balanceData = await dashboardService.getWalletBalance();
+                            const updatedUser = { ...user, balance: balanceData || user.balance };
+                            setUser(updatedUser);
+                            localStorage.setItem(`user_${user.id}`, JSON.stringify(updatedUser));
+                          } catch (balanceError) {
+                            console.error('Failed to refresh balance:', balanceError);
+                          }
+                          
+                          // Add deposit transaction to history
+                          const depositTransaction = {
+                            id: `dep_${Date.now()}`,
+                            recipient: `Deposit from ${currency}`,
+                            recipientId: 'deposit',
+                            amount: amount.toString(),
+                            currency: currency,
+                            convertedAmount: amount.toString(),
+                            recipientCurrency: 'CBUSD',
+                            status: 'completed' as const,
+                            date: new Date().toISOString(),
+                            timestamp: Date.now(),
+                            avatar: '💰',
+                            referenceNumber: depositResult.deposit_instructions.reference_code,
+                            exchangeRate: 1,
+                            fee: '0',
+                            totalPaid: amount.toString(),
+                            type: 'deposit' as const,
+                            flow_type: 'inflow' as const
+                          };
+                          
+                          setTransactions(prev => [depositTransaction, ...prev]);
+                          setCurrentTransaction(depositTransaction);
+                          
+                          // Add notification
+                          NotificationService.addDepositNotification(
+                            amount.toString(),
+                            'CBUSD',
+                            currency
+                          );
+                          
+                          navigateTo('success');
+                        } else {
+                          throw new Error(depositResult.message || 'Deposit failed');
+                        }
+                      } catch (error: any) {
+                        console.error('Deposit failed:', error);
+                        
+                        // Create failed transaction for UI
+                        const failedTransaction = {
+                          id: `dep_${Date.now()}`,
+                          recipient: `Deposit from ${currency}`,
+                          recipientId: 'deposit',
+                          amount: amount.toString(),
+                          currency: currency,
+                          convertedAmount: amount.toString(),
+                          recipientCurrency: 'CBUSD',
+                          status: 'failed' as const,
+                          date: new Date().toISOString(),
+                          timestamp: Date.now(),
+                          avatar: '💰',
+                          referenceNumber: `DEP${Date.now()}`,
+                          exchangeRate: 1,
+                          fee: '0',
+                          totalPaid: amount.toString(),
+                          type: 'deposit' as const,
+                          flow_type: 'inflow' as const,
+                          note: error.message
+                        };
+                        
+                        setCurrentTransaction(failedTransaction);
+                        navigateTo('failure');
+                      }
                     }}
                   />
                 )}
@@ -1016,7 +1131,33 @@ function App() {
                     onCurrentPinVerified={pinScreenConfig.onCurrentPinVerified}
                   />
                 )}
+                {currentScreen === 'scan' && (
+                  <ModernScanScreen
+                    onBack={() => navigateTo('home')}
+                    user={user}
+                  />
+                )}
+                {currentScreen === 'rewards' && (
+                  <ModernRewardsScreen
+                    onBack={() => navigateTo('home')}
+                    user={user}
+                  />
+                )}
+                {currentScreen === 'linked-accounts' && user && (
+                  <ModernBankAccounts
+                    userId={user.id}
+                    onBack={() => navigateTo('home')}
+                  />
+                )}
               </div>
+              
+              {/* Modern Footer - Show on most screens except login/signup */}
+              {user && !['login', 'signup', 'pin'].includes(currentScreen) && (
+                <ModernFooter
+                  currentScreen={currentScreen}
+                  onNavigate={navigateTo}
+                />
+              )}
             </div>
           </div>
 
@@ -1081,10 +1222,28 @@ function App() {
                       Transaction History
                     </button>
                     <button
+                      onClick={() => navigateTo('enhanced-analytics')}
+                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors"
+                    >
+                      Analytics
+                    </button>
+                    <button
                       onClick={() => navigateTo('analytics')}
                       className="w-full text-left p-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors"
                     >
                       Exchange Rates
+                    </button>
+                    <button
+                      onClick={() => navigateTo('simulation')}
+                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors"
+                    >
+                      Bank Simulation
+                    </button>
+                    <button
+                      onClick={() => navigateTo('developer-examples')}
+                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors"
+                    >
+                      Dev Examples
                     </button>
                     <button
                       onClick={() => navigateTo('notifications')}
@@ -1213,6 +1372,26 @@ function App() {
                   onBack={() => navigateTo('home')}
                 />
               )}
+              {currentScreen === 'enhanced-analytics' && (
+                <EnhancedAnalyticsScreen
+                  onBack={() => navigateTo('home')}
+                />
+              )}
+              {currentScreen === 'simulation' && (
+                <BankToSimulation
+                  onBack={() => navigateTo('home')}
+                />
+              )}
+              {currentScreen === 'developer-examples' && (
+                <DeveloperExamples
+                  onBack={() => navigateTo('home')}
+                />
+              )}
+              {currentScreen === 'admin' && (
+                <AdminDashboard
+                  onLogout={handleLogout}
+                />
+              )}
               {currentScreen === 'deposit-instructions' && depositData && user && (
                 <DepositInstructions
                   onBack={() => navigateTo('home')}
@@ -1240,3 +1419,4 @@ export default function AppWithErrorBoundary() {
     </ErrorBoundary>
   );
 }
+

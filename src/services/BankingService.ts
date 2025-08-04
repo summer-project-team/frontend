@@ -22,6 +22,7 @@ export interface LinkAccountRequest {
   account_name: string;
   account_type: 'savings' | 'checking' | 'current';
   currency: 'NGN' | 'GBP' | 'USD';
+  // Note: user_id is automatically extracted from JWT token on backend
 }
 
 export interface LinkAccountResponse {

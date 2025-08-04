@@ -86,24 +86,28 @@ export function ModernAnalyticsScreen({ onBack }: ModernAnalyticsScreenProps) {
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 pt-16">
-          <button
+        {/* Fixed Header */}
+        <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 pt-12 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/20">
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onBack}
-            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full p-3 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
           >
             <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
-          </button>
+          </Button>
           
           <h1 className="text-xl font-semibold text-gray-800 dark:text-white">Exchange Rates</h1>
           
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={refreshRates}
             disabled={isRefreshing}
-            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full p-3 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg disabled:opacity-50"
+            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg disabled:opacity-50"
           >
             <RefreshCw size={20} className={`text-gray-700 dark:text-gray-300 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </button>
+          </Button>
         </div>
 
         {/* Last Updated Banner */}
@@ -118,19 +122,19 @@ export function ModernAnalyticsScreen({ onBack }: ModernAnalyticsScreenProps) {
           </div>
         </div>
 
-        {/* Exchange Rates List */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4">
+        {/* Scrollable Exchange Rates List */}
+        <div className="flex-1 overflow-y-auto px-6 pb-24 pt-24 space-y-4">
           {/* USD Base Card */}
           <div className="backdrop-blur-xl bg-white/40 dark:bg-white/5 rounded-3xl p-6 border border-white/30 dark:border-white/10 shadow-2xl hover:shadow-3xl transition-all duration-500">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
-                  <span className="text-2xl">🇺🇸</span>
+                <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center shadow-lg">
+                  <span className="text-xl">🇺🇸</span>
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-gray-800 dark:text-white">USD</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">United States Dollar</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-500">Base Currency</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500">Pegged Currency</p>
                 </div>
               </div>
               
@@ -154,8 +158,8 @@ export function ModernAnalyticsScreen({ onBack }: ModernAnalyticsScreenProps) {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <span className="text-2xl">{rate.flag}</span>
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <span className="text-xl">{rate.flag}</span>
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-gray-800 dark:text-white">{rate.currency}</h3>
@@ -177,8 +181,8 @@ export function ModernAnalyticsScreen({ onBack }: ModernAnalyticsScreenProps) {
                         : 'bg-red-100 dark:bg-red-900/30'
                     }`}>
                       {rate.change >= 0 ? 
-                        <TrendingUp size={14} className="text-green-600 dark:text-green-400" /> : 
-                        <TrendingDown size={14} className="text-red-600 dark:text-red-400" />
+                        <TrendingUp size={12} className="text-green-600 dark:text-green-400" /> : 
+                        <TrendingDown size={12} className="text-red-600 dark:text-red-400" />
                       }
                       <span className={`text-xs font-medium ${
                         rate.change >= 0 
@@ -204,8 +208,8 @@ export function ModernAnalyticsScreen({ onBack }: ModernAnalyticsScreenProps) {
           {/* Market Trends Summary */}
           <div className="backdrop-blur-xl bg-white/40 dark:bg-white/5 rounded-3xl p-6 border border-white/30 dark:border-white/10 shadow-2xl">
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center shadow-lg">
-                <Sparkles size={24} className="text-white" />
+              <div className="w-10 h-10 rounded-2xl bg-yellow-500/20 flex items-center justify-center shadow-lg">
+                <Sparkles size={20} className="text-yellow-600 dark:text-yellow-400" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-800 dark:text-white">Market Trends</h3>
@@ -220,7 +224,7 @@ export function ModernAnalyticsScreen({ onBack }: ModernAnalyticsScreenProps) {
                     <p className="text-sm font-medium text-green-800 dark:text-green-200">🚀 Strongest Performer</p>
                     <p className="text-lg font-bold text-green-700 dark:text-green-400">CAD +{formatPercent(2.21)}%</p>
                   </div>
-                  <TrendingUp size={24} className="text-green-600 dark:text-green-400" />
+                  <TrendingUp size={20} className="text-green-600 dark:text-green-400" />
                 </div>
               </div>
               
@@ -230,12 +234,19 @@ export function ModernAnalyticsScreen({ onBack }: ModernAnalyticsScreenProps) {
                     <p className="text-sm font-medium text-red-800 dark:text-red-200">📉 Weakest Performer</p>
                     <p className="text-lg font-bold text-red-700 dark:text-red-400">GBP -{formatPercent(2.47)}%</p>
                   </div>
-                  <TrendingDown size={24} className="text-red-600 dark:text-red-400" />
+                  <TrendingDown size={20} className="text-red-600 dark:text-red-400" />
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Subtle Liquid Glass Footer */}
+      <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-white/10 to-transparent dark:from-slate-900/30 dark:via-slate-900/15 dark:to-transparent backdrop-blur-md"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/20"></div>
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white/40 dark:bg-white/20 rounded-full"></div>
       </div>
     </div>
   );

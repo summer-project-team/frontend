@@ -445,13 +445,15 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
       {/* Content */}
       <div className="relative z-10 p-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 pt-8">
-          <button
+        <div className="flex items-center justify-between mb-8 pt-4">
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onBack}
-            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full p-3 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
           >
             <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
-          </button>
+          </Button>
           <h1 className="text-xl font-semibold text-gray-800 dark:text-white">Add Money</h1>
           <div className="w-12"></div>
         </div>
@@ -465,6 +467,13 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
           {currentStep === 'method' && renderMethodStep()}
           {currentStep === 'instructions' && renderInstructionsStep()}
         </div>
+      </div>
+
+      {/* Subtle Liquid Glass Footer */}
+      <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-white/10 to-transparent dark:from-slate-900/30 dark:via-slate-900/15 dark:to-transparent backdrop-blur-md"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/20"></div>
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white/40 dark:bg-white/20 rounded-full"></div>
       </div>
     </div>
   );

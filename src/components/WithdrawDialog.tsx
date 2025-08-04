@@ -26,6 +26,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
   const [isLoading, setIsLoading] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [twoFactorError, setTwoFactorError] = useState('');
+  const [showNoAccountsModal, setShowNoAccountsModal] = useState(false);
 
   // Load linked bank accounts when dialog opens
   useEffect(() => {
@@ -41,7 +42,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
       setLinkedAccounts(accounts);
       
       if (accounts.length === 0) {
-        toast.error('No linked bank accounts found. Please link a bank account first.');
+        setShowNoAccountsModal(true);
       }
     } catch (error: any) {
       console.error('Error loading bank accounts:', error);
@@ -85,7 +86,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
     }
     
     if (linkedAccounts.length === 0) {
-      toast.error('No linked bank accounts found. Please link a bank account first.');
+      setShowNoAccountsModal(true);
       return;
     }
     
@@ -599,19 +600,68 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-gray-200/30 dark:border-white/10 max-w-sm mx-auto">
-        <DialogHeader>
-          <DialogTitle className="text-center text-gray-800 dark:text-white">
-            {getStepTitle()}
-          </DialogTitle>
-        </DialogHeader>
-        
-        {step === 1 && renderStep1()}
-        {step === 2 && renderStep2()}
-        {step === 3 && renderStep3()}
-        {step === 4 && renderStep4()}
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-gray-200/30 dark:border-white/10 max-w-sm mx-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center text-gray-800 dark:text-white">
+              {getStepTitle()}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {step === 1 && renderStep1()}
+          {step === 2 && renderStep2()}
+          {step === 3 && renderStep3()}
+          {step === 4 && renderStep4()}
+        </DialogContent>
+      </Dialog>
+
+      {/* No Accounts Linked Modal */}
+      <Dialog open={showNoAccountsModal} onOpenChange={setShowNoAccountsModal}>
+        <DialogContent className="bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-gray-200/30 dark:border-white/10 max-w-sm mx-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center text-gray-800 dark:text-white flex items-center justify-center gap-2">
+              <Landmark size={24} className="text-orange-500" />
+              No Accounts Linked
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 pt-4">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Landmark size={32} className="text-orange-500" />
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                You need to link a bank account before you can withdraw funds.
+              </p>
+            </div>
+            
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowNoAccountsModal(false);
+                  onClose();
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowNoAccountsModal(false);
+                  onClose();
+                  // Navigate to bank accounts would go here
+                  toast.info('Please navigate to Bank Accounts to link your account');
+                }}
+                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                Link Account
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

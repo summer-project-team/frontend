@@ -5,7 +5,6 @@ import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { toast } from 'sonner';
 import { bankingService, type BankAccount } from '../services/BankingService';
-import type { Screen } from '../App';
 
 interface ModernWithdrawScreenProps {
   onBack: () => void;
@@ -18,12 +17,11 @@ interface ModernWithdrawScreenProps {
     onSuccess: (pin: string) => void;
     returnScreen?: 'withdraw';
   }) => void;
-  onNavigate?: (screen: Screen) => void; // Add navigation prop
 }
 
 type WithdrawStep = 'amount' | 'account' | 'twoFactor' | 'pin' | 'confirmation';
 
-export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNavigateToPin, onNavigate }: ModernWithdrawScreenProps) {
+export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNavigateToPin }: ModernWithdrawScreenProps) {
   const [currentStep, setCurrentStep] = useState<WithdrawStep>('amount');
   const [amount, setAmount] = useState('');
   const [linkedAccounts, setLinkedAccounts] = useState<BankAccount[]>([]);
@@ -528,13 +526,9 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
               <Button
                 onClick={() => {
                   setShowNoAccountsModal(false);
-                  // Navigate to bank accounts screen
-                  if (onNavigate) {
-                    onNavigate('bank-accounts');
-                  } else {
-                    onBack();
-                    toast.info('Please navigate to Bank Accounts to link your account');
-                  }
+                  onBack();
+                  // Navigate to bank accounts would go here
+                  toast.info('Please navigate to Bank Accounts to link your account');
                 }}
                 className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
               >
@@ -544,13 +538,6 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Subtle Liquid Glass Footer */}
-      <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-white/10 to-transparent dark:from-slate-900/30 dark:via-slate-900/15 dark:to-transparent backdrop-blur-md"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/20"></div>
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white/40 dark:bg-white/20 rounded-full"></div>
-      </div>
     </>
   );
 }

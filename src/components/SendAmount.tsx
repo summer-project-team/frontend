@@ -564,7 +564,7 @@ export function SendAmount({
       </div>
 
       {/* Biometric Confirmation Button */}
-      <div className="flex-1 flex items-end p-6 safe-bottom">
+      <div className="flex-1 flex items-end p-6 pb-28 safe-bottom">
         <Button
           onClick={handleConfirm}
           disabled={numericAmount <= 0 || isConfirming}

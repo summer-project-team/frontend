@@ -31,7 +31,9 @@ export function formatCurrency(
   
   if (isNaN(numAmount)) return '0.00';
   
-  const currencyConfig = CURRENCIES[currency.toUpperCase()] || CURRENCIES['USD'];
+  // Handle null/undefined currency
+  const safeCurrency = currency || 'USD';
+  const currencyConfig = CURRENCIES[safeCurrency.toUpperCase()] || CURRENCIES['USD'];
   const formattedAmount = numAmount.toLocaleString('en-US', { 
     minimumFractionDigits: 2, 
     maximumFractionDigits: 2 
@@ -81,6 +83,37 @@ export function getDisplayCurrency(transaction: {
 }
 
 /**
+ * Add flow_type to transactions that don't have it
+ * This helps maintain consistent transaction direction display
+ */
+export function enrichTransactionWithFlowType<T extends {
+  type?: string;
+  status?: string;
+  recipient?: string;
+  recipientId?: string;
+  flow_type?: 'inflow' | 'outflow';
+}>(transaction: T): T & { flow_type: 'inflow' | 'outflow' } {
+  if (transaction.flow_type) {
+    return transaction as T & { flow_type: 'inflow' | 'outflow' };
+  }
+
+  // Determine flow type based on transaction properties
+  const isIncoming = transaction.type === 'deposit' || 
+                    transaction.type === 'add_money' ||
+                    transaction.type === 'bank_deposit' ||
+                    transaction.status === 'received' || 
+                    transaction.recipient?.toLowerCase().includes('deposit') ||
+                    transaction.recipient?.toLowerCase().includes('add money') ||
+                    transaction.recipientId === 'deposit' ||
+                    (transaction.type === 'transfer' && transaction.status === 'received');
+
+  return {
+    ...transaction,
+    flow_type: isIncoming ? 'inflow' : 'outflow'
+  };
+}
+
+/**
  * Format transaction amount with proper currency
  * @param transaction - Transaction object
  * @param showSign - Whether to show +/- sign
@@ -96,6 +129,8 @@ export function formatTransactionAmount(
     target_currency?: string;
     status?: string;
     recipient?: string;
+    recipientId?: string;
+    flow_type?: 'inflow' | 'outflow'; // Add flow_type field
   },
   showSign: boolean = true
 ): string {
@@ -104,10 +139,22 @@ export function formatTransactionAmount(
   
   if (!showSign) return formattedAmount;
   
-  // Determine if this is incoming or outgoing
-  const isIncoming = transaction.type === 'deposit' || 
-                    transaction.status === 'received' || 
-                    transaction.recipient?.includes('Deposit');
+  // Use flow_type if available, otherwise determine from transaction properties
+  let isIncoming: boolean;
+  
+  if (transaction.flow_type) {
+    isIncoming = transaction.flow_type === 'inflow';
+  } else {
+    // Fallback logic for transactions without flow_type
+    isIncoming = transaction.type === 'deposit' || 
+                transaction.type === 'add_money' ||
+                transaction.type === 'bank_deposit' ||
+                transaction.status === 'received' || 
+                transaction.recipient?.toLowerCase().includes('deposit') ||
+                transaction.recipient?.toLowerCase().includes('add money') ||
+                transaction.recipientId === 'deposit' ||
+                (transaction.type === 'transfer' && transaction.status === 'received');
+  }
   
   const sign = isIncoming ? '+' : '-';
   return `${sign}${formattedAmount}`;

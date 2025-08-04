@@ -30,22 +30,22 @@ export function UnifiedPinInput({
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    // Focus first input on mount
-    if (inputRefs.current[0] && !disabled) {
+    // Focus first input on mount only if we're not using custom number pad
+    if (inputRefs.current[0] && !disabled && !(showNumberPad && variant === 'screen')) {
       inputRefs.current[0].focus();
     }
-  }, [disabled]);
+  }, [disabled, showNumberPad, variant]);
 
   useEffect(() => {
     // Clear PIN when error occurs
     if (error) {
       setPin(['', '', '', '']);
       setCurrentIndex(0);
-      if (inputRefs.current[0] && !disabled) {
+      if (inputRefs.current[0] && !disabled && !(showNumberPad && variant === 'screen')) {
         inputRefs.current[0].focus();
       }
     }
-  }, [error, disabled]);
+  }, [error, disabled, showNumberPad, variant]);
 
   const handleInputChange = (value: string, index: number) => {
     if (!/^\d*$/.test(value) || disabled) return; // Only allow digits
@@ -133,7 +133,10 @@ export function UnifiedPinInput({
     
     setPin(['', '', '', '']);
     setCurrentIndex(0);
-    inputRefs.current[0]?.focus();
+    // Only focus if not using custom number pad
+    if (!(showNumberPad && variant === 'screen')) {
+      inputRefs.current[0]?.focus();
+    }
     onClear?.();
   };
 
@@ -147,7 +150,8 @@ export function UnifiedPinInput({
       setPin(newPin);
       setCurrentIndex(Math.max(0, newPinString.length));
       
-      if (inputRefs.current[newPinString.length]) {
+      // Only focus if not using custom number pad
+      if (!(showNumberPad && variant === 'screen') && inputRefs.current[newPinString.length]) {
         inputRefs.current[newPinString.length]?.focus();
       }
     }
@@ -205,15 +209,17 @@ export function UnifiedPinInput({
             <input
               ref={(el) => (inputRefs.current[index] = el)}
               type="text"
-              inputMode="numeric"
+              inputMode={showNumberPad && variant === 'screen' ? 'none' : 'numeric'}
               maxLength={1}
               value={digit}
               onChange={(e) => handleInputChange(e.target.value, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               onPaste={handlePaste}
+              onFocus={showNumberPad && variant === 'screen' ? (e) => e.target.blur() : undefined}
               className={getInputClasses(digit, index)}
               style={{ color: 'transparent', caretColor: 'transparent' }}
               disabled={disabled || isVerifying}
+              readOnly={showNumberPad && variant === 'screen'}
             />
             {/* Dot indicator for filled inputs */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

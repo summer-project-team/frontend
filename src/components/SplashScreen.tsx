@@ -18,12 +18,12 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     // Start fade out
     const fadeTimer = setTimeout(() => {
       setIsVisible(false);
-    }, 2800);
+    }, 3800);
     
     // Complete animation
     const completeTimer = setTimeout(() => {
       onComplete();
-    }, 3300);
+    }, 4300);
 
     return () => {
       clearTimeout(timer1);

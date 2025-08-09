@@ -209,18 +209,18 @@ export function ModernRecipientSelection({ user, onBack, onRecipientSelect }: Mo
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 pt-8 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/20">
+      <div className="flex items-center justify-between px-4 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <Button
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+          className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
         >
           <ArrowLeft size={20} />
         </Button>
-        <h2 className="text-gray-800 dark:text-white font-semibold">Send to</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Send to</h2>
         <Button
           variant="ghost"
           size="sm"
@@ -228,7 +228,7 @@ export function ModernRecipientSelection({ user, onBack, onRecipientSelect }: Mo
             setRecipientType(activeTab === 'app-users' ? 'phone' : 'bank');
             setIsAddRecipientOpen(true);
           }}
-          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+          className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
         >
           <Plus size={20} />
         </Button>
@@ -242,42 +242,42 @@ export function ModernRecipientSelection({ user, onBack, onRecipientSelect }: Mo
             placeholder="Search recipients..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white/50 dark:bg-white/10 border-white/50 dark:border-white/20 rounded-2xl h-12 text-gray-800 dark:text-white placeholder:text-gray-400"
+            className="pl-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-12 text-gray-800 dark:text-white placeholder:text-gray-400"
           />
         </div>
       </div>
 
       {/* Tabs */}
       <div className="px-4 mb-4">
-        <div className="flex bg-white/30 dark:bg-white/10 rounded-2xl p-1 backdrop-blur-md border border-white/30 dark:border-white/20">
+        <div className="flex bg-white dark:bg-gray-800 rounded-xl p-1 border border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setActiveTab('app-users')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 ${
+            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg transition-all duration-300 ${
               activeTab === 'app-users'
-                ? 'bg-white dark:bg-white/20 shadow-lg text-gray-800 dark:text-white'
+                ? 'bg-indigo-600 text-white'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
             }`}
           >
-            <Smartphone size={18} />
-            <span className="font-medium">App Users</span>
+            <Smartphone size={16} />
+            <span className="font-medium text-sm">App Users</span>
             {appUsers.length > 0 && (
-              <div className="px-2 py-1 bg-green-500/20 rounded-full">
+              <div className="px-1.5 py-0.5 bg-green-500/20 rounded-full">
                 <span className="text-green-600 dark:text-green-400 text-xs font-medium">{appUsers.length}</span>
               </div>
             )}
           </button>
           <button
             onClick={() => setActiveTab('bank-accounts')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 ${
+            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg transition-all duration-300 ${
               activeTab === 'bank-accounts'
-                ? 'bg-white dark:bg-white/20 shadow-lg text-gray-800 dark:text-white'
+                ? 'bg-indigo-600 text-white'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
             }`}
           >
-            <Building2 size={18} />
-            <span className="font-medium">Bank Accounts</span>
+            <Building2 size={16} />
+            <span className="font-medium text-sm">Bank Accounts</span>
             {bankRecipients.length > 0 && (
-              <div className="px-2 py-1 bg-blue-500/20 rounded-full">
+              <div className="px-1.5 py-0.5 bg-blue-500/20 rounded-full">
                 <span className="text-blue-600 dark:text-blue-400 text-xs font-medium">{bankRecipients.length}</span>
               </div>
             )}
@@ -347,10 +347,10 @@ export function ModernRecipientSelection({ user, onBack, onRecipientSelect }: Mo
                       <button
                         key={recipient.id}
                         onClick={() => handleSelectRecipient(recipient)}
-                        className="w-full flex items-center justify-between p-4 bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl border border-white/50 dark:border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 group"
+                        className="w-full flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 group"
                       >
                         <div className="flex items-center space-x-3">
-                          <Avatar className="w-12 h-12 border-2 border-white/50">
+                          <Avatar className="w-12 h-12 border-2 border-gray-200 dark:border-gray-700">
                             <AvatarImage src={recipient.avatar} />
                             <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-600 text-white text-sm font-medium">
                               {recipient.name[0]}
@@ -405,17 +405,17 @@ export function ModernRecipientSelection({ user, onBack, onRecipientSelect }: Mo
                       </div>
                       <h3 className="text-gray-800 dark:text-white font-semibold">Bank Accounts</h3>
                       <div className="px-2 py-1 bg-blue-500/20 rounded-full">
-                        <span className="text-blue-600 dark:text-blue-400 text-xs font-medium">1-3 days</span>
+                        <span className="text-blue-600 dark:text-blue-400 text-xs font-medium">2-5 minutes</span>
                       </div>
                     </div>
                     {bankRecipients.map((recipient) => (
                       <button
                         key={recipient.id}
                         onClick={() => handleSelectRecipient(recipient)}
-                        className="w-full flex items-center justify-between p-4 bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl border border-white/50 dark:border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 group"
+                        className="w-full flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 group"
                       >
                         <div className="flex items-center space-x-3">
-                          <Avatar className="w-12 h-12 border-2 border-white/50">
+                          <Avatar className="w-12 h-12 border-2 border-gray-200 dark:border-gray-700">
                             <AvatarImage src={recipient.avatar} />
                             <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm font-medium">
                               {recipient.name[0]}
@@ -451,7 +451,7 @@ export function ModernRecipientSelection({ user, onBack, onRecipientSelect }: Mo
           setNewRecipient({ name: '', accountNumber: '', bankCode: '', bankName: '', phoneNumber: '', country: 'Nigeria' });
         }
       }}>
-        <DialogContent className="bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-white/50 dark:border-white/20 mx-auto max-w-md rounded-3xl">
+        <DialogContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mx-auto max-w-md rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-center text-gray-800 dark:text-white">
               Add New Recipient
@@ -507,7 +507,7 @@ export function ModernRecipientSelection({ user, onBack, onRecipientSelect }: Mo
                   value={newRecipient.name}
                   onChange={(e) => setNewRecipient(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="Enter recipient name"
-                  className="mt-1 bg-white/50 dark:bg-white/10 border-white/50 dark:border-white/20 rounded-xl"
+                  className="mt-1 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl"
                 />
               </div>
               
@@ -519,7 +519,7 @@ export function ModernRecipientSelection({ user, onBack, onRecipientSelect }: Mo
                     value={newRecipient.phoneNumber}
                     onChange={(e) => setNewRecipient(prev => ({ ...prev, phoneNumber: e.target.value }))}
                     placeholder="Enter phone number"
-                    className="mt-1 bg-white/50 dark:bg-white/10 border-white/50 dark:border-white/20 rounded-xl"
+                    className="mt-1 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl"
                   />
                 </div>
               ) : (
@@ -531,7 +531,7 @@ export function ModernRecipientSelection({ user, onBack, onRecipientSelect }: Mo
                       value={newRecipient.accountNumber}
                       onChange={(e) => setNewRecipient(prev => ({ ...prev, accountNumber: e.target.value }))}
                       placeholder="Enter account number"
-                      className="mt-1 bg-white/50 dark:bg-white/10 border-white/50 dark:border-white/20 rounded-xl"
+                      className="mt-1 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl"
                     />
                   </div>
                   
@@ -548,7 +548,7 @@ export function ModernRecipientSelection({ user, onBack, onRecipientSelect }: Mo
                           bankName: selectedBank?.name || ''
                         }));
                       }}
-                      className="mt-1 w-full p-2 bg-white/50 dark:bg-white/10 border border-white/50 dark:border-white/20 rounded-xl text-gray-800 dark:text-white"
+                      className="mt-1 w-full p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-white"
                     >
                       <option value="">Select bank</option>
                       {nigerianBanks.map((bank) => (
@@ -582,7 +582,7 @@ export function ModernRecipientSelection({ user, onBack, onRecipientSelect }: Mo
                     }
                   }}
                   variant="outline"
-                  className="px-6 bg-white/50 dark:bg-white/10 border-white/50 dark:border-white/20 rounded-2xl"
+                  className="px-6 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl"
                 >
                   {recipientType ? 'Cancel' : 'Back'}
                 </Button>

@@ -81,21 +81,14 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 relative">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 -right-4 w-96 h-96 bg-gradient-to-tl from-purple-400/20 to-pink-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-indigo-400/10 to-blue-600/10 rounded-full blur-2xl animate-pulse delay-500"></div>
-      </div>
-
-      {/* Fixed Header */}
-      <div className="relative z-10 flex items-center justify-between p-4 pt-12 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/30 dark:border-white/20">
+    <div className="h-screen flex flex-col bg-slate-50 dark:bg-slate-900 relative">
+      {/* Header */}
+      <div className="relative z-10 flex items-center justify-between p-4 pt-12 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <Button
           onClick={onBack}
           variant="ghost"
           size="sm"
-          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+          className="bg-gray-100 dark:bg-gray-700 rounded-full w-10 h-10 p-0 border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300"
         >
           <ArrowLeft size={18} className="text-gray-700 dark:text-gray-300" />
         </Button>
@@ -107,7 +100,7 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
             onClick={handleShare}
             variant="ghost"
             size="sm"
-            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+            className="bg-gray-100 dark:bg-gray-700 rounded-full w-10 h-10 p-0 border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300"
           >
             <Share2 size={16} className="text-gray-700 dark:text-gray-300" />
           </Button>
@@ -115,7 +108,7 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
             onClick={handleDownload}
             variant="ghost"
             size="sm"
-            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+            className="bg-gray-100 dark:bg-gray-700 rounded-full w-10 h-10 p-0 border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300"
           >
             <Download size={16} className="text-gray-700 dark:text-gray-300" />
           </Button>
@@ -126,7 +119,7 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
       <div className="relative z-10 flex-1 overflow-y-auto pb-24 pt-6">
         {/* Status Header */}
         <div className="p-4 text-center">
-          <div className={`w-16 h-16 mx-auto mb-3 bg-gradient-to-r ${getStatusColor()} rounded-full flex items-center justify-center shadow-2xl border-4 border-white/50 dark:border-white/20`}>
+          <div className="w-16 h-16 mx-auto mb-3 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center border-4 border-gray-200 dark:border-gray-700">
             {getStatusIcon()}
           </div>
           <h1 className="text-xl font-bold mb-2 text-gray-800 dark:text-white">
@@ -138,12 +131,12 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
 
         {/* Receipt Card */}
         <div className="px-6">
-          <div className="backdrop-blur-xl bg-white/70 dark:bg-white/10 rounded-3xl border border-white/50 dark:border-white/20 shadow-2xl overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-blue-500/10 p-6 border-b border-white/30 dark:border-white/20">
+            <div className="bg-gray-50 dark:bg-gray-700 p-6 border-b border-gray-200 dark:border-gray-600">
               <div className="text-center">
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Transaction Receipt</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-mono bg-gray-100/50 dark:bg-gray-800/50 px-3 py-1 rounded-lg inline-block">
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-mono bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-lg inline-block">
                   {transaction.referenceNumber}
                 </p>
               </div>
@@ -153,12 +146,12 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
             <div className="p-6 space-y-6">
               {/* Sender & Recipient */}
               <div className="space-y-4">
-                <div className="bg-white/50 dark:bg-white/5 rounded-2xl p-5 border border-white/30 dark:border-white/10">
+                <div className="bg-gray-100 dark:bg-gray-600 rounded-2xl p-5 border border-gray-200 dark:border-gray-500">
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 font-medium">From</p>
                   <div className="flex items-center space-x-3">
-                    <Avatar className="w-12 h-12 border-2 border-white/50">
+                    <Avatar className="w-12 h-12 border-2 border-gray-200 dark:border-gray-600">
                       <AvatarImage src={user?.avatar} />
-                      <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                      <AvatarFallback className="bg-indigo-600 text-white">
                         {user?.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
@@ -169,12 +162,12 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
                   </div>
                 </div>
 
-                <div className="bg-white/50 dark:bg-white/5 rounded-2xl p-4 border border-white/30 dark:border-white/10">
+                <div className="bg-gray-100 dark:bg-gray-600 rounded-2xl p-4 border border-gray-200 dark:border-gray-500">
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 font-medium">To</p>
                   <div className="flex items-center space-x-3">
-                    <Avatar className="w-12 h-12 border-2 border-white/50">
+                    <Avatar className="w-12 h-12 border-2 border-gray-200 dark:border-gray-600">
                       <AvatarImage src={transaction.avatar} />
-                      <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+                      <AvatarFallback className="bg-green-600 text-white">
                         {transaction.recipient[0]}
                       </AvatarFallback>
                     </Avatar>
@@ -187,7 +180,7 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
               </div>
 
               {/* Amount Details */}
-              <div className="bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/30 dark:to-emerald-900/30 rounded-2xl p-5 border border-green-200/50 dark:border-green-700/50 backdrop-blur-sm">
+              <div className="bg-green-50 dark:bg-green-900 rounded-2xl p-5 border border-green-200 dark:border-green-700">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-400 font-medium">Amount Sent</span>
@@ -205,7 +198,7 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
                     <span className="text-gray-600 dark:text-gray-400">Transfer Fee</span>
                     <span className="text-gray-800 dark:text-white">{formatCurrency(transaction.fee, transaction.currency)}</span>
                   </div>
-                  <div className="border-t border-green-200/50 dark:border-green-700/50 pt-3">
+                  <div className="border-t border-green-200 dark:border-green-700 pt-3">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700 dark:text-gray-300 font-semibold">Total Paid</span>
                       <span className="text-xl font-bold text-green-600 dark:text-green-400">{formatCurrency(transaction.totalPaid, transaction.currency)}</span>
@@ -215,17 +208,17 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
               </div>
 
               {/* Transaction Info */}
-              <div className="bg-white/50 dark:bg-white/5 rounded-2xl p-4 border border-white/30 dark:border-white/10 space-y-3">
+              <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl p-4 border border-gray-200 dark:border-gray-600 space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-400">Reference Number</span>
-                  <span className="text-gray-800 dark:text-white font-mono text-sm bg-gray-100/50 dark:bg-gray-800/50 px-2 py-1 rounded">{transaction.referenceNumber}</span>
+                  <span className="text-gray-800 dark:text-white font-mono text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{transaction.referenceNumber}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-400">Status</span>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    transaction.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                    transaction.status === 'failed' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
-                    'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
+                    transaction.status === 'completed' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-400' :
+                    transaction.status === 'failed' ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-400' :
+                    'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-400'
                   }`}>
                     {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
                   </span>
@@ -238,7 +231,7 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
             </div>
 
             {/* Footer */}
-            <div className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/50 dark:to-gray-900/50 p-4 text-center border-t border-white/30 dark:border-white/10">
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 text-center border-t border-gray-200 dark:border-gray-700">
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Need help? Contact our support team
               </p>
@@ -250,7 +243,7 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
         <div className="px-6 pt-6 space-y-3">
           <button
             onClick={handleDownload}
-            className="w-full h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-2xl transition-all duration-300 hover:scale-105 text-white font-medium flex items-center justify-center gap-2 shadow-lg"
+            className="w-full h-12 bg-blue-600 hover:bg-blue-700 rounded-2xl transition-all duration-300 text-white font-medium flex items-center justify-center gap-2"
           >
             <Download size={20} />
             Download Receipt
@@ -259,7 +252,7 @@ export function ReceiptScreen({ transaction, user, onBack }: ReceiptScreenProps)
           {'share' in navigator && (
             <button
               onClick={handleShare}
-              className="w-full h-12 backdrop-blur-md bg-white/30 dark:bg-white/10 border border-white/40 dark:border-white/20 rounded-2xl hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 text-gray-700 dark:text-gray-300 font-medium flex items-center justify-center gap-2"
+              className="w-full h-12 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-2xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-gray-700 dark:text-gray-300 font-medium flex items-center justify-center gap-2"
             >
               <Share2 size={20} />
               Share Receipt

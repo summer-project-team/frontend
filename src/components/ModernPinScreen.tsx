@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Shield, AlertCircle, Lock } from 'lucide-react';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
-import { UnifiedPinInput } from './UnifiedPinInput.tsx';
+import { UnifiedPinInput } from './UnifiedPinInput';
 import PinService from '../services/PinService';
 
 interface ModernPinScreenProps {
@@ -226,12 +226,12 @@ export function ModernPinScreen({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 -right-4 w-96 h-96 bg-gradient-to-tl from-purple-400/20 to-pink-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-indigo-400/10 to-blue-600/10 rounded-full blur-2xl animate-pulse delay-500"></div>
+        <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-100 dark:bg-blue-900/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 -right-4 w-96 h-96 bg-purple-100 dark:bg-purple-900/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-100 dark:bg-indigo-900/20 rounded-full blur-2xl"></div>
       </div>
 
       {/* Content */}
@@ -242,7 +242,7 @@ export function ModernPinScreen({
             variant="ghost"
             size="sm"
             onClick={handleStepBack}
-            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+            className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-all duration-300"
           >
             <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
           </Button>
@@ -261,7 +261,7 @@ export function ModernPinScreen({
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
               <div 
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 h-2 rounded-full transition-all duration-500 ease-out"
+                className="bg-indigo-600 h-2 rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${getProgress()}%` }}
               ></div>
             </div>
@@ -270,11 +270,11 @@ export function ModernPinScreen({
 
         {/* Main Content */}
         <div className="flex-1 px-6 pb-6">
-          <div className="backdrop-blur-xl bg-white/40 dark:bg-white/5 rounded-3xl p-8 border border-white/30 dark:border-white/10 shadow-2xl hover:shadow-3xl transition-all duration-500 max-w-2xl mx-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 transition-all duration-500 max-w-2xl mx-auto">
             
             {/* Step Icon and Title */}
             <div className="text-center mb-8">
-              <div className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-br ${getStepIconColor()} rounded-2xl flex items-center justify-center shadow-lg`}>
+              <div className={`w-16 h-16 mx-auto mb-4 ${getStepIconColor()} rounded-2xl flex items-center justify-center`}>
                 {getStepIcon()}
               </div>
               <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">{getStepTitle()}</h2>
@@ -283,7 +283,7 @@ export function ModernPinScreen({
 
             {/* Error Message */}
             {error && (
-              <div className="mb-6 backdrop-blur-xl bg-red-50/50 dark:bg-red-900/20 border border-red-200/30 dark:border-red-500/30 rounded-2xl p-4">
+              <div className="mb-6 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-500 rounded-2xl p-4">
                 <div className="flex items-center gap-2">
                   <AlertCircle size={20} className="text-red-600 dark:text-red-400" />
                   <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
@@ -316,7 +316,7 @@ export function ModernPinScreen({
                   disabled={!canSave || isLoading}
                   className={`w-full py-4 px-6 rounded-2xl font-semibold text-lg transition-all duration-300 ${
                     canSave && !isLoading
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl active:scale-98'
+                      ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                   }`}
                 >

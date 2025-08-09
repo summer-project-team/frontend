@@ -44,7 +44,7 @@ export function ModernPinInput({ onComplete, onClear, disabled = false }: Modern
             key={index}
             className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${
               pin.length > index
-                ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-600/30'
+                ? 'bg-indigo-600 border-indigo-600'
                 : 'border-gray-300 dark:border-gray-600'
             }`}
           />
@@ -59,7 +59,7 @@ export function ModernPinInput({ onComplete, onClear, disabled = false }: Modern
             key={number}
             onClick={() => handleNumberClick(number)}
             disabled={disabled}
-            className="w-16 h-16 rounded-2xl bg-white/30 dark:bg-white/10 backdrop-blur-xl border border-white/40 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 text-xl font-semibold text-gray-800 dark:text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-16 h-16 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-xl font-semibold text-gray-800 dark:text-white transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {number}
           </Button>
@@ -69,7 +69,7 @@ export function ModernPinInput({ onComplete, onClear, disabled = false }: Modern
         <Button
           onClick={handleClear}
           disabled={disabled}
-          className="w-16 h-16 rounded-2xl bg-red-100/50 dark:bg-red-900/20 backdrop-blur-xl border border-red-200/40 dark:border-red-500/20 hover:bg-red-200/50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900 border border-red-200 dark:border-red-700 hover:bg-red-200 dark:hover:bg-red-800 text-red-600 dark:text-red-400 transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Trash2 size={20} />
         </Button>
@@ -77,7 +77,7 @@ export function ModernPinInput({ onComplete, onClear, disabled = false }: Modern
         <Button
           onClick={() => handleNumberClick('0')}
           disabled={disabled}
-          className="w-16 h-16 rounded-2xl bg-white/30 dark:bg-white/10 backdrop-blur-xl border border-white/40 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 text-xl font-semibold text-gray-800 dark:text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-16 h-16 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-xl font-semibold text-gray-800 dark:text-white transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           0
         </Button>
@@ -85,7 +85,7 @@ export function ModernPinInput({ onComplete, onClear, disabled = false }: Modern
         <Button
           onClick={handleBackspace}
           disabled={disabled}
-          className="w-16 h-16 rounded-2xl bg-gray-100/50 dark:bg-gray-900/20 backdrop-blur-xl border border-gray-200/40 dark:border-gray-500/20 hover:bg-gray-200/50 dark:hover:bg-gray-900/30 text-gray-600 dark:text-gray-400 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           ⌫
         </Button>

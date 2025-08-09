@@ -184,7 +184,7 @@ export function UnifiedPinInput({
   };
 
   const getInputClasses = (digit: string, index: number) => {
-    const baseClasses = 'text-center font-bold border-2 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all bg-white/70 dark:bg-white/10 backdrop-blur-lg';
+    const baseClasses = 'text-center font-bold border-2 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all bg-white dark:bg-gray-800';
     const sizeClasses = variant === 'modal' || variant === 'inline' ? 'w-12 h-12 text-xl' : 'w-16 h-16 text-2xl';
     const errorClasses = error ? 'border-red-500 animate-pulse' : digit ? 'border-blue-500' : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500';
     const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : '';
@@ -239,7 +239,7 @@ export function UnifiedPinInput({
                 variant="ghost"
                 onClick={() => handleNumberClick(number)}
                 disabled={disabled || isVerifying}
-                className="h-16 text-2xl font-bold backdrop-blur-xl bg-white/30 dark:bg-white/5 border border-white/40 dark:border-white/20 rounded-2xl hover:bg-white/40 dark:hover:bg-white/10 hover:scale-105 transition-all duration-200 shadow-lg"
+                className="h-16 text-2xl font-bold bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-105 transition-all duration-200"
               >
                 {number}
               </Button>
@@ -250,7 +250,7 @@ export function UnifiedPinInput({
               variant="ghost"
               onClick={handleClear}
               disabled={disabled || isVerifying}
-              className="h-16 backdrop-blur-xl bg-white/30 dark:bg-white/5 border border-white/40 dark:border-white/20 rounded-2xl hover:bg-white/40 dark:hover:bg-white/10 hover:scale-105 transition-all duration-200 shadow-lg"
+              className="h-16 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:scale-105 transition-all duration-200"
             >
               <Trash2 size={20} className="text-gray-600 dark:text-gray-400" />
             </Button>
@@ -259,7 +259,7 @@ export function UnifiedPinInput({
               variant="ghost"
               onClick={() => handleNumberClick('0')}
               disabled={disabled || isVerifying}
-              className="h-16 text-2xl font-bold backdrop-blur-xl bg-white/30 dark:bg-white/5 border border-white/40 dark:border-white/20 rounded-2xl hover:bg-white/40 dark:hover:bg-white/10 hover:scale-105 transition-all duration-200 shadow-lg"
+              className="h-16 text-2xl font-bold bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:scale-105 transition-all duration-200"
             >
               0
             </Button>
@@ -268,7 +268,7 @@ export function UnifiedPinInput({
               variant="ghost"
               onClick={handleBackspace}
               disabled={disabled || isVerifying}
-              className="h-16 backdrop-blur-xl bg-white/30 dark:bg-white/5 border border-white/40 dark:border-white/20 rounded-2xl hover:bg-white/40 dark:hover:bg-white/10 hover:scale-105 transition-all duration-200 shadow-lg"
+              className="h-16 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:scale-105 transition-all duration-200"
             >
               ⌫
             </Button>
@@ -283,7 +283,7 @@ export function UnifiedPinInput({
             variant="outline"
             onClick={handleClear}
             disabled={disabled || isVerifying}
-            className="flex-1 h-12 backdrop-blur-xl bg-white/20 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl hover:bg-white/30 dark:hover:bg-white/10"
+            className="flex-1 h-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Clear
           </Button>

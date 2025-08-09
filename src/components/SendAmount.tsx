@@ -139,6 +139,9 @@ export function SendAmount({
   const [checkingPin, setCheckingPin] = useState(false);
   const [pinAttempts, setPinAttempts] = useState(0);
 
+  // Fix: Define exchangeRate for use in onConfirm
+  const exchangeRate = exchangeRates[recipient.currency] || 1;
+
   useEffect(() => {
     const interval = setInterval(() => {
       setLastUpdate(ExchangeRateService.getLastUpdate());
@@ -165,8 +168,12 @@ export function SendAmount({
   }, []);
 
   const numericAmount = parseFloat(amount) || 0;
-  const exchangeRate = exchangeRates[recipient.currency] || 1;
-  const convertedAmount = numericAmount * exchangeRate;
+  
+  // For NGN recipients, user inputs NGN directly (no conversion needed)
+  // For other currencies, user inputs USD and we convert to recipient currency
+  const convertedAmount = recipient.currency === 'NGN' ? numericAmount : numericAmount * (exchangeRates[recipient.currency] || 1);
+  
+  // Fee calculation should be based on the input amount in its native currency
   const transferFee = numericAmount * 0.015; // 1.5% fee
   const totalPayable = numericAmount + transferFee;
 
@@ -405,33 +412,33 @@ export function SendAmount({
   return (
     <div className="h-screen flex flex-col safe-top">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 pt-4 backdrop-blur-lg bg-white/20 border-b border-white/20">
+      <div className="flex items-center justify-between p-4 pt-8 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <Button
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="backdrop-blur-md bg-white/20 rounded-full p-2 border border-white/30 hover:bg-white/30 no-tap-highlight haptic-light touch-target"
+          className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
         >
           <ArrowLeft size={20} />
         </Button>
-        <h2 className="text-gray-800 no-select">Enter Amount</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Enter Amount</h2>
         <div className="w-10"></div>
       </div>
 
       {/* Recipient Card (Collapsed) */}
-      <div className="p-6">
-        <div className="backdrop-blur-md bg-white/25 rounded-2xl p-4 border border-white/30">
+      <div className="p-4 pt-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
             <Avatar className="w-12 h-12">
               <AvatarImage src={recipient.avatar} />
               <AvatarFallback>{recipient.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-gray-800">{recipient.name}</p>
-              <p className="text-sm text-gray-600">{recipient.country}</p>
+              <p className="text-gray-800 dark:text-white">{recipient.name}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{recipient.country}</p>
             </div>
             <div className="flex-1"></div>
-            <div className="text-xs bg-white/40 px-2 py-1 rounded-full text-gray-600">
+            <div className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-gray-600 dark:text-gray-400">
               {recipient.currency}
             </div>
           </div>
@@ -439,17 +446,19 @@ export function SendAmount({
       </div>
 
       {/* Amount Input */}
-      <div className="px-6 mb-6">
+      <div className="px-4 mb-6">
         <div className="text-center mb-4">
-          <p className="text-gray-600 mb-2">You Send</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-2">You Send</p>
           <div className="relative">
-            <span className="absolute left-6 top-1/2 transform -translate-y-1/2 text-3xl text-gray-500">$</span>
+            <span className="absolute left-6 top-1/2 transform -translate-y-1/2 text-3xl text-gray-500 dark:text-gray-400">
+              {recipient.currency === 'NGN' ? '₦' : recipient.currency === 'GBP' ? '£' : '$'}
+            </span>
             <Input
               type="number"
               placeholder="0"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="text-center text-4xl h-20 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl focus:bg-white/40 transition-all duration-300 pl-14 pr-6"
+              className="text-center text-4xl h-20 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl focus:bg-gray-50 dark:focus:bg-gray-750 transition-all duration-300 pl-14 pr-6"
             />
           </div>
         </div>
@@ -457,9 +466,9 @@ export function SendAmount({
         {/* Real-time Conversion */}
         {numericAmount > 0 && (
           <div className="text-center">
-            <div className="backdrop-blur-md bg-green-500/20 rounded-2xl p-4 border border-green-500/30">
-              <p className="text-green-700 mb-1">Recipient gets</p>
-              <p className="text-2xl text-green-800">
+            <div className="bg-green-50 dark:bg-green-900 rounded-2xl p-4 border border-green-200 dark:border-green-700">
+              <p className="text-green-700 dark:text-green-400 mb-1">Recipient gets</p>
+              <p className="text-2xl text-green-800 dark:text-green-300">
                 {ExchangeRateService.formatRate(convertedAmount, recipient.currency)} {recipient.currency}
               </p>
             </div>
@@ -468,23 +477,23 @@ export function SendAmount({
       </div>
 
       {/* Category and Note */}
-      <div className="px-6 mb-6">
-        <div className="backdrop-blur-md bg-white/25 rounded-2xl p-6 border border-white/30">
-          <h3 className="text-gray-700 mb-4 flex items-center gap-2">
+      <div className="px-4 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+          <h3 className="text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
             <Tag size={18} />
             Transaction Details
           </h3>
           
           <div className="space-y-4">
             <div>
-              <Label htmlFor="category" className="text-gray-700 text-sm font-medium mb-2 block">
+              <Label htmlFor="category" className="text-gray-700 dark:text-gray-300 text-sm font-medium mb-2 block">
                 Category (Optional)
               </Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="bg-white/30 border-white/40 text-gray-800">
+                <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-gray-800">
+                <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                   {transactionCategories.map((cat) => (
                     <SelectItem key={cat.value} value={cat.value}>
                       <div>
@@ -498,7 +507,7 @@ export function SendAmount({
             </div>
             
             <div>
-              <Label htmlFor="note" className="text-gray-700 text-sm font-medium mb-2 block flex items-center gap-2">
+              <Label htmlFor="note" className="text-gray-700 dark:text-gray-300 text-sm font-medium mb-2 block flex items-center gap-2">
                 <FileText size={16} />
                 Note (Optional)
               </Label>
@@ -508,20 +517,20 @@ export function SendAmount({
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 maxLength={100}
-                className="bg-white/30 border-white/40 text-gray-800 resize-none h-20"
+                className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white resize-none h-20"
               />
-              <div className="text-xs text-gray-500 mt-1 text-right">{note.length}/100</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">{note.length}/100</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Rate & Fee Breakdown */}
-      <div className="px-6 mb-8">
-        <div className="backdrop-blur-md bg-white/25 rounded-2xl p-6 border border-white/30">
+      <div className="px-4 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-gray-700">Rate & Fees</h3>
-            <div className="flex items-center space-x-2 text-xs text-gray-500">
+            <h3 className="text-gray-700 dark:text-gray-300">Rate & Fees</h3>
+            <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
               <RefreshCw size={12} />
               <span>Updated {formatTimeSinceUpdate()}</span>
             </div>
@@ -532,7 +541,7 @@ export function SendAmount({
               <div className="flex items-center space-x-2">
                 {getChangeIndicator()}
                 <span className="text-gray-800">
-                  1 USD = {ExchangeRateService.formatRate(exchangeRate, recipient.currency)} {recipient.currency}
+                  1 USD = {ExchangeRateService.formatRate(exchangeRates[recipient.currency] || 1, recipient.currency)} {recipient.currency}
                 </span>
               </div>
             </div>
@@ -551,12 +560,16 @@ export function SendAmount({
             )}
             <div className="flex justify-between">
               <span className="text-gray-600">Transfer Fee (1.5%)</span>
-              <span className="text-gray-800">${transferFee.toFixed(2)}</span>
+              <span className="text-gray-800">
+                {recipient.currency === 'NGN' ? '₦' : recipient.currency === 'GBP' ? '£' : '$'}{transferFee.toFixed(2)}
+              </span>
             </div>
             <div className="border-t border-white/40 pt-3">
               <div className="flex justify-between">
                 <span className="text-gray-700">Total Payable</span>
-                <span className="text-gray-800">${totalPayable.toFixed(2)}</span>
+                <span className="text-gray-800">
+                  {recipient.currency === 'NGN' ? '₦' : recipient.currency === 'GBP' ? '£' : '$'}{totalPayable.toFixed(2)}
+                </span>
               </div>
             </div>
           </div>

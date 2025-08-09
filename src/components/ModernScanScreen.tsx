@@ -54,14 +54,14 @@ export function ModernScanScreen({ onBack, user }: ModernScanScreenProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Fixed Header */}
-      <div className="flex items-center justify-between p-4 pt-8 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/20 flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
         <Button
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+          className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-all duration-300"
         >
           <ArrowLeft size={20} />
         </Button>
@@ -71,12 +71,12 @@ export function ModernScanScreen({ onBack, user }: ModernScanScreenProps) {
 
       {/* Tab Navigation */}
       <div className="p-4 flex-shrink-0">
-        <div className="flex bg-white/50 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-1 border border-white/50 dark:border-white/20">
+        <div className="flex bg-white dark:bg-gray-800 rounded-2xl p-1 border border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setActiveTab('scan')}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all duration-300 ${
               activeTab === 'scan'
-                ? 'bg-white/80 dark:bg-white/20 text-gray-800 dark:text-white shadow-md'
+                ? 'bg-indigo-600 text-white'
                 : 'text-gray-600 dark:text-gray-400'
             }`}
           >
@@ -87,7 +87,7 @@ export function ModernScanScreen({ onBack, user }: ModernScanScreenProps) {
             onClick={() => setActiveTab('generate')}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all duration-300 ${
               activeTab === 'generate'
-                ? 'bg-white/80 dark:bg-white/20 text-gray-800 dark:text-white shadow-md'
+                ? 'bg-indigo-600 text-white'
                 : 'text-gray-600 dark:text-gray-400'
             }`}
           >
@@ -101,7 +101,7 @@ export function ModernScanScreen({ onBack, user }: ModernScanScreenProps) {
       <div className="flex-1 p-4 pb-24">
         {activeTab === 'scan' ? (
           <div className="flex flex-col items-center justify-center h-full space-y-6">
-            <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-lg">
+            <div className="w-24 h-24 bg-indigo-500 rounded-3xl flex items-center justify-center">
               <Scan size={48} className="text-white" />
             </div>
             
@@ -114,7 +114,7 @@ export function ModernScanScreen({ onBack, user }: ModernScanScreenProps) {
 
             <Button
               onClick={() => setIsQRScannerOpen(true)}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-2xl h-14 px-8 shadow-lg"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-8"
             >
               <Scan className="mr-2" size={20} />
               Start Scanning
@@ -130,7 +130,7 @@ export function ModernScanScreen({ onBack, user }: ModernScanScreenProps) {
             </div>
 
             {/* Amount Input */}
-            <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/50 dark:border-white/20 shadow-lg">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
               <label className="block text-gray-700 dark:text-gray-300 font-medium text-sm mb-2">
                 Amount (Optional)
               </label>
@@ -141,13 +141,13 @@ export function ModernScanScreen({ onBack, user }: ModernScanScreenProps) {
                   placeholder="0.00"
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
-                  className="w-full text-center text-2xl h-14 bg-white/50 dark:bg-white/5 border border-white/50 dark:border-white/20 rounded-xl focus:bg-white/60 dark:focus:bg-white/10 transition-all duration-300 pl-12 pr-6 text-gray-800 dark:text-white placeholder:text-gray-400"
+                  className="w-full text-center text-2xl h-14 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:bg-gray-50 dark:focus:bg-gray-700 transition-all duration-300 pl-12 pr-6 text-gray-800 dark:text-white placeholder:text-gray-400"
                 />
               </div>
             </div>
 
             {/* Note Input */}
-            <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/50 dark:border-white/20 shadow-lg">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
               <label className="block text-gray-700 dark:text-gray-300 font-medium text-sm mb-2">
                 Note (Optional)
               </label>
@@ -156,12 +156,12 @@ export function ModernScanScreen({ onBack, user }: ModernScanScreenProps) {
                 placeholder="What's this payment for?"
                 value={paymentNote}
                 onChange={(e) => setPaymentNote(e.target.value)}
-                className="w-full h-12 bg-white/50 dark:bg-white/5 border border-white/50 dark:border-white/20 rounded-xl px-4 text-gray-800 dark:text-white placeholder:text-gray-400 focus:bg-white/60 dark:focus:bg-white/10 transition-all duration-300"
+                className="w-full h-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 text-gray-800 dark:text-white placeholder:text-gray-400 focus:bg-gray-50 dark:focus:bg-gray-700 transition-all duration-300"
               />
             </div>
 
             {/* QR Code Display */}
-            <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/50 dark:border-white/20 shadow-lg">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
               <div className="flex flex-col items-center space-y-4">
                 {/* Placeholder QR Code */}
                 <div className="w-48 h-48 bg-white rounded-2xl flex items-center justify-center border-2 border-gray-200">
@@ -192,7 +192,7 @@ export function ModernScanScreen({ onBack, user }: ModernScanScreenProps) {
                   <Button
                     onClick={shareQR}
                     variant="outline"
-                    className="flex-1 bg-white/50 border-white/50 text-gray-700 dark:text-gray-300 hover:bg-white/60"
+                    className="flex-1 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     <Share2 size={16} className="mr-2" />
                     Share
@@ -200,7 +200,7 @@ export function ModernScanScreen({ onBack, user }: ModernScanScreenProps) {
                   <Button
                     onClick={copyQRData}
                     variant="outline"
-                    className="flex-1 bg-white/50 border-white/50 text-gray-700 dark:text-gray-300 hover:bg-white/60"
+                    className="flex-1 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     <Copy size={16} className="mr-2" />
                     Copy

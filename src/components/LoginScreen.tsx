@@ -106,19 +106,19 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
       <div className="w-full max-w-sm">
         {/* Logo/Title */}
         <div className="text-center mb-12">
-          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl">
+          <div className="w-20 h-20 mx-auto mb-6 bg-blue-600 rounded-3xl flex items-center justify-center">
             <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center">
-              <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg"></div>
+              <div className="w-6 h-6 bg-blue-600 rounded-lg"></div>
             </div>
           </div>
-          <h1 className="text-3xl mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl mb-2 text-blue-600 dark:text-blue-400">
             Welcome Back
           </h1>
           <p className="text-gray-600">Sign in to your account</p>
         </div>
 
         {/* Login Form */}
-        <div className="backdrop-blur-lg bg-white/30 rounded-3xl p-8 border border-white/40 shadow-2xl mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 mb-6">
           <div className="space-y-6">
             {/* Phone Input */}
             <div>
@@ -135,7 +135,7 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
                     if (error) setError(null);
                   }}
                   onKeyPress={handleKeyPress}
-                  className="pl-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-14 focus:bg-white/40 transition-all duration-300"
+                  className="pl-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-14 focus:bg-gray-50 dark:focus:bg-gray-700 transition-all duration-300"
                 />
               </div>
             </div>
@@ -155,7 +155,7 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
                     if (error) setError(null);
                   }}
                   onKeyPress={handleKeyPress}
-                  className="pl-12 pr-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-14 focus:bg-white/40 transition-all duration-300"
+                  className="pl-12 pr-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-14 focus:bg-gray-50 dark:focus:bg-gray-700 transition-all duration-300"
                 />
                 <button
                   type="button"
@@ -187,7 +187,7 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
             <Button
               onClick={handleLogin}
               disabled={!phone || !password || isLoading}
-              className="w-full h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
+              className="w-full h-14 bg-blue-600 hover:bg-blue-700 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
             >
               {isLoading ? (
                 <div className="flex items-center space-x-3">
@@ -202,13 +202,13 @@ export function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenProps) {
         </div>
 
         {/* Biometric Login */}
-        <div className="backdrop-blur-md bg-white/25 rounded-2xl p-4 border border-white/30 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 mb-6">
           <Button
             variant="outline"
-            className="w-full h-12 backdrop-blur-md bg-white/20 border-white/40 rounded-xl hover:bg-white/30 transition-all duration-300"
+            className="w-full h-12 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-300"
           >
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
                 <div className="w-3 h-3 bg-white rounded-full"></div>
               </div>
               <span>Use Biometric Login</span>

@@ -141,7 +141,7 @@ export function PinInput({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
+        className={`absolute inset-0 bg-black/70 transition-opacity duration-300 ${
           isVisible ? 'opacity-100' : 'opacity-0'
         }`}
         onClick={handleClose}
@@ -149,7 +149,7 @@ export function PinInput({
       
       {/* Modal */}
       <div 
-        className={`relative bg-white rounded-3xl shadow-2xl w-full max-w-md mx-auto transition-all duration-300 ease-out ${
+        className={`relative bg-white rounded-3xl w-full max-w-md mx-auto transition-all duration-300 ease-out ${
           isVisible 
             ? 'opacity-100 scale-100' 
             : 'opacity-0 scale-95'

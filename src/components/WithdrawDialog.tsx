@@ -263,7 +263,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="pl-10 text-lg bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white"
+            className="pl-10 text-lg bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white"
           />
         </div>
       </div>
@@ -367,7 +367,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
                 className={`w-full text-left p-4 rounded-xl border transition-all duration-200 ${
                   selectedAccount?.id === account.id
                     ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20'
-                    : 'border-gray-200/30 dark:border-white/10 bg-gray-100/30 dark:bg-gray-900/30 hover:bg-gray-200/30 dark:hover:bg-gray-900/50'
+                    : 'border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -406,7 +406,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
           <Button
             onClick={() => setStep(1)}
             variant="outline"
-            className="flex-1 bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white hover:bg-gray-200/30 dark:hover:bg-gray-900/50"
+            className="flex-1 bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800"
           >
             Back
           </Button>
@@ -491,7 +491,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
           onClick={() => setStep(isHighValueWithdrawal(parseFloat(amount), selectedAccount?.currency) ? 4 : 2)}
           variant="outline"
           disabled={isLoading}
-          className="flex-1 bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white hover:bg-gray-200/30 dark:hover:bg-gray-900/50 disabled:opacity-50"
+          className="flex-1 bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800 disabled:opacity-50"
         >
           Back
         </Button>
@@ -560,7 +560,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
               setTwoFactorError('');
             }}
             placeholder="000000"
-            className="text-center text-lg font-mono tracking-widest bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white mt-2"
+            className="text-center text-lg font-mono tracking-widest bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white mt-2"
             maxLength={6}
           />
         </div>
@@ -574,7 +574,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
         <Button
           onClick={() => setStep(2)}
           variant="outline"
-          className="flex-1 bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white hover:bg-gray-200/30 dark:hover:bg-gray-900/50"
+          className="flex-1 bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800"
         >
           Back
         </Button>
@@ -602,7 +602,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-gray-200/30 dark:border-white/10 max-w-sm mx-auto">
+        <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-w-sm mx-auto">
           <DialogHeader>
             <DialogTitle className="text-center text-gray-800 dark:text-white">
               {getStepTitle()}
@@ -618,7 +618,7 @@ export function WithdrawDialog({ isOpen, onClose, userBalance, onWithdraw }: Wit
 
       {/* No Accounts Linked Modal */}
       <Dialog open={showNoAccountsModal} onOpenChange={setShowNoAccountsModal}>
-        <DialogContent className="bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-gray-200/30 dark:border-white/10 max-w-sm mx-auto">
+        <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-w-sm mx-auto">
           <DialogHeader>
             <DialogTitle className="text-center text-gray-800 dark:text-white flex items-center justify-center gap-2">
               <Landmark size={24} className="text-orange-500" />

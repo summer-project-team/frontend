@@ -104,7 +104,7 @@ export function EnhancedAnalyticsScreen({ onBack }: EnhancedAnalyticsScreenProps
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-purple-900 dark:via-blue-900 dark:to-indigo-900 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Loading analytics data...</p>
@@ -114,15 +114,15 @@ export function EnhancedAnalyticsScreen({ onBack }: EnhancedAnalyticsScreenProps
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-purple-900 dark:via-blue-900 dark:to-indigo-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="sticky top-0 z-10 backdrop-blur-xl bg-white/30 dark:bg-black/30 border-b border-white/20 dark:border-white/10">
+      <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between p-6 pt-8">
           <Button
             variant="ghost"
             size="sm"
             onClick={onBack}
-            className="backdrop-blur-md bg-white/40 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 hover:bg-white/50 dark:hover:bg-white/20"
+            className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <ArrowLeft size={20} />
           </Button>
@@ -134,7 +134,7 @@ export function EnhancedAnalyticsScreen({ onBack }: EnhancedAnalyticsScreenProps
               variant="ghost"
               size="sm"
               onClick={loadAnalyticsData}
-              className="backdrop-blur-md bg-white/40 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 hover:bg-white/50 dark:hover:bg-white/20"
+              className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               <RefreshCw size={20} />
             </Button>
@@ -142,7 +142,7 @@ export function EnhancedAnalyticsScreen({ onBack }: EnhancedAnalyticsScreenProps
               variant="ghost"
               size="sm"
               onClick={exportData}
-              className="backdrop-blur-md bg-white/40 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 hover:bg-white/50 dark:hover:bg-white/20"
+              className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               <Download size={20} />
             </Button>
@@ -157,7 +157,7 @@ export function EnhancedAnalyticsScreen({ onBack }: EnhancedAnalyticsScreenProps
             Transaction Analytics
           </h2>
           <Select value={selectedPeriod} onValueChange={(value: '7d' | '30d' | '90d') => setSelectedPeriod(value)}>
-            <SelectTrigger className="w-32 backdrop-blur-xl bg-white/40 dark:bg-white/10 border-white/40 dark:border-white/20 rounded-xl">
+            <SelectTrigger className="w-32 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -171,7 +171,7 @@ export function EnhancedAnalyticsScreen({ onBack }: EnhancedAnalyticsScreenProps
         {/* Summary Cards */}
         {analyticsSummary && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="backdrop-blur-xl bg-white/40 dark:bg-white/10 border-white/40 dark:border-white/20 rounded-2xl">
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
                   <DollarSign size={16} className="mr-2" />
@@ -195,7 +195,7 @@ export function EnhancedAnalyticsScreen({ onBack }: EnhancedAnalyticsScreenProps
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-xl bg-white/40 dark:bg-white/10 border-white/40 dark:border-white/20 rounded-2xl">
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
                   <Activity size={16} className="mr-2" />
@@ -212,7 +212,7 @@ export function EnhancedAnalyticsScreen({ onBack }: EnhancedAnalyticsScreenProps
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-xl bg-white/40 dark:bg-white/10 border-white/40 dark:border-white/20 rounded-2xl">
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
                   <Users size={16} className="mr-2" />
@@ -226,7 +226,7 @@ export function EnhancedAnalyticsScreen({ onBack }: EnhancedAnalyticsScreenProps
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-xl bg-white/40 dark:bg-white/10 border-white/40 dark:border-white/20 rounded-2xl">
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
                   <PieChart size={16} className="mr-2" />
@@ -243,7 +243,7 @@ export function EnhancedAnalyticsScreen({ onBack }: EnhancedAnalyticsScreenProps
         )}
 
         {/* Spending Patterns */}
-        <Card className="backdrop-blur-xl bg-white/40 dark:bg-white/10 border-white/40 dark:border-white/20 rounded-2xl">
+        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center text-gray-800 dark:text-white">
               <PieChart size={20} className="mr-2" />
@@ -258,11 +258,11 @@ export function EnhancedAnalyticsScreen({ onBack }: EnhancedAnalyticsScreenProps
               {spendingPatterns.map((pattern, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${
-                      index % 4 === 0 ? 'from-blue-500 to-blue-600' :
-                      index % 4 === 1 ? 'from-green-500 to-green-600' :
-                      index % 4 === 2 ? 'from-purple-500 to-purple-600' :
-                      'from-orange-500 to-orange-600'
+                    <div className={`w-3 h-3 rounded-full ${
+                      index % 4 === 0 ? 'bg-blue-500' :
+                      index % 4 === 1 ? 'bg-green-500' :
+                      index % 4 === 2 ? 'bg-purple-500' :
+                      'bg-orange-500'
                     }`} />
                     <span className="text-gray-700 dark:text-gray-300 font-medium">
                       {pattern.category}
@@ -284,7 +284,7 @@ export function EnhancedAnalyticsScreen({ onBack }: EnhancedAnalyticsScreenProps
         </Card>
 
         {/* Transaction Trends */}
-        <Card className="backdrop-blur-xl bg-white/40 dark:bg-white/10 border-white/40 dark:border-white/20 rounded-2xl">
+        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center text-gray-800 dark:text-white">
               <BarChart3 size={20} className="mr-2" />
@@ -333,7 +333,7 @@ export function EnhancedAnalyticsScreen({ onBack }: EnhancedAnalyticsScreenProps
 
         {/* Currency Distribution */}
         {currencyDistribution.length > 0 && (
-          <Card className="backdrop-blur-xl bg-white/40 dark:bg-white/10 border-white/40 dark:border-white/20 rounded-2xl">
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl">
             <CardHeader>
               <CardTitle className="flex items-center text-gray-800 dark:text-white">
                 <Calendar size={20} className="mr-2" />
@@ -346,7 +346,7 @@ export function EnhancedAnalyticsScreen({ onBack }: EnhancedAnalyticsScreenProps
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {currencyDistribution.map((currency, index) => (
-                  <div key={index} className="text-center p-4 bg-white/30 dark:bg-white/5 rounded-xl">
+                  <div key={index} className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <div className="text-lg font-bold text-gray-800 dark:text-white">
                       {currency.code}
                     </div>

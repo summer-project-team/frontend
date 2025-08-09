@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Home, QrCode, Gift, CreditCard } from 'lucide-react';
 import { Screen } from '../App';
 
@@ -8,6 +8,30 @@ interface ModernFooterProps {
 }
 
 export function ModernFooter({ currentScreen, onNavigate }: ModernFooterProps) {
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  // Detect keyboard visibility
+  useEffect(() => {
+    const handleResize = () => {
+      // On mobile, when keyboard appears, the viewport height decreases significantly
+      const currentHeight = window.visualViewport?.height || window.innerHeight;
+      const baseHeight = window.screen.height;
+      const heightDifference = baseHeight - currentHeight;
+      
+      // If height difference is more than 150px, assume keyboard is visible
+      setIsKeyboardVisible(heightDifference > 150);
+    };
+
+    // Use visualViewport if available (better for keyboard detection)
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+      return () => window.visualViewport?.removeEventListener('resize', handleResize);
+    } else {
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
+
   const footerItems = [
     {
       id: 'home' as Screen,
@@ -36,7 +60,11 @@ export function ModernFooter({ currentScreen, onNavigate }: ModernFooterProps) {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-white/30 dark:border-white/20 px-4 py-2 safe-area-bottom">
+    <div 
+      className={`fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-4 py-2 safe-area-bottom transition-transform duration-300 ${
+        isKeyboardVisible ? 'translate-y-full' : 'translate-y-0'
+      }`}
+    >
       <div className="flex items-center justify-around max-w-md mx-auto">
         {footerItems.map((item) => {
           const isActive = item.activeScreens.includes(currentScreen);
@@ -57,7 +85,7 @@ export function ModernFooter({ currentScreen, onNavigate }: ModernFooterProps) {
                 strokeWidth={isActive ? 2.5 : 1.5}
                 className={`transition-all duration-500 ease-out transform ${
                   isActive 
-                    ? 'scale-110 drop-shadow-sm' 
+                    ? 'scale-110' 
                     : 'group-hover:scale-110 group-hover:-translate-y-0.5 group-active:scale-95 group-active:translate-y-0'
                 }`} 
               />

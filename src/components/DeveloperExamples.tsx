@@ -373,14 +373,14 @@ export function DeveloperExamples({ onBack }: DeveloperExamplesProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Header */}
       <div className="flex items-center justify-between p-6 pt-8">
         <Button
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20"
+          className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700"
         >
           <ArrowLeft size={20} />
         </Button>
@@ -393,7 +393,7 @@ export function DeveloperExamples({ onBack }: DeveloperExamplesProps) {
           variant="ghost"
           size="sm"
           onClick={openDocumentation}
-          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20"
+          className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700"
         >
           <ExternalLink size={20} />
         </Button>
@@ -401,9 +401,9 @@ export function DeveloperExamples({ onBack }: DeveloperExamplesProps) {
 
       {/* Introduction */}
       <div className="px-6 mb-8">
-        <div className="backdrop-blur-xl bg-white/40 dark:bg-white/10 rounded-3xl p-6 border border-white/30 dark:border-white/20 shadow-lg">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center">
               <Code size={24} className="text-white" />
             </div>
             <div>
@@ -422,7 +422,7 @@ export function DeveloperExamples({ onBack }: DeveloperExamplesProps) {
       {/* Code Examples Tabs */}
       <div className="px-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-5 backdrop-blur-xl bg-white/30 dark:bg-white/10 border border-white/30 dark:border-white/20 rounded-2xl p-1 mb-6">
+          <TabsList className="grid grid-cols-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-1 mb-6">
             <TabsTrigger value="webhook" className="rounded-xl">
               <Globe size={16} className="mr-2" />
               Webhooks
@@ -447,9 +447,9 @@ export function DeveloperExamples({ onBack }: DeveloperExamplesProps) {
 
           {Object.entries(codeExamples).map(([key, example]) => (
             <TabsContent key={key} value={key}>
-              <div className="backdrop-blur-xl bg-white/40 dark:bg-white/10 rounded-3xl border border-white/30 dark:border-white/20 shadow-lg overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                 {/* Example Header */}
-                <div className="p-6 border-b border-white/30 dark:border-white/20">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-1">
@@ -494,7 +494,7 @@ export function DeveloperExamples({ onBack }: DeveloperExamplesProps) {
 
       {/* API Endpoints Reference */}
       <div className="px-6 mt-8 mb-6">
-        <div className="backdrop-blur-xl bg-white/40 dark:bg-white/10 rounded-3xl p-6 border border-white/30 dark:border-white/20 shadow-lg">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">
             Quick API Reference
           </h3>
@@ -512,7 +512,7 @@ export function DeveloperExamples({ onBack }: DeveloperExamplesProps) {
             ].map((api, index) => (
               <div
                 key={index}
-                className="flex items-center space-x-3 p-3 bg-white/30 dark:bg-white/5 rounded-xl border border-white/30 dark:border-white/20"
+                className="flex items-center space-x-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600"
               >
                 <span className={`px-2 py-1 text-xs font-medium rounded ${
                   api.method === 'GET' 

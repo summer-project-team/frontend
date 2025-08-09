@@ -42,7 +42,7 @@ export function TransactionResult({
           <div className={`mb-8 transition-all duration-1000 ${showAnimation ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}`}>
             <div className="relative">
               <div className="absolute inset-0 bg-green-500/20 rounded-full animate-ping"></div>
-              <div className="relative w-24 h-24 mx-auto bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-2xl">
+              <div className="relative w-24 h-24 mx-auto bg-green-500 rounded-full flex items-center justify-center">
                 <CheckCircle2 size={48} className="text-white" />
               </div>
             </div>
@@ -56,7 +56,7 @@ export function TransactionResult({
 
           {/* Transaction Details */}
           <div className={`mb-8 transition-all duration-1000 delay-500 ${showAnimation ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-            <div className="backdrop-blur-lg bg-white/30 rounded-3xl p-6 border border-white/40 shadow-xl">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-200 dark:border-gray-700">
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
                   <Avatar className="w-12 h-12">
@@ -73,7 +73,7 @@ export function TransactionResult({
                   </div>
                 </div>
                 
-                <div className="border-t border-white/40 pt-4 space-y-2">
+                <div className="border-t border-gray-200 dark:border-gray-600 pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Reference</span>
                     <span className="text-gray-800 font-mono">{transaction.referenceNumber}</span>
@@ -95,7 +95,7 @@ export function TransactionResult({
           <div className={`space-y-3 transition-all duration-1000 delay-700 ${showAnimation ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
             <Button
               onClick={onViewReceipt}
-              className="w-full h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-2xl transition-all duration-300 hover:scale-105"
+              className="w-full h-14 bg-blue-600 hover:bg-blue-700 rounded-2xl transition-all duration-300 hover:scale-105"
             >
               <Receipt size={20} className="mr-2" />
               View Receipt
@@ -104,7 +104,7 @@ export function TransactionResult({
               <Button
                 onClick={onDone}
                 variant="outline"
-                className="h-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl hover:bg-white/40 transition-all duration-300"
+                className="h-12 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-300"
               >
                 <Home size={16} className="mr-2" />
                 Home
@@ -112,7 +112,7 @@ export function TransactionResult({
               <Button
                 onClick={() => onDone()}
                 variant="outline"
-                className="h-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl hover:bg-white/40 transition-all duration-300"
+                className="h-12 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-300"
               >
                 Send Another
               </Button>
@@ -136,7 +136,7 @@ export function TransactionResult({
       <div className="relative z-10 text-center max-w-sm">
         {/* Failure Icon */}
         <div className={`mb-8 transition-all duration-1000 ${showAnimation ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}`}>
-          <div className="w-24 h-24 mx-auto bg-gradient-to-r from-red-400 to-orange-500 rounded-full flex items-center justify-center shadow-2xl">
+          <div className="w-24 h-24 mx-auto bg-red-500 rounded-full flex items-center justify-center">
             <XCircle size={48} className="text-white" />
           </div>
         </div>
@@ -149,7 +149,7 @@ export function TransactionResult({
 
         {/* Transaction Details */}
         <div className={`mb-8 transition-all duration-1000 delay-500 ${showAnimation ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-          <div className="backdrop-blur-lg bg-white/30 rounded-3xl p-6 border border-white/40 shadow-xl">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-200 dark:border-gray-700">
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
                 <Avatar className="w-12 h-12">
@@ -165,7 +165,7 @@ export function TransactionResult({
                 </div>
               </div>
               
-              <div className="border-t border-white/40 pt-4">
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-gray-600">Reference</span>
                   <span className="text-gray-800 font-mono">{transaction.referenceNumber}</span>
@@ -177,7 +177,7 @@ export function TransactionResult({
 
         {/* Problem Description */}
         <div className={`mb-8 transition-all duration-1000 delay-500 ${showAnimation ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-          <div className="backdrop-blur-lg bg-white/30 rounded-2xl p-6 border border-white/40 shadow-xl">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
@@ -195,7 +195,7 @@ export function TransactionResult({
         <div className={`space-y-3 transition-all duration-1000 delay-700 ${showAnimation ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
           <Button
             onClick={onTryAgain}
-            className="w-full h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-2xl transition-all duration-300 hover:scale-105"
+            className="w-full h-14 bg-blue-600 hover:bg-blue-700 rounded-2xl transition-all duration-300"
           >
             <RefreshCw size={20} className="mr-2" />
             Try Again
@@ -203,7 +203,7 @@ export function TransactionResult({
           <Button
             onClick={onDone}
             variant="outline"
-            className="w-full h-14 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl hover:bg-white/40 transition-all duration-300"
+            className="w-full h-14 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-300"
           >
             <Home size={20} className="mr-2" />
             Back to Home

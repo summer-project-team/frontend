@@ -161,7 +161,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 mx-auto mb-4 bg-blue-600 rounded-2xl flex items-center justify-center">
                 <UserIcon size={28} className="text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Personal Information</h2>
@@ -178,7 +178,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
                     placeholder="Enter your first name"
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    className="pl-12 backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-14 focus:bg-white/50 dark:focus:bg-white/10 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-blue-300 focus:border-blue-400"
+                    className="pl-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-14 focus:bg-gray-50 dark:focus:bg-gray-700 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-blue-300 focus:border-blue-400"
                   />
                 </div>
               </div>
@@ -192,7 +192,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
                     placeholder="Enter your last name"
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    className="pl-12 backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-14 focus:bg-white/50 dark:focus:bg-white/10 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-blue-300 focus:border-blue-400"
+                    className="pl-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-14 focus:bg-gray-50 dark:focus:bg-gray-700 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-blue-300 focus:border-blue-400"
                   />
                 </div>
               </div>
@@ -204,7 +204,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 mx-auto mb-4 bg-green-600 rounded-2xl flex items-center justify-center">
                 <Mail size={28} className="text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Contact Details</h2>
@@ -221,7 +221,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="pl-12 backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-14 focus:bg-white/50 dark:focus:bg-white/10 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-green-300 focus:border-green-400"
+                    className="pl-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-14 focus:bg-gray-50 dark:focus:bg-gray-700 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-green-300 focus:border-green-400"
                   />
                 </div>
               </div>
@@ -232,7 +232,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
                   <select
                     value={formData.countryCode}
                     onChange={(e) => handleInputChange('countryCode', e.target.value)}
-                    className="w-20 backdrop-blur-xl bg-white/30 dark:bg-white/5 border border-white/40 dark:border-white/20 rounded-2xl h-14 px-3 focus:bg-white/50 dark:focus:bg-white/10 transition-all duration-300 text-gray-800 dark:text-white"
+                    className="w-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl h-14 px-3 focus:bg-gray-50 dark:focus:bg-gray-700 transition-all duration-300 text-gray-800 dark:text-white"
                   >
                     <option value="NG">🇳🇬</option>
                     <option value="GB">🇬🇧</option>
@@ -245,7 +245,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
                       placeholder="+234 801 234 5678"
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
-                      className="pl-12 backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-14 focus:bg-white/50 dark:focus:bg-white/10 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-green-300 focus:border-green-400"
+                      className="pl-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-14 focus:bg-gray-50 dark:focus:bg-gray-700 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-green-300 focus:border-green-400"
                     />
                   </div>
                 </div>
@@ -258,7 +258,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-red-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 mx-auto mb-4 bg-red-600 rounded-2xl flex items-center justify-center">
                 <Shield size={28} className="text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Secure Your Account</h2>
@@ -275,7 +275,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
                     placeholder="Create a password"
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
-                    className="pl-12 pr-12 backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-14 focus:bg-white/50 dark:focus:bg-white/10 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-red-300 focus:border-red-400"
+                    className="pl-12 pr-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-14 focus:bg-gray-50 dark:focus:bg-gray-700 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-red-300 focus:border-red-400"
                   />
                   <button
                     type="button"
@@ -301,7 +301,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                    className="pl-12 pr-12 backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-14 focus:bg-white/50 dark:focus:bg-white/10 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-red-300 focus:border-red-400"
+                    className="pl-12 pr-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-14 focus:bg-gray-50 dark:focus:bg-gray-700 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-red-300 focus:border-red-400"
                   />
                   <button
                     type="button"
@@ -323,7 +323,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 mx-auto mb-4 bg-purple-600 rounded-2xl flex items-center justify-center">
                 <Shield size={28} className="text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Transaction PIN</h2>
@@ -343,7 +343,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
                       const value = e.target.value.replace(/\D/g, '').slice(0, 4);
                       handleInputChange('pin', value);
                     }}
-                    className="pl-12 pr-12 backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-14 focus:bg-white/50 dark:focus:bg-white/10 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-purple-300 focus:border-purple-400 text-center tracking-widest"
+                    className="pl-12 pr-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-14 focus:bg-gray-50 dark:focus:bg-gray-700 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-purple-300 focus:border-purple-400 text-center tracking-widest"
                     maxLength={4}
                   />
                   <button
@@ -368,7 +368,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
                       const value = e.target.value.replace(/\D/g, '').slice(0, 4);
                       handleInputChange('confirmPin', value);
                     }}
-                    className="pl-12 pr-12 backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-14 focus:bg-white/50 dark:focus:bg-white/10 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-purple-300 focus:border-purple-400 text-center tracking-widest"
+                    className="pl-12 pr-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-14 focus:bg-gray-50 dark:focus:bg-gray-700 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-purple-300 focus:border-purple-400 text-center tracking-widest"
                     maxLength={4}
                   />
                   <button
@@ -397,14 +397,14 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
         return (
           <div className="space-y-6 text-center">
             <div className="mb-8">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center shadow-2xl animate-pulse">
+              <div className="w-20 h-20 mx-auto mb-6 bg-green-600 rounded-full flex items-center justify-center animate-pulse">
                 <CheckCircle size={40} className="text-white" />
               </div>
               <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Welcome Aboard! 🎉</h2>
               <p className="text-gray-600 dark:text-gray-400 text-lg">Your account has been created successfully</p>
             </div>
 
-            <div className="backdrop-blur-xl bg-green-50/50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-6">
+            <div className="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-800 rounded-2xl p-6">
               <div className="space-y-3">
                 <h3 className="font-semibold text-green-800 dark:text-green-300">What's Next?</h3>
                 <ul className="space-y-2 text-sm text-green-700 dark:text-green-400">
@@ -427,29 +427,22 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 -right-4 w-96 h-96 bg-gradient-to-tl from-purple-400/20 to-pink-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-indigo-400/10 to-blue-600/10 rounded-full blur-2xl animate-pulse delay-500"></div>
-      </div>
-
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 relative overflow-hidden">
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col justify-center items-center p-6">
         <div className="w-full max-w-md">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="relative mb-6">
-              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 rounded-3xl flex items-center justify-center shadow-2xl border border-white/20 rotate-3 hover:rotate-0 transition-transform duration-500">
-                <div className="w-14 h-14 bg-white/90 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-20 h-20 mx-auto bg-indigo-600 rounded-3xl flex items-center justify-center border border-gray-200 dark:border-gray-700 rotate-3 hover:rotate-0 transition-transform duration-500">
+                <div className="w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center">
                   <CreditCard size={28} className="text-indigo-600" />
                 </div>
               </div>
               <div className="absolute -top-2 -right-2 w-3 h-3 bg-blue-400 rounded-full animate-ping"></div>
             </div>
             
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-700 bg-clip-text text-transparent mb-2">
+            <h1 className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">
               Ready to go borderless?
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
@@ -466,7 +459,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                 <div 
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 h-2 rounded-full transition-all duration-500 ease-out"
+                  className="bg-indigo-600 h-2 rounded-full transition-all duration-500 ease-out"
                   style={{ width: `${getStepProgress()}%` }}
                 ></div>
               </div>
@@ -474,7 +467,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
           )}
 
           {/* Main Form */}
-          <div className="backdrop-blur-xl bg-white/40 dark:bg-white/5 rounded-3xl p-8 border border-white/30 dark:border-white/10 shadow-2xl mb-8 hover:shadow-3xl transition-all duration-500">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 mb-8 transition-all duration-500">
             {renderStepContent()}
 
             {/* Error Display */}
@@ -504,7 +497,7 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
                 <Button
                   onClick={currentStep === 'personal' ? onSwitchToLogin : handleBack}
                   variant="outline"
-                  className="flex-1 h-12 backdrop-blur-xl bg-white/20 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl hover:bg-white/30 dark:hover:bg-white/10 transition-all duration-300"
+                  className="flex-1 h-12 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-2xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300"
                 >
                   <ArrowLeft size={20} className="mr-2" />
                   {currentStep === 'personal' ? 'Sign In' : 'Back'}
@@ -513,11 +506,11 @@ export function ModernSignupScreen({ onSignup, onSwitchToLogin }: ModernSignupSc
                 <Button
                   onClick={currentStep === 'verification' ? handleSignup : handleNext}
                   disabled={!validateCurrentStep() || isLoading}
-                  className="flex-1 h-12 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-700 hover:from-indigo-700 hover:via-purple-700 hover:to-blue-800 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+                  className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-700 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02]"
                 >
                   {isLoading ? (
                     <div className="flex items-center justify-center space-x-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       <span>Creating...</span>
                     </div>
                   ) : (

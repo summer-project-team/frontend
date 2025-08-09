@@ -91,7 +91,9 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
       toast.error('Please enter a valid amount');
       return;
     }
-    if (numAmount > userBalance) {
+    // Convert NGN amount to CBUSD for balance validation
+    const cbusdRequired = numAmount / 1500;
+    if (cbusdRequired > userBalance) {
       toast.error('Insufficient balance');
       return;
     }
@@ -158,8 +160,10 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
     const numAmount = parseFloat(amount);
     const fee = getWithdrawalFee(numAmount);
     const totalDeduction = numAmount + fee;
+    // Convert NGN to CBUSD for balance validation
+    const cbusdRequired = totalDeduction / 1500;
     
-    if (totalDeduction > userBalance) {
+    if (cbusdRequired > userBalance) {
       toast.error('Insufficient balance including fees');
       return;
     }
@@ -220,7 +224,7 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 mx-auto mb-4 bg-green-600 rounded-2xl flex items-center justify-center">
                 <DollarSign size={28} className="text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Withdrawal Amount</h2>
@@ -228,13 +232,13 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
             </div>
 
             {/* Available Balance */}
-            <div className="backdrop-blur-xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/30 dark:border-blue-500/30 rounded-2xl p-6 text-center">
+            <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-500 rounded-2xl p-6 text-center">
               <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">Available Balance</p>
               <p className="text-3xl font-bold text-blue-800 dark:text-blue-200">
-                ₦{formatCurrency(userBalance)}
+                ₦{(userBalance * 1500).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </p>
               <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
-                {formatCurrency(convertNgnToCbusd(userBalance))} CBUSD
+                {formatCurrency(userBalance)} CBUSD
               </p>
             </div>
 
@@ -248,14 +252,14 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  className="pl-12 text-xl backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-16 focus:bg-white/50 dark:focus:bg-white/10"
+                  className="pl-12 text-xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-16 focus:bg-gray-50 dark:focus:bg-gray-750"
                 />
               </div>
             </div>
 
             {/* Fee Information */}
             {amount && parseFloat(amount) > 0 && !isNaN(parseFloat(amount)) && (
-              <div className="backdrop-blur-xl bg-yellow-50/50 dark:bg-yellow-900/20 border border-yellow-200/30 dark:border-yellow-500/30 rounded-2xl p-6">
+              <div className="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-500 rounded-2xl p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <AlertCircle size={20} className="text-yellow-600 dark:text-yellow-400" />
                   <p className="text-lg font-semibold text-yellow-800 dark:text-yellow-200">Fee Breakdown</p>
@@ -290,7 +294,7 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 mx-auto mb-4 bg-blue-600 rounded-2xl flex items-center justify-center">
                 <Landmark size={28} className="text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Select Account</h2>
@@ -316,13 +320,13 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
                     onClick={() => setSelectedAccount(account)}
                     className={`w-full p-6 rounded-2xl border-2 text-left transition-all duration-300 ${
                       selectedAccount?.id === account.id
-                        ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20'
-                        : 'border-white/40 dark:border-white/20 bg-white/30 dark:bg-white/5 hover:bg-white/40 dark:hover:bg-white/10'
-                    } backdrop-blur-xl`}
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900'
+                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl bg-green-600 flex items-center justify-center">
                           <Building2 size={20} className="text-white" />
                         </div>
                         <div>
@@ -372,7 +376,7 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 mx-auto mb-4 bg-orange-600 rounded-2xl flex items-center justify-center">
                 <Shield size={28} className="text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Two-Factor Authentication</h2>
@@ -387,12 +391,12 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
                   value={twoFactorCode}
                   onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="000000"
-                  className="text-center text-2xl tracking-widest backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-16"
                   maxLength={6}
+                  className="text-center text-2xl tracking-widest bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-16"
                 />
               </div>
 
-              <div className="backdrop-blur-xl bg-orange-50/50 dark:bg-orange-900/20 border border-orange-200/30 dark:border-orange-500/30 rounded-2xl p-4">
+              <div className="bg-orange-50 dark:bg-orange-900 border border-orange-200 dark:border-orange-500 rounded-2xl p-4">
                 <div className="flex items-start space-x-3">
                   <Shield size={16} className="text-orange-600 dark:text-orange-400 mt-0.5" />
                   <div>
@@ -414,23 +418,23 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 relative overflow-hidden">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 -left-4 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-0 -right-4 w-96 h-96 bg-gradient-to-tl from-purple-400/20 to-pink-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-indigo-400/10 to-blue-600/10 rounded-full blur-2xl animate-pulse delay-500"></div>
+          <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-100 dark:bg-blue-900 rounded-full opacity-30"></div>
+          <div className="absolute bottom-0 -right-4 w-96 h-96 bg-purple-100 dark:bg-purple-900 rounded-full opacity-30"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-100 dark:bg-indigo-900 rounded-full opacity-20"></div>
         </div>
 
         {/* Content */}
         <div className="relative z-10 min-h-screen flex flex-col">
           {/* Fixed Header */}
-          <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 pt-8 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/20">
+          <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 pt-8 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleBack}
-              className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+              className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
             >
               <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
             </Button>
@@ -450,7 +454,7 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                 <div 
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 h-2 rounded-full transition-all duration-500 ease-out"
+                  className="bg-indigo-600 h-2 rounded-full transition-all duration-500 ease-out"
                   style={{ width: `${getStepProgress()}%` }}
                 ></div>
               </div>
@@ -458,7 +462,7 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
 
             {/* Main Content */}
             <div className="px-6">
-              <div className="backdrop-blur-xl bg-white/40 dark:bg-white/5 rounded-3xl p-8 border border-white/30 dark:border-white/10 shadow-2xl hover:shadow-3xl transition-all duration-500 max-w-2xl mx-auto">
+              <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-500 max-w-2xl mx-auto">
                 {renderStepContent()}
 
                 {/* Navigation Buttons */}
@@ -466,7 +470,7 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
                   <Button
                     onClick={handleBack}
                     variant="outline"
-                    className="flex-1 h-12 backdrop-blur-xl bg-white/20 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl hover:bg-white/30 dark:hover:bg-white/10 transition-all duration-300"
+                    className="flex-1 h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
                   >
                     <ArrowLeft size={20} className="mr-2" />
                     Back
@@ -482,7 +486,7 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
                       (currentStep === 'account' && !selectedAccount) ||
                       (currentStep === 'twoFactor' && twoFactorCode.length !== 6)
                     }
-                    className="flex-1 h-12 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-700 hover:from-indigo-700 hover:via-purple-700 hover:to-blue-800 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+                    className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02]"
                   >
                     Continue
                     <ArrowRight size={20} className="ml-2" />
@@ -496,7 +500,7 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
 
       {/* No Accounts Linked Modal */}
       <Dialog open={showNoAccountsModal} onOpenChange={setShowNoAccountsModal}>
-        <DialogContent className="bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-gray-200/30 dark:border-white/10 max-w-sm mx-auto">
+        <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-w-sm mx-auto">
           <DialogHeader>
             <DialogTitle className="text-center text-gray-800 dark:text-white flex items-center justify-center gap-2">
               <Landmark size={24} className="text-orange-500" />
@@ -545,11 +549,11 @@ export function ModernWithdrawScreen({ onBack, userBalance, onWithdraw, onNaviga
         </DialogContent>
       </Dialog>
 
-      {/* Subtle Liquid Glass Footer */}
+      {/* Simple Footer */}
       <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-white/10 to-transparent dark:from-slate-900/30 dark:via-slate-900/15 dark:to-transparent backdrop-blur-md"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/20"></div>
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white/40 dark:bg-white/20 rounded-full"></div>
+        <div className="absolute inset-0 bg-white dark:bg-gray-900"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gray-200 dark:bg-gray-700"></div>
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
       </div>
     </>
   );

@@ -116,7 +116,7 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Loading your bank accounts...</p>
@@ -126,14 +126,7 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 -right-4 w-96 h-96 bg-gradient-to-tl from-purple-400/20 to-pink-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-indigo-400/10 to-blue-600/10 rounded-full blur-2xl animate-pulse delay-500"></div>
-      </div>
-
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
@@ -142,7 +135,7 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
             variant="ghost"
             size="sm"
             onClick={onBack}
-            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+            className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
           >
             <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
           </Button>
@@ -154,14 +147,14 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
               <Button
                 variant="ghost"
                 size="sm"
-                className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+                className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
               >
                 <Plus size={20} className="text-gray-700 dark:text-gray-300" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border border-white/30 dark:border-white/20 rounded-3xl max-w-md">
+            <DialogContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-700 bg-clip-text text-transparent">
+                <DialogTitle className="text-xl font-bold text-gray-800 dark:text-white">
                   Link Bank Account
                 </DialogTitle>
                 <DialogDescription className="text-gray-600 dark:text-gray-400">
@@ -173,10 +166,10 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                 <div className="space-y-2">
                   <label className="block text-gray-700 dark:text-gray-300 font-medium text-sm">Bank Name</label>
                   <Select value={linkForm.bank_name} onValueChange={(value) => setLinkForm(prev => ({ ...prev, bank_name: value }))}>
-                    <SelectTrigger className="backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-12">
+                    <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-12">
                       <SelectValue placeholder="Select your bank" />
                     </SelectTrigger>
-                    <SelectContent className="backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border border-white/30 dark:border-white/20 rounded-2xl">
+                    <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl">
                       {banks.map((bank) => (
                         <SelectItem key={bank.code} value={bank.name}>
                           <div className="flex items-center space-x-3">
@@ -198,7 +191,7 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                       placeholder="Your full name as on account"
                       value={linkForm.account_name}
                       onChange={(e) => setLinkForm(prev => ({ ...prev, account_name: e.target.value }))}
-                      className="pl-12 backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-12"
+                      className="pl-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-12"
                     />
                   </div>
                 </div>
@@ -212,7 +205,7 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                       placeholder="1234567890"
                       value={linkForm.account_number}
                       onChange={(e) => setLinkForm(prev => ({ ...prev, account_number: e.target.value }))}
-                      className="pl-12 backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-12"
+                      className="pl-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-12"
                     />
                   </div>
                 </div>
@@ -226,7 +219,7 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                       placeholder="Bank Code"
                       value={linkForm.bank_code}
                       onChange={(e) => setLinkForm(prev => ({ ...prev, bank_code: e.target.value }))}
-                      className="pl-12 backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-12"
+                      className="pl-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-12"
                     />
                   </div>
                 </div>
@@ -234,10 +227,10 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                 <div className="space-y-2">
                   <label className="block text-gray-700 dark:text-gray-300 font-medium text-sm">Account Type</label>
                   <Select value={linkForm.account_type} onValueChange={(value: 'checking' | 'savings' | 'current') => setLinkForm(prev => ({ ...prev, account_type: value }))}>
-                    <SelectTrigger className="backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-12">
+                    <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-12">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border border-white/30 dark:border-white/20 rounded-2xl">
+                    <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl">
                       <SelectItem value="checking">Checking Account</SelectItem>
                       <SelectItem value="savings">Savings Account</SelectItem>
                       <SelectItem value="current">Current Account</SelectItem>
@@ -248,10 +241,10 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                 <div className="space-y-2">
                   <label className="block text-gray-700 dark:text-gray-300 font-medium text-sm">Currency</label>
                   <Select value={linkForm.currency} onValueChange={(value: 'NGN' | 'USD' | 'GBP') => setLinkForm(prev => ({ ...prev, currency: value }))}>
-                    <SelectTrigger className="backdrop-blur-xl bg-white/30 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl h-12">
+                    <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-12">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border border-white/30 dark:border-white/20 rounded-2xl">
+                    <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl">
                       <SelectItem value="NGN">Nigerian Naira (NGN)</SelectItem>
                       <SelectItem value="USD">US Dollar (USD)</SelectItem>
                       <SelectItem value="GBP">British Pound (GBP)</SelectItem>
@@ -259,7 +252,7 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                   </Select>
                 </div>
 
-                <div className="backdrop-blur-xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/30 dark:border-blue-500/30 rounded-2xl p-4">
+                <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-500 rounded-2xl p-4">
                   <div className="flex items-start space-x-3">
                     <Shield size={16} className="text-blue-600 dark:text-blue-400 mt-0.5" />
                     <div>
@@ -273,18 +266,18 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                   <Button
                     variant="outline"
                     onClick={() => setIsAddModalOpen(false)}
-                    className="flex-1 h-12 backdrop-blur-xl bg-white/20 dark:bg-white/5 border-white/40 dark:border-white/20 rounded-2xl"
+                    className="flex-1 h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleLinkAccount}
                     disabled={isLinking}
-                    className="flex-1 h-12 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-700 hover:from-indigo-700 hover:via-purple-700 hover:to-blue-800 rounded-2xl"
+                    className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-2xl"
                   >
                     {isLinking ? (
                       <div className="flex items-center space-x-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <div className="w-4 h-4 border-2 border-gray-200 border-t-white rounded-full animate-spin"></div>
                         <span>Linking...</span>
                       </div>
                     ) : (
@@ -302,7 +295,7 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
           {accounts.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center max-w-md mx-auto">
-                <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-3xl flex items-center justify-center">
+                <div className="w-24 h-24 mx-auto mb-6 bg-gray-200 dark:bg-gray-700 rounded-3xl flex items-center justify-center">
                   <Landmark size={32} className="text-gray-400" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">No Bank Accounts</h3>
@@ -311,7 +304,7 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                 </p>
                 <Button
                   onClick={() => setIsAddModalOpen(true)}
-                  className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-700 hover:from-indigo-700 hover:via-purple-700 hover:to-blue-800 rounded-2xl h-12 px-8"
+                  className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-2xl h-12 px-8"
                 >
                   <Plus size={20} className="mr-2" />
                   Link Your First Account
@@ -321,10 +314,10 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
           ) : (
             <div className="space-y-4">
               {accounts.map((account) => (
-                <div key={account.id} className="backdrop-blur-xl bg-white/40 dark:bg-white/5 rounded-3xl p-6 border border-white/30 dark:border-white/10 shadow-2xl hover:shadow-3xl transition-all duration-500">
+                <div key={account.id} className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-500">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-4">
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
+                      <div className="w-16 h-16 rounded-2xl bg-green-600 flex items-center justify-center">
                         <Building2 size={24} className="text-white" />
                       </div>
                       <div>
@@ -339,7 +332,7 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                         variant="ghost"
                         size="sm"
                         onClick={() => toggleAccountVisibility(account.id)}
-                        className="backdrop-blur-xl bg-white/20 dark:bg-white/10 border border-white/30 dark:border-white/20 rounded-xl p-2"
+                        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2"
                       >
                         {showAccountNumber[account.id] ? <EyeOff size={16} /> : <Eye size={16} />}
                       </Button>
@@ -347,7 +340,7 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
                         variant="ghost"
                         size="sm"
                         onClick={() => handleUnlinkAccount(account.id)}
-                        className="backdrop-blur-xl bg-red-50/50 dark:bg-red-900/20 border border-red-200/30 dark:border-red-500/30 rounded-xl p-2 hover:bg-red-100/50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400"
+                        className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-500 rounded-xl p-2 hover:bg-red-100 dark:hover:bg-red-800 text-red-600 dark:text-red-400"
                       >
                         <Trash2 size={16} />
                       </Button>
@@ -382,11 +375,9 @@ export function ModernBankAccounts({ onBack, userId }: ModernBankAccountsProps) 
         </div>
       </div>
 
-      {/* Subtle Liquid Glass Footer */}
-      <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-white/10 to-transparent dark:from-slate-900/30 dark:via-slate-900/15 dark:to-transparent backdrop-blur-md"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/20"></div>
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white/40 dark:bg-white/20 rounded-full"></div>
+      {/* Footer */}
+      <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none bg-gray-50/80 dark:bg-gray-900/80 border-t border-gray-200 dark:border-gray-800">
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
       </div>
     </div>
   );

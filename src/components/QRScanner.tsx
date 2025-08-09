@@ -71,7 +71,7 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-black/95 backdrop-blur-2xl border-white/10 max-w-sm mx-auto p-0 overflow-hidden">
+      <DialogContent className="bg-black/95 border-gray-800 max-w-sm mx-auto p-0 overflow-hidden">
         <DialogHeader className="p-6 pb-4">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-white">Scan QR Code</DialogTitle>
@@ -80,7 +80,7 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
                 variant="ghost"
                 size="sm"
                 onClick={toggleFlash}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20"
+                className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
               >
                 {isFlashOn ? (
                   <FlashlightOff size={20} className="text-white" />
@@ -92,7 +92,7 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
                 variant="ghost"
                 size="sm"
                 onClick={handleClose}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20"
+                className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
               >
                 <X size={20} className="text-white" />
               </Button>
@@ -105,7 +105,7 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
         
         <div className="relative">
           {/* Camera View Simulation */}
-          <div className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 relative overflow-hidden">
+          <div className="aspect-square bg-gray-900 dark:bg-gray-800 relative overflow-hidden">
             {hasPermission === false ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
                 <Camera size={48} className="text-gray-400" />
@@ -114,7 +114,7 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
                 </p>
                 <Button
                   onClick={requestCameraPermission}
-                  className="bg-white/20 hover:bg-white/30 text-white"
+                  className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200"
                 >
                   Grant Permission
                 </Button>
@@ -131,7 +131,7 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
                   
                   {/* Scanning line animation */}
                   {scanning && (
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent animate-pulse"></div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-blue-400 animate-pulse"></div>
                   )}
                   
                   {/* Center QR icon */}

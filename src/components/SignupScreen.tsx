@@ -143,19 +143,19 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
       <div className="w-full max-w-sm py-8">
         {/* Logo/Title */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl">
+          <div className="w-20 h-20 mx-auto mb-6 bg-blue-600 rounded-3xl flex items-center justify-center">
             <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center">
-              <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg"></div>
+              <div className="w-6 h-6 bg-blue-600 rounded-lg"></div>
             </div>
           </div>
-          <h1 className="text-3xl mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl mb-2 text-blue-600">
             Create Account
           </h1>
           <p className="text-gray-600">Join us and start sending money</p>
         </div>
 
         {/* Signup Form */}
-        <div className="backdrop-blur-lg bg-white/30 rounded-3xl p-8 border border-white/40 shadow-2xl mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 mb-6">
           <div className="space-y-5">
             {/* First Name */}
             <div>
@@ -167,7 +167,7 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
                   placeholder="Enter your first name"
                   value={formData.firstName}
                   onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  className="pl-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-12 focus:bg-white/40 transition-all duration-300"
+                  className="pl-12 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-2xl h-12 focus:bg-gray-100 dark:focus:bg-gray-600 transition-all duration-300"
                 />
               </div>
             </div>
@@ -182,7 +182,7 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
                   placeholder="Enter your last name"
                   value={formData.lastName}
                   onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  className="pl-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-12 focus:bg-white/40 transition-all duration-300"
+                  className="pl-12 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-2xl h-12 focus:bg-gray-100 dark:focus:bg-gray-600 transition-all duration-300"
                 />
               </div>
             </div>
@@ -197,7 +197,7 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
                   placeholder="Enter your email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="pl-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-12 focus:bg-white/40 transition-all duration-300"
+                  className="pl-12 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-2xl h-12 focus:bg-gray-100 dark:focus:bg-gray-600 transition-all duration-300"
                 />
               </div>
             </div>
@@ -209,7 +209,7 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
                 <select
                   value={formData.countryCode}
                   onChange={(e) => handleInputChange('countryCode', e.target.value)}
-                  className="w-20 backdrop-blur-md bg-white/30 border border-white/40 rounded-2xl h-12 px-3 focus:bg-white/40 transition-all duration-300"
+                  className="w-20 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-2xl h-12 px-3 focus:bg-gray-100 dark:focus:bg-gray-600 transition-all duration-300"
                 >
                   <option value="NG">🇳🇬</option>
                   <option value="GB">🇬🇧</option>
@@ -222,7 +222,7 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
                     placeholder="+234 801 234 5678"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="pl-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-12 focus:bg-white/40 transition-all duration-300"
+                    className="pl-12 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-2xl h-12 focus:bg-gray-100 dark:focus:bg-gray-600 transition-all duration-300"
                   />
                 </div>
               </div>
@@ -238,7 +238,7 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
                   placeholder="Create a password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className="pl-12 pr-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-12 focus:bg-white/40 transition-all duration-300"
+                  className="pl-12 pr-12 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-2xl h-12 focus:bg-gray-100 dark:focus:bg-gray-600 transition-all duration-300"
                 />
                 <button
                   type="button"
@@ -260,7 +260,7 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
                   placeholder="Confirm your password"
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  className="pl-12 pr-12 backdrop-blur-md bg-white/30 border-white/40 rounded-2xl h-12 focus:bg-white/40 transition-all duration-300"
+                  className="pl-12 pr-12 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-2xl h-12 focus:bg-gray-100 dark:focus:bg-gray-600 transition-all duration-300"
                 />
                 <button
                   type="button"
@@ -297,7 +297,7 @@ export function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreenProps) {
             <Button
               onClick={handleSignup}
               disabled={!isFormValid() || isLoading}
-              className="w-full h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
+              className="w-full h-14 bg-blue-600 hover:bg-blue-700 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
             >
               {isLoading ? (
                 <div className="flex items-center space-x-3">

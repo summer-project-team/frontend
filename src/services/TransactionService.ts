@@ -29,15 +29,15 @@ export default class TransactionService {
   static async initiateDeposit(params: DepositRequest): Promise<{
     success: boolean;
     message: string;
-    demo_notice?: string;
-    deposit_instructions: {
-      amount: number;
-      currency: string;
-      bank_account: string;
-      reference_code: string;
-      bank_name: string;
-      instructions: string;
-      expires_at: string;
+    data: {
+      id?: string;
+      reference_id?: string;
+      amount?: number;
+      currency?: string;
+      status?: string;
+      instant?: boolean;
+      processingTime?: number;
+      [key: string]: any;
     };
   }> {
     try {

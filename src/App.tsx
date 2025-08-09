@@ -127,7 +127,12 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    // Provide a fallback during development to prevent crashes
+    console.warn('useTheme called outside of ThemeProvider, using fallback');
+    return {
+      theme: 'light' as Theme,
+      toggleTheme: () => console.warn('toggleTheme called outside of ThemeProvider')
+    };
   }
   return context;
 };
@@ -712,43 +717,42 @@ function App() {
   const handleWithdraw = async (amount: number, bankDetails: any, pin: string) => {
     try {
       console.log('App.tsx: handleWithdraw called with:', { amount, bankDetails, pin });
-      
       const withdrawalData = {
         amount,
-        currency: bankDetails.currency || 'NGN', // Use account currency or default to NGN
+        currency: bankDetails.currency || 'NGN',
         bank_account_number: bankDetails.account_number,
         bank_name: bankDetails.bank_name,
-        account_holder_name: bankDetails.account_name, // Use account_name from linked account
+        account_holder_name: bankDetails.account_name,
         transaction_pin: pin
       };
-      
       console.log('App.tsx: Calling TransactionService.initiateWithdrawal with:', withdrawalData);
       const withdrawResult = await TransactionService.initiateWithdrawal(withdrawalData);
       console.log('App.tsx: Withdrawal result:', withdrawResult);
-      
-      // Add withdrawal transaction to history
+
+      // Add withdrawal transaction to history and set as currentTransaction
       const withdrawTransaction: Transaction = {
         id: withdrawResult.id,
         recipient: `Withdraw to ${bankDetails.bank_name}`,
         recipientId: 'withdrawal',
         amount: amount.toString(),
         currency: 'CBUSD',
-        convertedAmount: (amount * 1600).toString(), // Mock NGN conversion
+        convertedAmount: (amount * 1600).toString(),
         recipientCurrency: 'NGN',
         status: withdrawResult.status as Transaction['status'],
         date: withdrawResult.created_at || new Date().toISOString(),
         timestamp: Date.now(),
         avatar: 'https://ui-avatars.com/api/?name=W&background=ef4444&color=fff',
         referenceNumber: withdrawResult.reference_id,
-        exchangeRate: 1600, // Mock NGN rate
+        exchangeRate: 1600,
         fee: withdrawResult.fee?.toString() || '0.00',
         totalPaid: withdrawResult.total?.toString() || amount.toString(),
         category: 'other',
-        note: `Withdrawal to ${bankDetails.account_name || bankDetails.bank_name}`
+        note: `Withdrawal to ${bankDetails.account_name || bankDetails.bank_name}`,
+        type: 'withdrawal',
+        flow_type: 'outflow'
       };
-      
       setTransactions(prev => [withdrawTransaction, ...prev]);
-      
+      setCurrentTransaction(withdrawTransaction);
       // Refresh balance
       try {
         const balanceData = await dashboardService.getWalletBalance();
@@ -758,18 +762,38 @@ function App() {
       } catch (error) {
         console.error('Failed to refresh balance:', error);
       }
-      
       NotificationService.addWithdrawalNotification(
         amount.toString(),
         'CBUSD',
         bankDetails.bankName
       );
-      
-      alert(`Withdrawal initiated! Reference: ${withdrawResult.reference_id}`);
-      
+      navigateTo('success');
     } catch (error: any) {
       console.error('Withdrawal failed:', error);
-      alert(`Withdrawal failed: ${error.message}`);
+      // Create failed transaction for UI
+      const failedTransaction: Transaction = {
+        id: `wit_${Date.now()}`,
+        recipient: `Withdraw to ${bankDetails.bank_name}`,
+        recipientId: 'withdrawal',
+        amount: amount.toString(),
+        currency: 'CBUSD',
+        convertedAmount: (amount * 1600).toString(),
+        recipientCurrency: 'NGN',
+        status: 'failed',
+        date: new Date().toISOString(),
+        timestamp: Date.now(),
+        avatar: 'https://ui-avatars.com/api/?name=W&background=ef4444&color=fff',
+        referenceNumber: `WIT${Date.now()}`,
+        exchangeRate: 1600,
+        fee: '0.00',
+        totalPaid: amount.toString(),
+        category: 'other',
+        note: error.message,
+        type: 'withdrawal',
+        flow_type: 'outflow'
+      };
+      setCurrentTransaction(failedTransaction);
+      navigateTo('failure');
     }
   };
 
@@ -792,15 +816,15 @@ function App() {
 
   return (
     <ThemeContext.Provider value={themeContextValue}>
-      {/* Splash Screen */}
-      {showSplash && (
-        <SplashScreen onComplete={() => setShowSplash(false)} />
-      )}
-      
-      <div className="min-h-screen bg-background relative">
-        {/* Responsive background with mobile-optimized sizes */}
-        <div className="fixed top-0 left-0 w-40 h-40 sm:w-52 sm:h-52 md:w-64 md:h-64 lg:w-72 lg:h-72 xl:w-80 xl:h-80 bg-blue-100/30 dark:bg-purple-900/20 rounded-full blur-3xl"></div>
-        <div className="fixed bottom-0 right-0 w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-84 lg:h-84 xl:w-96 xl:h-96 bg-purple-100/30 dark:bg-blue-900/20 rounded-full blur-3xl"></div>
+      <div className={`min-h-screen ${theme === 'dark' ? 'dark' : ''}`}>
+        {/* Splash Screen */}
+        {showSplash && (
+          <SplashScreen onComplete={() => setShowSplash(false)} />
+        )}
+        
+        {!showSplash && (
+          <div className="min-h-screen bg-background relative">
+            {/* Removed background blur elements for clean design */}
         
         {/* Responsive container with improved mobile handling */}
         <div className="relative z-10 w-full min-h-screen">
@@ -1059,7 +1083,7 @@ function App() {
                             date: new Date().toISOString(),
                             timestamp: Date.now(),
                             avatar: '💰',
-                            referenceNumber: depositResult.deposit_instructions.reference_code,
+                            referenceNumber: depositResult.data?.reference_id || depositResult.data?.id || `DEP${Date.now()}`,
                             exchangeRate: 1,
                             fee: '0',
                             totalPaid: amount.toString(),
@@ -1105,7 +1129,6 @@ function App() {
                           flow_type: 'inflow' as const,
                           note: error.message
                         };
-                        
                         setCurrentTransaction(failedTransaction);
                         navigateTo('failure');
                       }
@@ -1179,7 +1202,7 @@ function App() {
           <div className="hidden 2xl:flex min-h-screen">
             {/* Show sidebar only when user is logged in */}
             {user && (
-              <div className="w-80 bg-white/50 dark:bg-black/50 backdrop-blur-xl border-r border-gray-200/30 dark:border-white/10">
+              <div className="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
                 <div className="p-6">
                   <div className="text-center mb-8">
                     <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">SecureRemit</h1>
@@ -1187,7 +1210,7 @@ function App() {
                   </div>
                   
                   {/* Desktop Balance Display */}
-                  <div className="bg-white/30 dark:bg-black/30 backdrop-blur-lg rounded-2xl p-6 mb-6 border border-gray-200/30 dark:border-white/10">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
                     <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Total Balance</p>
                     <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-1">
                       ${(user.balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -1203,57 +1226,57 @@ function App() {
                       onClick={() => navigateTo('home')}
                       className={`w-full text-left p-3 rounded-xl transition-colors ${
                         currentScreen === 'home' 
-                          ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' 
-                          : 'hover:bg-gray-100/50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300'
+                          ? 'bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-400' 
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                       }`}
                     >
                       Dashboard
                     </button>
                     <button
                       onClick={() => navigateTo('recipients')}
-                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors"
+                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
                     >
                       Send Money
                     </button>
                     <button
                       onClick={() => navigateTo('history')}
-                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors"
+                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
                     >
                       Transaction History
                     </button>
                     <button
                       onClick={() => navigateTo('enhanced-analytics')}
-                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors"
+                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
                     >
                       Analytics
                     </button>
                     <button
                       onClick={() => navigateTo('analytics')}
-                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors"
+                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
                     >
                       Exchange Rates
                     </button>
                     <button
                       onClick={() => navigateTo('simulation')}
-                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors"
+                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
                     >
                       Bank Simulation
                     </button>
                     <button
                       onClick={() => navigateTo('developer-examples')}
-                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors"
+                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
                     >
                       Dev Examples
                     </button>
                     <button
                       onClick={() => navigateTo('notifications')}
-                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors"
+                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
                     >
                       Notifications
                     </button>
                     <button
                       onClick={() => navigateTo('profile')}
-                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors"
+                      className="w-full text-left p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
                     >
                       Profile & Settings
                     </button>
@@ -1403,6 +1426,8 @@ function App() {
             </div>
           </div>
         </div>
+      </div>
+        )}
       </div>
     </ThemeContext.Provider>
   );

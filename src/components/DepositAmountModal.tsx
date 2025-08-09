@@ -59,7 +59,7 @@ export function DepositAmountModal({ isOpen, onClose, onProceed }: DepositAmount
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-gray-200/30 dark:border-white/10 max-w-sm mx-auto">
+      <DialogContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 max-w-sm mx-auto">
         <DialogHeader>
           <DialogTitle className="text-center text-gray-800 dark:text-white">
             Top Up Your Wallet
@@ -73,7 +73,7 @@ export function DepositAmountModal({ isOpen, onClose, onProceed }: DepositAmount
               Select Currency
             </Label>
             <Select value={currency} onValueChange={(value) => setCurrency(value)}>
-              <SelectTrigger className="bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10">
+              <SelectTrigger className="bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -111,7 +111,7 @@ export function DepositAmountModal({ isOpen, onClose, onProceed }: DepositAmount
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="pl-8 text-lg bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white"
+                className="pl-8 text-lg bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white"
                 min={minAmount}
                 step={currency === 'NGN' ? '100' : '1'}
               />
@@ -157,7 +157,7 @@ export function DepositAmountModal({ isOpen, onClose, onProceed }: DepositAmount
             <Button
               onClick={handleClose}
               variant="outline"
-              className="flex-1 bg-gray-100/30 dark:bg-gray-900/30 border-gray-200/30 dark:border-white/10 text-gray-800 dark:text-white hover:bg-gray-200/30 dark:hover:bg-gray-900/50"
+              className="flex-1 bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               Cancel
             </Button>

@@ -95,13 +95,13 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-emerald-100/80 text-emerald-700 border-emerald-200/50';
+        return 'bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700';
       case 'pending':
-        return 'bg-amber-100/80 text-amber-700 border-amber-200/50';
+        return 'bg-amber-100 dark:bg-amber-800 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-700';
       case 'failed':
-        return 'bg-red-100/80 text-red-700 border-red-200/50';
+        return 'bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700';
       default:
-        return 'bg-gray-100/80 text-gray-700 border-gray-200/50';
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700';
     }
   };
 
@@ -191,15 +191,15 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
   }, [filteredTransactions]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header with glass morphism */}
-      <div className="sticky top-0 z-10 backdrop-blur-xl bg-white/30 dark:bg-black/30 border-b border-white/20 dark:border-white/10">
+      <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between p-6 pt-8">
           <Button
             variant="ghost"
             size="sm"
             onClick={onBack}
-            className="backdrop-blur-md bg-white/40 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 hover:bg-white/50 dark:hover:bg-white/20 transition-all duration-300"
+            className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
           >
             <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
           </Button>
@@ -210,7 +210,7 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
           <Button
             variant="ghost"
             size="sm"
-            className="backdrop-blur-md bg-white/40 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 hover:bg-white/50 dark:hover:bg-white/20 transition-all duration-300"
+            className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
           >
             <Download size={20} className="text-gray-700 dark:text-gray-300" />
           </Button>
@@ -220,12 +220,12 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
       {/* Enhanced Summary Cards */}
       <div className="p-6 space-y-6">
         <div className="grid grid-cols-2 gap-4">
-          <div className="backdrop-blur-xl bg-gradient-to-br from-white/40 to-white/20 dark:from-white/10 dark:to-white/5 rounded-3xl p-6 border border-white/30 dark:border-white/10 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center">
                 <TrendingUp size={20} className="text-white" />
               </div>
-              <div className="text-xs px-2 py-1 rounded-full bg-emerald-100/80 text-emerald-700 border border-emerald-200/50">
+              <div className="text-xs px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700">
                 All time
               </div>
             </div>
@@ -234,12 +234,12 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
             <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{summaryStats.completedCount} completed</p>
           </div>
           
-          <div className="backdrop-blur-xl bg-gradient-to-br from-white/40 to-white/20 dark:from-white/10 dark:to-white/5 rounded-3xl p-6 border border-white/30 dark:border-white/10 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500 flex items-center justify-center">
                 <Calendar size={20} className="text-white" />
               </div>
-              <div className="text-xs px-2 py-1 rounded-full bg-blue-100/80 text-blue-700 border border-blue-200/50">
+              <div className="text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700">
                 This month
               </div>
             </div>
@@ -259,7 +259,7 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
             placeholder="Search by recipient, reference, or note..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 backdrop-blur-xl bg-white/40 dark:bg-white/10 border-white/40 dark:border-white/20 rounded-2xl h-14 focus:bg-white/50 dark:focus:bg-white/15 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            className="pl-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-14 focus:bg-gray-50 dark:focus:bg-gray-700 transition-all duration-300 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
           />
         </div>
 
@@ -277,8 +277,8 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
               variant="ghost"
               className={`px-4 py-3 rounded-2xl whitespace-nowrap transition-all duration-300 ${
                 filterStatus === filter.key
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                  : 'backdrop-blur-xl bg-white/30 dark:bg-white/10 border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
               <filter.icon size={16} className="mr-2" />
@@ -303,8 +303,8 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
               size="sm"
               className={`px-3 py-2 rounded-xl whitespace-nowrap transition-all duration-300 ${
                 dateFilter === filter.key
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-md'
-                  : 'backdrop-blur-xl bg-white/20 dark:bg-white/5 border border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/10 text-gray-600 dark:text-gray-400 text-xs'
+                  ? 'bg-purple-500 text-white'
+                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs'
               }`}
             >
               {filter.label}
@@ -318,7 +318,7 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
         <div className="space-y-6 mt-6">
           {Object.keys(groupedTransactions).length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 rounded-3xl flex items-center justify-center shadow-lg">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 dark:bg-gray-700 rounded-3xl flex items-center justify-center">
                 <Receipt size={32} className="text-gray-500 dark:text-gray-400" />
               </div>
               <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">No transactions found</h3>
@@ -330,7 +330,7 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
                   setFilterCategory('all');
                   setDateFilter('all');
                 }}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-2xl hover:shadow-lg transition-all duration-300"
+                className="bg-blue-500 text-white px-6 py-3 rounded-2xl hover:bg-blue-600 transition-all duration-300"
               >
                 Clear Filters
               </Button>
@@ -340,8 +340,8 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
               <div key={date} className="space-y-3">
                 <div className="flex items-center space-x-3 px-2">
                   <h3 className="text-lg font-bold text-gray-800 dark:text-white">{date}</h3>
-                  <div className="flex-1 h-px bg-gradient-to-r from-gray-300 to-transparent dark:from-gray-600"></div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-white/30 dark:bg-white/10 px-2 py-1 rounded-full">
+                  <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600"></div>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
                     {transactions.length} {transactions.length === 1 ? 'transaction' : 'transactions'}
                   </span>
                 </div>
@@ -349,19 +349,19 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
                 {transactions.map((transaction) => (
                   <div
                     key={transaction.id}
-                    className="backdrop-blur-xl bg-white/40 dark:bg-white/5 rounded-3xl p-5 border border-white/30 dark:border-white/10 cursor-pointer hover:bg-white/50 dark:hover:bg-white/10 hover:shadow-lg transition-all duration-300 group"
+                    className="bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 group"
                     onClick={() => onViewReceipt(transaction)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <div className="relative">
-                          <Avatar className="w-14 h-14 border-2 border-white/30 shadow-lg">
+                          <Avatar className="w-14 h-14 border-2 border-gray-200 dark:border-gray-700">
                             <AvatarImage src={transaction.avatar} />
-                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold">
+                            <AvatarFallback className="bg-blue-500 text-white font-bold">
                               {transaction.recipient[0]?.toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white dark:bg-gray-800 border-2 border-white/30 flex items-center justify-center shadow-md">
+                          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 flex items-center justify-center shadow-md">
                             {getTransactionIcon(transaction)}
                           </div>
                         </div>
@@ -376,11 +376,11 @@ export function ModernTransactionHistory({ transactions, onBack, onViewReceipt }
                             })}
                           </p>
                           <div className="flex items-center space-x-2">
-                            <p className="text-xs text-gray-500 dark:text-gray-500 font-mono bg-gray-100/50 dark:bg-gray-800/50 px-2 py-1 rounded-lg">
+                            <p className="text-xs text-gray-500 dark:text-gray-500 font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-lg">
                               {transaction.referenceNumber}
                             </p>
                             {transaction.category && (
-                              <span className="text-xs px-2 py-1 rounded-lg bg-blue-100/50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                              <span className="text-xs px-2 py-1 rounded-lg bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-400">
                                 {transactionCategories.find(c => c.value === transaction.category)?.icon} {transactionCategories.find(c => c.value === transaction.category)?.label}
                               </span>
                             )}

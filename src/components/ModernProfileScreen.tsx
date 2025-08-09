@@ -318,25 +318,18 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
   const renderProfileView = () => (
     <div className="space-y-6">
       {/* Profile Header Card */}
-      <div className="mx-4 bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 rounded-3xl p-6 shadow-2xl border border-white/20 relative overflow-hidden">
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 -left-4 w-32 h-32 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-2xl"></div>
-          <div className="absolute bottom-0 -right-4 w-32 h-32 bg-gradient-to-tl from-white/10 to-transparent rounded-full blur-2xl"></div>
-        </div>
-        
-        {/* Glass overlay */}
-        <div className="absolute inset-0 backdrop-blur-sm bg-white/5 rounded-3xl"></div>
+      <div className="mx-4 bg-indigo-600 rounded-3xl p-6 border border-indigo-500 relative overflow-hidden">
+        {/* Clean background */}
         
         <div className="relative z-10 flex flex-col items-center">
           <div className="relative mb-4">
-            <Avatar className="w-24 h-24 border-4 border-white/30 shadow-xl">
+            <Avatar className="w-24 h-24 border-4 border-white border-opacity-60">/
               <AvatarImage src={user.avatar} />
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-2xl font-bold">
+              <AvatarFallback className="bg-blue-600 text-white text-2xl font-bold">
                 {user.first_name?.[0] || user.name[0] || 'U'}
               </AvatarFallback>
             </Avatar>
-            <button className="absolute bottom-0 right-0 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all duration-300 border border-white/30">
+            <button className="absolute bottom-0 right-0 w-8 h-8 bg-indigo-700 hover:bg-indigo-800 rounded-full flex items-center justify-center transition-all duration-300 border border-indigo-500">
               <Camera size={16} className="text-white" />
             </button>
           </div>
@@ -345,7 +338,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
           <p className="text-white/80 text-sm mb-1">{user.email}</p>
           <p className="text-white/70 text-sm">{user.phoneNumber}</p>
           
-          <div className="flex items-center gap-2 mt-3 px-3 py-1 bg-white/20 rounded-full">
+          <div className="flex items-center gap-2 mt-3 px-3 py-1 bg-indigo-700 rounded-full border border-indigo-500">
             <div className="w-2 h-2 bg-green-400 rounded-full"></div>
             <span className="text-white/90 text-xs font-medium capitalize">{user.verificationLevel}</span>
           </div>
@@ -356,7 +349,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
       <div className="mx-4 space-y-4">
         {isEditing ? (
           <div className="space-y-4">
-            <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/50 dark:border-white/20 shadow-lg">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -364,7 +357,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
                     <Input
                       value={editForm.firstName}
                       onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
-                      className="bg-white/50 dark:bg-white/5 border-white/50 dark:border-white/20"
+                      className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                       placeholder="First name"
                     />
                   </div>
@@ -373,7 +366,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
                     <Input
                       value={editForm.lastName}
                       onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
-                      className="bg-white/50 dark:bg-white/5 border-white/50 dark:border-white/20"
+                      className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                       placeholder="Last name"
                     />
                   </div>
@@ -384,7 +377,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
                   <Input
                     value={editForm.email}
                     onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
-                    className="bg-white/50 dark:bg-white/5 border-white/50 dark:border-white/20"
+                    className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                     placeholder="Email address"
                     type="email"
                   />
@@ -395,7 +388,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
                   <Input
                     value={editForm.phoneNumber}
                     onChange={(e) => setEditForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                    className="bg-white/50 dark:bg-white/5 border-white/50 dark:border-white/20"
+                    className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                     placeholder="Phone number"
                   />
                 </div>
@@ -406,7 +399,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
               <Button
                 onClick={handleSaveProfile}
                 disabled={isSaving}
-                className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-2xl h-12 shadow-lg"
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-12"
               >
                 {isSaving ? <Loader2 className="animate-spin mr-2" size={18} /> : <Check className="mr-2" size={18} />}
                 {isSaving ? 'Saving...' : 'Save Changes'}
@@ -414,7 +407,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
               <Button
                 onClick={handleCancelEdit}
                 variant="outline"
-                className="px-6 bg-white/50 dark:bg-white/10 border-white/50 dark:border-white/20 rounded-2xl h-12"
+                className="px-6 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl h-12"
               >
                 <X size={18} />
               </Button>
@@ -423,11 +416,11 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
         ) : (
           <div className="space-y-3">
             {/* Personal Information Card */}
-            <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/50 dark:border-white/20 shadow-lg">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Personal Information</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center">
                     <UserIcon size={18} className="text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="flex-1">
@@ -437,7 +430,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
                 </div>
                 
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-800 flex items-center justify-center">
                     <Mail size={18} className="text-purple-600 dark:text-purple-400" />
                   </div>
                   <div className="flex-1">
@@ -447,7 +440,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
                 </div>
                 
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center">
                     <Phone size={18} className="text-green-600 dark:text-green-400" />
                   </div>
                   <div className="flex-1">
@@ -465,10 +458,10 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
       <div className="mx-4 space-y-3">
         <button
           onClick={() => setCurrentView('security')}
-          className="w-full flex items-center justify-between p-4 bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl border border-white/50 dark:border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 group"
+          className="w-full flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-all duration-300 group"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <Shield size={18} className="text-red-600 dark:text-red-400" />
             </div>
             <div className="text-left">
@@ -481,10 +474,10 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
 
         <button
           onClick={() => setCurrentView('settings')}
-          className="w-full flex items-center justify-between p-4 bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl border border-white/50 dark:border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 group"
+          className="w-full flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-all duration-300 group"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <Settings size={18} className="text-gray-600 dark:text-gray-400" />
             </div>
             <div className="text-left">
@@ -497,10 +490,10 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
 
         <button
           onClick={onLogout}
-          className="w-full flex items-center justify-between p-4 bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl border border-white/50 dark:border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 group hover:bg-red-50/70 dark:hover:bg-red-900/20"
+          className="w-full flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-300 group"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <LogOut size={18} className="text-red-600 dark:text-red-400" />
             </div>
             <div className="text-left">
@@ -517,12 +510,12 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
   // Security view with simplified design for now
   const renderSecurityView = () => (
     <div className="mx-4 space-y-4">
-      <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/50 dark:border-white/20 shadow-lg">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Security Settings</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center">
                 <Lock size={18} className="text-green-600 dark:text-green-400" />
               </div>
               <div>
@@ -538,7 +531,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center">
                 <KeyRound size={18} className="text-blue-600 dark:text-blue-400" />
               </div>
               <div>
@@ -556,7 +549,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
           <div className="pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-800 flex items-center justify-center">
                   <Shield size={18} className="text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
@@ -575,7 +568,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
                         variant="outline"
                         size="sm"
                         onClick={handlePinSetup}
-                        className="bg-white/50 dark:bg-white/10 border-white/50 dark:border-white/20 hover:bg-white/70 dark:hover:bg-white/20"
+                        className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750"
                       >
                         Set Up
                       </Button>
@@ -585,7 +578,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
                           variant="outline"
                           size="sm"
                           onClick={handlePinChange}
-                          className="bg-white/50 dark:bg-white/10 border-white/50 dark:border-white/20 hover:bg-white/70 dark:hover:bg-white/20"
+                          className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750"
                         >
                           Change
                         </Button>
@@ -593,7 +586,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
                           variant="outline"
                           size="sm"
                           onClick={handlePinDisable}
-                          className="bg-red-50/50 dark:bg-red-900/20 border-red-200/50 dark:border-red-500/30 hover:bg-red-100/70 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400"
+                          className="bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-500 hover:bg-red-100 dark:hover:bg-red-800 text-red-600 dark:text-red-400"
                         >
                           Disable
                         </Button>
@@ -612,12 +605,12 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
   const renderSettingsView = () => (
     <div className="mx-4 space-y-4">
       {/* Notifications Settings */}
-      <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/50 dark:border-white/20 shadow-lg">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Notifications</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
                 <Bell size={18} className="text-blue-600 dark:text-blue-400" />
               </div>
               <div>
@@ -633,7 +626,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-800 flex items-center justify-center">
                 <Mail size={18} className="text-purple-600 dark:text-purple-400" />
               </div>
               <div>
@@ -650,12 +643,12 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
       </div>
 
       {/* App Preferences */}
-      <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/50 dark:border-white/20 shadow-lg">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">App Preferences</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center">
                 {theme === 'dark' ? (
                   <Moon size={18} className="text-indigo-600 dark:text-indigo-400" />
                 ) : (
@@ -676,13 +669,13 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
       </div>
 
       {/* Theme & Appearance Settings */}
-      <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/50 dark:border-white/20 shadow-lg">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Theme & Appearance</h3>
         <div className="space-y-4">
           {/* Color Scheme */}
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
                 <Palette size={18} className="text-blue-600 dark:text-blue-400" />
               </div>
               <div>
@@ -711,7 +704,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
                   <div className={`w-1/2 h-full ${scheme.colors[1]} absolute top-0 right-0`}></div>
                   {settings.theme.colorScheme === scheme.key && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Check size={12} className="text-white drop-shadow-lg" />
+                      <Check size={12} className="text-white" />
                     </div>
                   )}
                 </button>
@@ -722,7 +715,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
           {/* Theme Tone */}
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-gray-500/20 to-slate-500/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
                 <Contrast size={18} className="text-gray-600 dark:text-gray-400" />
               </div>
               <div>
@@ -746,15 +739,15 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
       </div>
 
       {/* Danger Zone */}
-      <div className="bg-red-50/70 dark:bg-red-900/20 backdrop-blur-lg rounded-2xl p-4 border border-red-200/50 dark:border-red-800/50 shadow-lg">
+      <div className="bg-red-50 dark:bg-red-900 rounded-2xl p-4 border border-red-200 dark:border-red-800">
         <h3 className="text-lg font-semibold text-red-800 dark:text-red-300 mb-4">Danger Zone</h3>
         <div className="space-y-3">
           <button
             onClick={handleDeleteAccount}
-            className="w-full flex items-center justify-between p-3 bg-red-100/70 dark:bg-red-900/30 backdrop-blur-lg rounded-xl border border-red-200/50 dark:border-red-800/50 hover:bg-red-200/70 dark:hover:bg-red-900/50 transition-all duration-300 group"
+            className="w-full flex items-center justify-between p-3 bg-red-100 dark:bg-red-900 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-200 dark:hover:bg-red-800 transition-all duration-300 group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-800 flex items-center justify-center">
                 <Trash2 size={18} className="text-red-600 dark:text-red-400" />
               </div>
               <div className="text-left">
@@ -770,14 +763,14 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 pt-8 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/20">
+      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <Button
           variant="ghost"
           size="sm"
           onClick={currentView === 'profile' ? onBack : () => setCurrentView('profile')}
-          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+          className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
         >
           <ArrowLeft size={20} />
         </Button>
@@ -791,7 +784,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
             variant="ghost"
             size="sm"
             onClick={() => setIsEditing(!isEditing)}
-            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+            className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
           >
             {isEditing ? <X size={20} /> : <Edit3 size={20} />}
           </Button>
@@ -808,7 +801,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
 
       {/* PIN Success Modal */}
       <Dialog open={showPinSuccessModal} onOpenChange={setShowPinSuccessModal}>
-        <DialogContent className="bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-gray-200/30 dark:border-white/10 max-w-sm mx-auto">
+        <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-w-sm mx-auto">
           <DialogHeader>
             <DialogTitle className="text-center text-gray-800 dark:text-white flex items-center justify-center gap-2">
               <Shield size={24} className="text-green-500" />
@@ -841,7 +834,7 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
 
       {/* Delete Account Modal */}
       <Dialog open={showDeleteModal} onOpenChange={resetDeleteModal}>
-        <DialogContent className="bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-gray-200/30 dark:border-white/10 max-w-md mx-auto">
+        <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-w-md mx-auto">
           <DialogHeader>
             <DialogTitle className="text-center text-red-600 dark:text-red-400 flex items-center justify-center gap-2">
               <AlertTriangle size={24} />
@@ -956,9 +949,9 @@ export function ModernProfileScreen({ user, onBack, onLogout, onUpdateUser, onNa
 
       {/* Subtle Liquid Glass Footer */}
       <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-white/10 to-transparent dark:from-slate-900/30 dark:via-slate-900/15 dark:to-transparent backdrop-blur-md"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/20"></div>
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white/40 dark:bg-white/20 rounded-full"></div>
+        <div className="absolute inset-0 bg-gray-100 dark:bg-slate-800"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gray-200 dark:bg-gray-700"></div>
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
       </div>
     </div>
   );

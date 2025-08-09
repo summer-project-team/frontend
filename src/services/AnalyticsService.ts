@@ -27,6 +27,43 @@ export interface AnalyticsSummary {
   topCategory: string;
 }
 
+export interface CBUSDFlowsSummary {
+  total_inflow: number;
+  total_outflow: number;
+  net_flow: number;
+  inflow_count: number;
+  outflow_count: number;
+  total_transactions: number;
+}
+
+export interface CBUSDFlowsResponse {
+  period: string;
+  days: number;
+  summary: CBUSDFlowsSummary;
+  circulation: {
+    total_supply: number;
+    holders_count: number;
+    avg_balance: number;
+    max_balance: number;
+  };
+  velocity_metrics: {
+    velocity: number;
+    period_days: number;
+  };
+  reserve_metrics: {
+    total_backing_value: number;
+    reserve_ratio: number;
+    backing_currencies: any[];
+  };
+  health_indicators: {
+    circulation_growth_rate: number;
+    velocity: number;
+    reserve_ratio: number;
+    backing_diversity: number;
+    flow_stability: number;
+  };
+}
+
 class AnalyticsServiceClass {
   async getSpendingPatterns(period: '7d' | '30d' | '90d' = '30d'): Promise<SpendingPattern[]> {
     try {
@@ -75,6 +112,21 @@ class AnalyticsServiceClass {
     } catch (error) {
       console.error('Failed to fetch currency distribution:', error);
       return [];
+    }
+  }
+
+  async getCBUSDFlows(period: '7d' | '30d' | '90d' = '30d'): Promise<CBUSDFlowsResponse | null> {
+    try {
+      const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
+      const response = await api.get(`/analytics/cbusd-flows?days=${days}&period=daily`);
+      
+      if (response.data.success) {
+        return response.data.data;
+      }
+      return null;
+    } catch (error) {
+      console.error('Failed to fetch CBUSD flows:', error);
+      return null;
     }
   }
 

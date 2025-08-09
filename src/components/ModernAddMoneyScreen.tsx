@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 interface ModernAddMoneyScreenProps {
   user: User;
   onBack: () => void;
-  onComplete: (amount: number, currency: string, method: string) => void;
+  onComplete: (amount: number, currency: string, method: string, reference?: string) => void;
 }
 
 const currencies = [
@@ -153,7 +153,7 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
     setIsProcessing(true);
     setTimeout(() => {
       setIsProcessing(false);
-      onComplete(parseFloat(amount), currency, selectedMethod);
+      onComplete(parseFloat(amount), currency, selectedMethod, depositInstructions?.reference);
       toast.success('Deposit instructions generated! Follow the steps to complete your deposit.');
     }, 1500);
   };
@@ -170,10 +170,10 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
           <React.Fragment key={step}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${
               currentStep === step 
-                ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-lg shadow-blue-600/30' 
+                ? 'bg-blue-600 dark:bg-blue-500 text-white' 
                 : index < ['amount', 'method', 'instructions'].indexOf(currentStep)
                   ? 'bg-green-500 text-white'
-                  : 'bg-white/30 dark:bg-white/10 text-gray-600 dark:text-gray-400'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
             }`}>
               {index < ['amount', 'method', 'instructions'].indexOf(currentStep) ? (
                 <CheckCircle size={16} />
@@ -205,7 +205,7 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
         <div>
           <Label className="text-gray-700 dark:text-gray-300 mb-2 block font-medium">Select Currency</Label>
           <Select value={currency} onValueChange={setCurrency}>
-            <SelectTrigger className="bg-white/70 dark:bg-white/10 backdrop-blur-lg border-white/50 dark:border-white/20 text-gray-800 dark:text-white h-14 text-lg">
+            <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white h-14 text-lg">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -229,7 +229,7 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder={`Min. ${formatCurrency(minAmount)}`}
-              className="bg-white/70 dark:bg-white/10 backdrop-blur-lg border-white/50 dark:border-white/20 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-lg pl-12 h-14"
+              className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-lg pl-12 h-14"
             />
             <DollarSign size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400" />
           </div>
@@ -242,7 +242,7 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
         </div>
 
         {amount && !errors.amount && parseFloat(amount) >= minAmount && (
-          <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/50 dark:border-white/20">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">You'll receive:</span>
               <span className="text-gray-800 dark:text-white font-semibold text-lg">{formatCurrency(parseFloat(amount))}</span>
@@ -254,7 +254,7 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
       <Button 
         onClick={handleAmountNext}
         disabled={!amount || parseFloat(amount) < minAmount}
-        className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white h-14 rounded-2xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-blue-600/30 text-lg"
+        className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white h-14 rounded-2xl font-medium transition-all duration-300 text-lg"
       >
         Continue
       </Button>
@@ -275,10 +275,10 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
             <button
               key={method.id}
               onClick={() => handleMethodSelect(method.id)}
-              className="w-full p-6 bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-3xl border border-white/50 dark:border-white/20 hover:bg-white/80 dark:hover:bg-white/20 transition-all duration-300 text-left group shadow-lg hover:shadow-xl"
+              className="w-full p-6 bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 text-left group"
             >
               <div className="flex items-center space-x-4">
-                <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border-2 border-blue-500/30">
+                <div className="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border-2 border-blue-200 dark:border-blue-700">
                   <Icon size={26} className="text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="flex-1">
@@ -289,7 +289,7 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
                     <span>• {method.fee}</span>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-gray-100/50 dark:bg-gray-800/50 flex items-center justify-center text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors duration-300">
+                <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors duration-300">
                   <ExternalLink size={20} />
                 </div>
               </div>
@@ -300,7 +300,7 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
 
       <button 
         onClick={() => setCurrentStep('amount')}
-        className="w-full h-14 backdrop-blur-md bg-white/30 dark:bg-white/10 border border-white/40 dark:border-white/20 rounded-2xl hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 text-gray-700 dark:text-gray-300 font-medium text-lg"
+        className="w-full h-14 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 text-gray-700 dark:text-gray-300 font-medium text-lg"
       >
         Back
       </button>
@@ -317,7 +317,7 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
       {depositInstructions && (
         <div className="space-y-4">
           {/* Summary Card */}
-          <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/50 dark:border-white/20 shadow-lg">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-gray-500 dark:text-gray-400">Amount:</span>
@@ -344,7 +344,7 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
 
           {/* Bank Transfer Details */}
           {selectedMethod === 'bank' && (
-            <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/50 dark:border-white/20 shadow-lg">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
               <h3 className="text-gray-800 dark:text-white font-semibold mb-4">Bank Details</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between items-center">
@@ -373,13 +373,13 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
 
           {/* USSD Code */}
           {selectedMethod === 'ussd' && (
-            <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/50 dark:border-white/20 shadow-lg">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
               <h3 className="text-gray-800 dark:text-white font-semibold mb-4">USSD Code</h3>
               <div className="flex items-center space-x-2">
                 <code className="text-blue-600 dark:text-blue-400 font-mono text-lg">{depositInstructions.ussdCode}</code>
                 <button
                   onClick={() => copyToClipboard(depositInstructions.ussdCode)}
-                  className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 hover:bg-blue-500/30 transition-all duration-300"
+                  className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-700 transition-all duration-300"
                 >
                   <Copy size={16} />
                 </button>
@@ -389,7 +389,7 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
 
           {/* QR Code */}
           {selectedMethod === 'qr' && (
-            <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/50 dark:border-white/20 shadow-lg text-center">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 text-center">
               <h3 className="text-gray-800 dark:text-white font-semibold mb-4">QR Code</h3>
               <div className="w-48 h-48 bg-white rounded-2xl mx-auto flex items-center justify-center">
                 <QrCode size={120} className="text-gray-800" />
@@ -399,12 +399,12 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
           )}
 
           {/* Steps */}
-          <div className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/50 dark:border-white/20 shadow-lg">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
             <h3 className="text-gray-800 dark:text-white font-semibold mb-4">Instructions</h3>
             <ol className="space-y-2">
               {depositInstructions.steps.map((step: string, index: number) => (
                 <li key={index} className="flex items-start space-x-3">
-                  <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-sm font-medium">
+                  <span className="flex-shrink-0 w-6 h-6 bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-sm font-medium">
                     {index + 1}
                   </span>
                   <span className="text-gray-600 dark:text-gray-300 text-sm">{step}</span>
@@ -419,13 +419,13 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
         <button 
           onClick={handleComplete}
           disabled={isProcessing}
-          className="w-full bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white h-14 rounded-2xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-green-600/30 text-lg disabled:opacity-50"
+          className="w-full bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white h-14 rounded-2xl font-medium transition-all duration-300 text-lg disabled:opacity-50"
         >
           {isProcessing ? 'Generating...' : 'I\'ve Completed the Transfer'}
         </button>
         <button 
           onClick={() => setCurrentStep('method')}
-          className="w-full h-14 backdrop-blur-md bg-white/30 dark:bg-white/10 border border-white/40 dark:border-white/20 rounded-2xl hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 text-gray-700 dark:text-gray-300 font-medium text-lg"
+          className="w-full h-14 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 text-gray-700 dark:text-gray-300 font-medium text-lg"
         >
           Back
         </button>
@@ -434,23 +434,17 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 dark:bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/5 dark:bg-purple-500/15 rounded-full blur-3xl animate-pulse delay-2000"></div>
-      </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
 
       {/* Content */}
-      <div className="relative z-10 p-4">
+      <div className="relative z-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 pt-4">
+        <div className="flex items-center justify-between px-4 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 mb-6">
           <Button
             variant="ghost"
             size="sm"
             onClick={onBack}
-            className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+            className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
           >
             <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
           </Button>
@@ -459,21 +453,21 @@ export function ModernAddMoneyScreen({ user, onBack, onComplete }: ModernAddMone
         </div>
 
         {/* Step Indicator */}
-        {renderStepIndicator()}
+        <div className="p-4">
+          {renderStepIndicator()}
 
-        {/* Content */}
-        <div className="max-w-md mx-auto">
-          {currentStep === 'amount' && renderAmountStep()}
-          {currentStep === 'method' && renderMethodStep()}
-          {currentStep === 'instructions' && renderInstructionsStep()}
+          {/* Content */}
+          <div className="max-w-md mx-auto">
+            {currentStep === 'amount' && renderAmountStep()}
+            {currentStep === 'method' && renderMethodStep()}
+            {currentStep === 'instructions' && renderInstructionsStep()}
+          </div>
         </div>
       </div>
 
-      {/* Subtle Liquid Glass Footer */}
-      <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-white/10 to-transparent dark:from-slate-900/30 dark:via-slate-900/15 dark:to-transparent backdrop-blur-md"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/20"></div>
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white/40 dark:bg-white/20 rounded-full"></div>
+      {/* Footer */}
+      <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none bg-gray-50/80 dark:bg-gray-900/80 border-t border-gray-200 dark:border-gray-800">
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
       </div>
     </div>
   );

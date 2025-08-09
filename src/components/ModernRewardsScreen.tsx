@@ -113,23 +113,23 @@ export function ModernRewardsScreen({ onBack, user }: ModernRewardsScreenProps) 
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'achievement': return 'bg-blue-500/20 text-blue-600 dark:text-blue-400';
-      case 'challenge': return 'bg-purple-500/20 text-purple-600 dark:text-purple-400';
-      case 'referral': return 'bg-green-500/20 text-green-600 dark:text-green-400';
-      case 'daily': return 'bg-orange-500/20 text-orange-600 dark:text-orange-400';
-      default: return 'bg-gray-500/20 text-gray-600 dark:text-gray-400';
+      case 'achievement': return 'bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-400';
+      case 'challenge': return 'bg-purple-100 dark:bg-purple-800 text-purple-600 dark:text-purple-400';
+      case 'referral': return 'bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-400';
+      case 'daily': return 'bg-orange-100 dark:bg-orange-800 text-orange-600 dark:text-orange-400';
+      default: return 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400';
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 pt-8 backdrop-blur-lg bg-white/30 dark:bg-white/10 border-b border-white/20">
+      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-4 bg-gray-50/90 dark:bg-gray-900/90 border-b border-gray-200 dark:border-gray-800">
         <Button
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="backdrop-blur-md bg-white/30 dark:bg-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-white/30 dark:border-white/20 hover:bg-white/40 dark:hover:bg-white/20 transition-all duration-300 shadow-lg"
+          className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
         >
           <ArrowLeft size={20} />
         </Button>
@@ -141,15 +141,15 @@ export function ModernRewardsScreen({ onBack, user }: ModernRewardsScreenProps) 
       <div className="flex-1 overflow-y-auto pt-20 pb-24">
         {/* Points Summary */}
         <div className="p-4">
-          <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 rounded-3xl p-6 shadow-2xl border border-white/20">
+          <div className="bg-blue-600 dark:bg-blue-500 rounded-3xl p-6 border border-blue-500 dark:border-blue-400">
             <div className="text-center text-white">
-              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Coins size={32} className="text-white" />
+              <div className="w-16 h-16 bg-gray-200 dark:bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Coins size={32} className="text-blue-600" />
               </div>
               <h2 className="text-3xl font-bold mb-1">{userPoints.toLocaleString()}</h2>
               <p className="text-white/80">Total Points</p>
               <div className="mt-4">
-                <Button className="bg-white/20 hover:bg-white/30 text-white border-white/30">
+                <Button className="bg-gray-200 hover:bg-gray-100 dark:bg-gray-200 dark:hover:bg-gray-100 text-blue-600 border-gray-200 dark:border-gray-200">
                   Redeem Points
                 </Button>
               </div>
@@ -159,12 +159,12 @@ export function ModernRewardsScreen({ onBack, user }: ModernRewardsScreenProps) 
 
         {/* Tab Navigation */}
         <div className="p-4">
-          <div className="flex bg-white/50 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-1 border border-white/50 dark:border-white/20">
+          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-2xl p-1 border border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setActiveTab('available')}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all duration-300 ${
               activeTab === 'available'
-                ? 'bg-white/80 dark:bg-white/20 text-gray-800 dark:text-white shadow-md'
+                ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white'
                 : 'text-gray-600 dark:text-gray-400'
             }`}
           >
@@ -175,7 +175,7 @@ export function ModernRewardsScreen({ onBack, user }: ModernRewardsScreenProps) 
             onClick={() => setActiveTab('history')}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all duration-300 ${
               activeTab === 'history'
-                ? 'bg-white/80 dark:bg-white/20 text-gray-800 dark:text-white shadow-md'
+                ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white'
                 : 'text-gray-600 dark:text-gray-400'
             }`}
           >
@@ -194,7 +194,7 @@ export function ModernRewardsScreen({ onBack, user }: ModernRewardsScreenProps) 
               return (
                 <div
                   key={reward.id}
-                  className={`bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/50 dark:border-white/20 shadow-lg ${
+                  className={`bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 ${
                     reward.completed ? 'ring-2 ring-green-500/50' : ''
                   }`}
                 >
@@ -247,7 +247,7 @@ export function ModernRewardsScreen({ onBack, user }: ModernRewardsScreenProps) 
             {rewardsHistory.map((item) => (
               <div
                 key={item.id}
-                className="bg-white/70 dark:bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/50 dark:border-white/20 shadow-lg"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -278,11 +278,9 @@ export function ModernRewardsScreen({ onBack, user }: ModernRewardsScreenProps) 
         </div>
       </div>
 
-      {/* Subtle Liquid Glass Footer */}
-      <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-white/10 to-transparent dark:from-slate-900/30 dark:via-slate-900/15 dark:to-transparent backdrop-blur-md"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/20"></div>
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white/40 dark:bg-white/20 rounded-full"></div>
+      {/* Footer */}
+      <div className="fixed bottom-0 left-0 right-0 h-20 pointer-events-none bg-gray-50/80 dark:bg-gray-900/80 border-t border-gray-200 dark:border-gray-800">
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
       </div>
     </div>
   );
